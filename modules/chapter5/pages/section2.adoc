@@ -3,7 +3,7 @@
 
 == Overview
 
-A gateway site is a local system site on a RHEL host that joins an existing application network.
+A gateway site is a local system site on a Linux host that joins an existing application network.
 This section walks through creating a site, linking it to an OpenShift cluster, and managing its lifecycle.
 
 == Creating a Site Using the CLI
@@ -22,13 +22,13 @@ For the `linux` (systemd) platform, skip the `skupper system install` step -- th
 
 [source,bash,role=execute]
 ----
-skupper site create my-rhel-site
+skupper site create my-local-site
 ----
 
 .Expected output
 ----
 Waiting for status...
-Site "my-rhel-site" is ready.
+Site "my-local-site" is ready.
 ----
 
 The site is created but not yet running.
@@ -44,27 +44,27 @@ This launches the router (as a Podman container, Docker container, or systemd se
 
 == Linking to an OpenShift Site
 
-To join the application network, you create a link between the local system site and an OpenShift site.
-The OpenShift site must have link access enabled.
+To join the application network, you create a link between the local system site and an OpenShift or Kubernetes site.
+The Kubernetes site must have link access enabled.
 
 === Linking with a Token
 
-. On the OpenShift site, ensure link access is enabled and issue a token:
+. On the Kubernetes site, ensure link access is enabled and issue a token:
 +
 [source,bash,role=execute]
 ----
 oc project site-west
 skupper site update --enable-link-access
-skupper token issue ~/rhel-token.yaml
+skupper token issue ~/local-site-token.yaml
 ----
 
-. Copy the token file to the RHEL host (e.g., via `scp`).
+. Copy the token file to the Linux host (e.g., via `scp`).
 
-. On the RHEL host, redeem the token:
+. On the Linux host, redeem the token:
 +
 [source,bash,role=execute]
 ----
-skupper token redeem ~/rhel-token.yaml
+skupper token redeem ~/local-site-token.yaml
 ----
 
 . Verify the link:
@@ -89,7 +89,7 @@ You can redeem tokens on a local system site and create link resources.
 
 An alternative to tokens is to generate a link resource YAML file:
 
-. On the OpenShift site, ensure link access is enabled:
+. On the Kubernetes site, ensure link access is enabled:
 +
 [source,bash,role=execute]
 ----
@@ -103,7 +103,7 @@ skupper site update --enable-link-access
 skupper link generate > ~/link-to-west.yaml
 ----
 
-. On the RHEL host, apply the link resource:
+. On the Linux host, apply the link resource:
 +
 [source,bash,role=execute]
 ----
@@ -120,7 +120,7 @@ skupper link status
 == Site Bundles
 
 Site bundles allow you to package an entire site configuration into a distributable `.tar.gz` file.
-This is useful when deploying sites to remote RHEL hosts where you do not want to install the full CLI.
+This is useful when deploying sites to remote Linux hosts where you do not want to install the full CLI.
 
 === Creating a Bundle
 

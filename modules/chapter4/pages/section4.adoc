@@ -248,4 +248,4 @@ In this exercise, you:
 * Simulated a failure and verified automatic failover to the remaining site
 * Learned how link cost influences traffic distribution in a multi-site network
 
-In the next chapter, you will learn how to extend the application network to include RHEL gateway sites for non-Kubernetes workloads.
+In the next chapter, you will learn how to extend the application network to include local system sites on Linux for non-Kubernetes workloads.

@@ -1,9 +1,9 @@
-= Service Interconnect on RHEL
-:navtitle: SI on RHEL
+= Service Interconnect on Linux
+:navtitle: SI on Linux
 
 == Overview
 
-Service Interconnect can run on local systems -- RHEL servers, virtual machines, or edge devices -- in addition to Kubernetes and OpenShift clusters.
+Service Interconnect can run on local systems -- Linux servers, virtual machines, or edge devices -- in addition to Kubernetes and OpenShift clusters.
 A _local system_ site participates in the same application network as Kubernetes sites, using the same mTLS-secured router mesh to route traffic.
 
 IMPORTANT: Using the Skupper CLI on local systems is a Technology Preview feature.
@@ -28,8 +28,8 @@ Service Interconnect supports three local system platforms, controlled by the `S
 |Docker Engine installed and running
 
 |`linux`
-|Runs the router as a systemd service using the `skupper-router` RPM
-|RHEL 8 or 9, `skupper-router` package installed
+|Runs the router as a systemd service using the `skupper-router` package
+|Linux with systemd (RHEL 8/9 supported), `skupper-router` package installed
 |===
 
 NOTE: The `linux` (systemd) platform does not use a container runtime.
@@ -37,15 +37,15 @@ The router runs directly as a system service, which can be preferable in environ
 
 == Installation Requirements
 
-To use Service Interconnect on a RHEL system, you need:
+To use Service Interconnect on a Linux system, you need:
 
 * The `skupper` CLI installed (via binary download or RPM package)
 * For Podman/Docker platforms: the container runtime installed and running
-* For the Linux platform: the `skupper-router` RPM package
+* For the Linux/systemd platform: the `skupper-router` package
 
-=== Installing the CLI on RHEL
+=== Installing the CLI via RPM (RHEL)
 
-If you have not installed the CLI as described in Chapter 2, use the RPM method:
+If you have not installed the CLI as described in Chapter 2, RHEL users can use the RPM method:
 
 [source,bash,role=execute]
 ----

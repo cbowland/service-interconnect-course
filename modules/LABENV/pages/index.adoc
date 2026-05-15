@@ -24,7 +24,7 @@ This means you can simulate a multi-cluster environment by creating separate nam
 All core concepts (sites, tokens, links, exposing services) work the same way in both options.
 
 NOTE: Option B does not demonstrate cross-network connectivity, since both namespaces share the same cluster network.
-For production scenarios and Chapter 5 (RHEL Gateways), Option A with a separate RHEL 9 system is required.
+For production scenarios and Chapter 5 (Local System Sites), Option A with a separate Linux system is required.
 
 == Option A: Two OpenShift Clusters
 
@@ -119,7 +119,7 @@ oc project site-east
 
 TIP: You can use two terminal windows — one set to each namespace — to make switching easier.
 
-NOTE: Chapter 5 (Working with RHEL Gateways) requires a separate RHEL 9 system and cannot be completed with the single-cluster option alone.
+NOTE: Chapter 5 (Local System Sites) requires a separate Linux system and cannot be completed with the single-cluster option alone.
 
 [[RHDP-Portal-Links]]
 == RHDP Portal Links

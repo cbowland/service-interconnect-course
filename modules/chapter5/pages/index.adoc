@@ -1,22 +1,22 @@
-= Working with RHEL Gateways
-:navtitle: Working with RHEL Gateways
+= Working with Local System Sites
+:navtitle: Local System Sites
 
 == Chapter Overview
 
 In previous chapters, you connected services across OpenShift clusters.
-Many organizations also run workloads on bare-metal servers, virtual machines, or edge devices running Red Hat Enterprise Linux.
+Many organizations also run workloads on bare-metal servers, virtual machines, or edge devices running Linux.
 Service Interconnect can extend the application network to these non-Kubernetes environments, enabling seamless connectivity between containerized and traditional workloads.
 
-This chapter covers how to create Service Interconnect sites on RHEL systems, link them to OpenShift clusters, and expose services in both directions.
+This chapter covers how to create Service Interconnect sites on Linux systems using Podman, Docker, or systemd, link them to OpenShift clusters, and expose services in both directions.
 
 == Objectives
 
 After completing this chapter, you should be able to:
 
-* Describe the local system site platforms supported by Service Interconnect (Podman, Docker, Linux)
-* Install and configure Service Interconnect on a RHEL 9 system
+* Describe the local system site platforms supported by Service Interconnect (Podman, Docker, Linux/systemd)
+* Install and configure Service Interconnect on a Linux system
 * Create a local system site and link it to an OpenShift-based application network
-* Expose services running on RHEL to OpenShift workloads
-* Consume OpenShift-hosted services from a RHEL system
+* Expose services running on a Linux host to OpenShift workloads
+* Consume OpenShift-hosted services from a Linux system
 * Use site bundles to deploy pre-configured sites to remote hosts
 * Manage local system site lifecycle with `skupper system` commands

@@ -1,20 +1,20 @@
-= Exposing VM-based Services
-:navtitle: Exposing VM-based Services
+= Exposing Local System Services
+:navtitle: Exposing Local Services
 
 == Overview
 
-Once a RHEL site is linked to the application network, you can expose services in both directions:
+Once a local system site is linked to the application network, you can expose services in both directions:
 
-* **RHEL to OpenShift** -- A service running on the RHEL host is made available to OpenShift workloads
-* **OpenShift to RHEL** -- A service running on OpenShift is made available on the RHEL host
+* **Linux to OpenShift** -- A service running on the Linux host is made available to OpenShift workloads
+* **OpenShift to Linux** -- A service running on OpenShift is made available on the Linux host
 
 Both directions use the same connector and listener model as Kubernetes sites.
 
-== RHEL to OpenShift: Exposing a Local Service
+== Linux to OpenShift: Exposing a Local Service
 
-To expose a service running on the RHEL host (for example, a database listening on port 5432):
+To expose a service running on the Linux host (for example, a database listening on port 5432):
 
-=== Step 1: Create a Connector on the RHEL Site
+=== Step 1: Create a Connector on the Local System Site
 
 [source,bash,role=execute]
 ----
@@ -73,7 +73,7 @@ postgresql   Ready    postgresql    postgresql   5432   true                 OK
 === Traffic Flow
 
 ----
-OpenShift (site-west)               RHEL host (my-rhel-site)
+OpenShift (site-west)               Linux host (my-local-site)
 ┌──────────────────────┐            ┌──────────────────────┐
 │  frontend pod        │            │  PostgreSQL           │
 │    │                 │            │    ▲                  │
@@ -85,9 +85,9 @@ OpenShift (site-west)               RHEL host (my-rhel-site)
 └──────────────────────┘            └──────────────────────┘
 ----
 
-== OpenShift to RHEL: Consuming a Remote Service
+== OpenShift to Linux: Consuming a Remote Service
 
-To make a service running on OpenShift available on the RHEL host:
+To make a service running on OpenShift available on the Linux host:
 
 === Step 1: Create a Connector on the OpenShift Site
 
@@ -100,9 +100,9 @@ oc project site-east
 skupper connector create backend 8080 --workload deployment/backend
 ----
 
-=== Step 2: Create a Listener on the RHEL Site
+=== Step 2: Create a Listener on the Local System Site
 
-On the RHEL host:
+On the Linux host:
 
 [source,bash,role=execute]
 ----
@@ -129,7 +129,7 @@ NAME      STATUS   ROUTING-KEY   HOST        PORT
 backend   Ok       backend       localhost   8081
 ----
 
-Now local processes on the RHEL host can connect to `localhost:8081` to reach the `backend` service running on OpenShift.
+Now local processes on the Linux host can connect to `localhost:8081` to reach the `backend` service running on OpenShift.
 
 NOTE: On local systems, the listener binds to `localhost` on a local port.
 The port assignment may differ from the requested port; check `skupper listener status` for the actual port.
@@ -190,14 +190,14 @@ If you are using a different namespace, replace `default` with your namespace na
 |===
 |Direction |Connector Site |Listener Site |Use Case
 
-|RHEL → OpenShift
-|RHEL host
+|Linux → OpenShift
+|Linux host
 |OpenShift cluster
 |Expose a legacy database, message broker, or file service to cloud workloads
 
-|OpenShift → RHEL
+|OpenShift → Linux
 |OpenShift cluster
-|RHEL host
+|Linux host
 |Allow on-premises tools to access cloud-hosted APIs or services
 
 |Bidirectional

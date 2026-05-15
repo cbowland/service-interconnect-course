@@ -73,8 +73,8 @@ This course is organized into the following chapters:
 |Chapter 4: Multi-cluster Connectivity
 |Multi-site topologies, service distribution, load balancing, and failover
 
-|Chapter 5: Working with RHEL Gateways
-|Connecting non-Kubernetes workloads on RHEL to the service network
+|Chapter 5: Working with Local System Sites
+|Connecting non-Kubernetes workloads on Linux to the service network
 
 |Chapter 6: Security and Observability
 |Mutual TLS, certificate management, Network Observer, and monitoring
