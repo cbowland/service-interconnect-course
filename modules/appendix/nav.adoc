@@ -1,1 +1,4 @@
 * xref:appendix.adoc[]
+** xref:cli-reference.adoc[]
+** xref:troubleshooting.adoc[]
+** xref:resources.adoc[]

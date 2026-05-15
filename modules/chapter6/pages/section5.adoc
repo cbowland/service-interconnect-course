@@ -1,0 +1,2 @@
+= Hands-on: Securing and Monitoring Your Network
+:navtitle: Hands-on: Securing and Monitoring

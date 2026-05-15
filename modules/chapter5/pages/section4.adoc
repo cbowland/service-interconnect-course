@@ -1,0 +1,2 @@
+= Hands-on: Connecting a Legacy Database
+:navtitle: Hands-on: Connecting a Legacy Database

@@ -1,0 +1,2 @@
+= Hands-on: Install and Verify
+:navtitle: Hands-on: Install and Verify

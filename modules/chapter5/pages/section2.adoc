@@ -1,0 +1,2 @@
+= Creating a Gateway Site
+:navtitle: Creating a Gateway Site

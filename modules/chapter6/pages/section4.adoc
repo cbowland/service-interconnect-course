@@ -1,0 +1,2 @@
+= Integration with OpenShift Monitoring
+:navtitle: Integration with OpenShift Monitoring
