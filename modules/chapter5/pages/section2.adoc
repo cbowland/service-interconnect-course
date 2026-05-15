@@ -1,2 +1,202 @@
 = Creating a Gateway Site
 :navtitle: Creating a Gateway Site
+
+== Overview
+
+A gateway site is a local system site on a RHEL host that joins an existing application network.
+This section walks through creating a site, linking it to an OpenShift cluster, and managing its lifecycle.
+
+== Creating a Site Using the CLI
+
+=== Step 1: Set the Platform and Install the Controller
+
+[source,bash,role=execute]
+----
+export SKUPPER_PLATFORM=podman
+skupper system install
+----
+
+For the `linux` (systemd) platform, skip the `skupper system install` step -- the `skupper-router` RPM provides the router directly.
+
+=== Step 2: Create the Site
+
+[source,bash,role=execute]
+----
+skupper site create my-rhel-site
+----
+
+.Expected output
+----
+Waiting for status...
+Site "my-rhel-site" is ready.
+----
+
+The site is created but not yet running.
+
+=== Step 3: Start the Site
+
+[source,bash,role=execute]
+----
+skupper system start
+----
+
+This launches the router (as a Podman container, Docker container, or systemd service depending on the platform).
+
+== Linking to an OpenShift Site
+
+To join the application network, you create a link between the local system site and an OpenShift site.
+The OpenShift site must have link access enabled.
+
+=== Linking with a Token
+
+. On the OpenShift site, ensure link access is enabled and issue a token:
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper site update --enable-link-access
+skupper token issue ~/rhel-token.yaml
+----
+
+. Copy the token file to the RHEL host (e.g., via `scp`).
+
+. On the RHEL host, redeem the token:
++
+[source,bash,role=execute]
+----
+skupper token redeem ~/rhel-token.yaml
+----
+
+. Verify the link:
++
+[source,bash,role=execute]
+----
+skupper link status
+----
++
+You might need to run this command multiple times until the link is ready:
++
+.Expected output
+----
+NAME                                          STATUS   COST   MESSAGE
+west-<uuid>                                   Ready    1      OK
+----
+
+NOTE: In this release, the CLI does not support issuing tokens from local system sites.
+You can redeem tokens on a local system site and create link resources.
+
+=== Linking with a Link Resource
+
+An alternative to tokens is to generate a link resource YAML file:
+
+. On the OpenShift site, ensure link access is enabled:
++
+[source,bash,role=execute]
+----
+skupper site update --enable-link-access
+----
+
+. Generate a link resource file:
++
+[source,bash,role=execute]
+----
+skupper link generate > ~/link-to-west.yaml
+----
+
+. On the RHEL host, apply the link resource:
++
+[source,bash,role=execute]
+----
+skupper system apply -f ~/link-to-west.yaml
+----
+
+. Verify the link:
++
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+== Site Bundles
+
+Site bundles allow you to package an entire site configuration into a distributable `.tar.gz` file.
+This is useful when deploying sites to remote RHEL hosts where you do not want to install the full CLI.
+
+=== Creating a Bundle
+
+On a host with the CLI installed:
+
+[source,bash,role=execute]
+----
+export SKUPPER_PLATFORM=podman
+skupper system install
+skupper site create remote-site
+skupper system generate-bundle remote-site
+----
+
+.Expected output
+----
+Site "remote-site" has been created (as a distributable bundle)
+Installation bundle available at: /home/user/.local/share/skupper/bundles/remote-site.tar.gz
+Default namespace: default
+Default platform: podman
+----
+
+=== Deploying a Bundle
+
+. Transfer the bundle to the remote host:
++
+[source,bash,role=execute]
+----
+scp /home/user/.local/share/skupper/bundles/remote-site.tar.gz user@remote-host:~/
+----
+
+. On the remote host, extract and install:
++
+[source,bash,role=execute]
+----
+tar -xzvf remote-site.tar.gz
+./install.sh
+----
++
+The site is now running.
+You can verify with `skupper site status` if the CLI is installed on the remote host.
+
+NOTE: The bundle includes all configuration files needed to run the site.
+The CLI is not required on the remote host -- only the container runtime (Podman or Docker) or the `skupper-router` RPM (Linux platform).
+
+== Lifecycle Management
+
+=== Applying Configuration Changes
+
+After modifying site configuration (adding connectors, listeners, or links), apply changes with:
+
+[source,bash,role=execute]
+----
+skupper system reload
+----
+
+=== Stopping and Starting
+
+[source,bash,role=execute]
+----
+skupper system stop
+skupper system start
+----
+
+=== Deleting a Site
+
+[source,bash,role=execute]
+----
+skupper site delete <site-name>
+skupper system stop
+----
+
+=== Uninstalling the Controller
+
+After deleting all sites, you can remove the controller:
+
+[source,bash,role=execute]
+----
+skupper system uninstall
+----

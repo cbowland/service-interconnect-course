@@ -1,2 +1,207 @@
 = Exposing VM-based Services
 :navtitle: Exposing VM-based Services
+
+== Overview
+
+Once a RHEL site is linked to the application network, you can expose services in both directions:
+
+* **RHEL to OpenShift** -- A service running on the RHEL host is made available to OpenShift workloads
+* **OpenShift to RHEL** -- A service running on OpenShift is made available on the RHEL host
+
+Both directions use the same connector and listener model as Kubernetes sites.
+
+== RHEL to OpenShift: Exposing a Local Service
+
+To expose a service running on the RHEL host (for example, a database listening on port 5432):
+
+=== Step 1: Create a Connector on the RHEL Site
+
+[source,bash,role=execute]
+----
+skupper connector create postgresql 5432 --host localhost
+----
+
+By default, the routing key is set to the connector name (`postgresql`).
+Use `--routing-key` for a custom name.
+
+Apply the configuration:
+
+[source,bash,role=execute]
+----
+skupper system reload
+----
+
+Verify the connector:
+
+[source,bash,role=execute]
+----
+skupper connector status
+----
+
+.Expected output
+----
+NAME         STATUS   ROUTING-KEY   HOST        PORT
+postgresql   Ok       postgresql    localhost   5432
+----
+
+=== Step 2: Create a Listener on the OpenShift Site
+
+On the OpenShift cluster where you want to consume the service:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener create postgresql 5432
+----
+
+This creates a Kubernetes `Service` named `postgresql` on port 5432 in the `site-west` namespace.
+Pods in that namespace can connect to `postgresql:5432` as if the database were local.
+
+Verify the listener:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME         STATUS   ROUTING-KEY   HOST         PORT   MATCHING-CONNECTOR   MESSAGE
+postgresql   Ready    postgresql    postgresql   5432   true                 OK
+----
+
+=== Traffic Flow
+
+----
+OpenShift (site-west)               RHEL host (my-rhel-site)
+┌──────────────────────┐            ┌──────────────────────┐
+│  frontend pod        │            │  PostgreSQL           │
+│    │                 │            │    ▲                  │
+│    ▼                 │            │    │                  │
+│  listener            │   mTLS    │  connector            │
+│  (postgresql:5432)   │◄─────────►│  (localhost:5432)     │
+│    │                 │            │                      │
+│  router ─────────────┼────────────┼── router             │
+└──────────────────────┘            └──────────────────────┘
+----
+
+== OpenShift to RHEL: Consuming a Remote Service
+
+To make a service running on OpenShift available on the RHEL host:
+
+=== Step 1: Create a Connector on the OpenShift Site
+
+The connector already exists if you exposed the service in a previous chapter.
+If not:
+
+[source,bash,role=execute]
+----
+oc project site-east
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+=== Step 2: Create a Listener on the RHEL Site
+
+On the RHEL host:
+
+[source,bash,role=execute]
+----
+skupper listener create backend 8080
+----
+
+Apply the configuration:
+
+[source,bash,role=execute]
+----
+skupper system reload
+----
+
+Verify:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME      STATUS   ROUTING-KEY   HOST        PORT
+backend   Ok       backend       localhost   8081
+----
+
+Now local processes on the RHEL host can connect to `localhost:8081` to reach the `backend` service running on OpenShift.
+
+NOTE: On local systems, the listener binds to `localhost` on a local port.
+The port assignment may differ from the requested port; check `skupper listener status` for the actual port.
+
+== Using YAML on Local Systems
+
+IMPORTANT: Using YAML on local systems is a Technology Preview feature.
+
+You can also define connectors and listeners using YAML files:
+
+=== Connector YAML
+
+Create a file `Connector-postgresql.yaml`:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: postgresql
+spec:
+  routingKey: postgresql
+  host: localhost
+  port: 5432
+----
+
+=== Listener YAML
+
+Create a file `Listener-backend.yaml`:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+spec:
+  routingKey: backend
+  host: localhost
+  port: 8080
+----
+
+Place the YAML files in the site's input directory and apply:
+
+[source,bash,role=execute]
+----
+mv Connector-postgresql.yaml \
+  ~/.local/share/skupper/namespaces/default/input/resources/
+skupper system setup --force
+----
+
+NOTE: The path shown is for the `default` namespace.
+If you are using a different namespace, replace `default` with your namespace name.
+
+== Bidirectional Connectivity Summary
+
+[cols="1,1,1,1",options="header"]
+|===
+|Direction |Connector Site |Listener Site |Use Case
+
+|RHEL → OpenShift
+|RHEL host
+|OpenShift cluster
+|Expose a legacy database, message broker, or file service to cloud workloads
+
+|OpenShift → RHEL
+|OpenShift cluster
+|RHEL host
+|Allow on-premises tools to access cloud-hosted APIs or services
+
+|Bidirectional
+|Both sites
+|Both sites
+|Full hybrid integration between cloud and on-premises
+|===

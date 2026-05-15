@@ -1,2 +1,339 @@
 = Hands-on: Connecting a Legacy Database
-:navtitle: Hands-on: Connecting a Legacy Database
+:navtitle: Hands-on: Legacy Database
+
+== Lab Overview
+
+In this exercise, you will connect a PostgreSQL database running on a RHEL 9 system to a frontend application running on OpenShift.
+This simulates a common hybrid scenario where a legacy database cannot be migrated to the cloud but needs to be accessed by cloud-native workloads.
+
+IMPORTANT: Using the Skupper CLI on local systems is a Technology Preview feature.
+
+== Prerequisites
+
+* Completed the Chapter 3 hands-on lab (you have a working `site-west` with link access enabled)
+* A RHEL 9 system with:
+** The `skupper` CLI installed
+** Podman installed and the Podman socket enabled, *or* the `skupper-router` RPM installed
+* Network connectivity between the RHEL system and the OpenShift cluster (outbound from RHEL)
+
+== Exercise Steps
+
+=== Step 1: Prepare the RHEL System
+
+Verify the CLI is installed:
+
+[source,bash,role=execute]
+----
+skupper version
+----
+
+.Expected output
+----
+COMPONENT          VERSION
+cli                2.1.3-rh-1
+----
+
+[tabs]
+====
+Option A: Podman Platform::
++
+Enable the Podman socket and user lingering:
++
+[source,bash,role=execute]
+----
+systemctl --user enable --now podman.socket
+loginctl enable-linger $(whoami)
+export SKUPPER_PLATFORM=podman
+----
+
+Option B: Linux (systemd) Platform::
++
+Verify the `skupper-router` package is installed:
++
+[source,bash,role=execute]
+----
+rpm -q skupper-router
+export SKUPPER_PLATFORM=linux
+----
+====
+
+=== Step 2: Install PostgreSQL on RHEL
+
+Install and start PostgreSQL:
+
+[source,bash,role=execute]
+----
+sudo dnf install -y postgresql-server postgresql
+sudo postgresql-setup --initdb
+sudo systemctl enable --now postgresql
+----
+
+Create a test database and user:
+
+[source,bash,role=execute]
+----
+sudo -u postgres psql -c "CREATE USER appuser WITH PASSWORD 'redhat123';"
+sudo -u postgres psql -c "CREATE DATABASE appdb OWNER appuser;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE appdb TO appuser;"
+----
+
+Configure PostgreSQL to listen on all interfaces and accept password authentication.
+Edit `/var/lib/pgsql/data/postgresql.conf`:
+
+[source,bash,role=execute]
+----
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" \
+  /var/lib/pgsql/data/postgresql.conf
+----
+
+Edit `/var/lib/pgsql/data/pg_hba.conf` to add a line for password authentication:
+
+[source,bash,role=execute]
+----
+echo "host all all 0.0.0.0/0 md5" | sudo tee -a /var/lib/pgsql/data/pg_hba.conf
+----
+
+Restart PostgreSQL:
+
+[source,bash,role=execute]
+----
+sudo systemctl restart postgresql
+----
+
+Verify the database is accessible locally:
+
+[source,bash,role=execute]
+----
+psql -h localhost -U appuser -d appdb -c "SELECT 1;"
+----
+
+Enter the password `redhat123` when prompted.
+
+=== Step 3: Create a Local System Site
+
+[tabs]
+====
+Option A: Podman Platform::
++
+[source,bash,role=execute]
+----
+export SKUPPER_PLATFORM=podman
+skupper system install
+skupper site create rhel-db-site
+skupper system start
+----
+
+Option B: Linux (systemd) Platform::
++
+[source,bash,role=execute]
+----
+export SKUPPER_PLATFORM=linux
+skupper site create rhel-db-site
+skupper system start
+----
+====
+
+Verify the site is running:
+
+[source,bash,role=execute]
+----
+skupper site status
+----
+
+.Expected output
+----
+NAME           STATUS   MESSAGE
+rhel-db-site   Ready    OK
+----
+
+=== Step 4: Link the RHEL Site to OpenShift
+
+On the OpenShift cluster, ensure link access is enabled and issue a token:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper site update --enable-link-access
+skupper token issue ~/rhel-link-token.yaml
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper site update --enable-link-access
+skupper token issue ~/rhel-link-token.yaml
+----
+====
+
+Copy the token to the RHEL host:
+
+[source,bash,role=execute]
+----
+scp ~/rhel-link-token.yaml user@rhel-host:~/rhel-link-token.yaml
+----
+
+On the RHEL host, redeem the token:
+
+[source,bash,role=execute]
+----
+skupper token redeem ~/rhel-link-token.yaml
+----
+
+Verify the link is ready:
+
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+Run this command multiple times if needed until `STATUS` shows `Ready`:
+
+.Expected output
+----
+NAME                                          STATUS   COST   MESSAGE
+west-<uuid>                                   Ready    1      OK
+----
+
+=== Step 5: Expose PostgreSQL to the Application Network
+
+Create a connector on the RHEL host to expose the local PostgreSQL instance:
+
+[source,bash,role=execute]
+----
+skupper connector create postgresql 5432 --host localhost
+skupper system reload
+----
+
+Verify the connector:
+
+[source,bash,role=execute]
+----
+skupper connector status
+----
+
+.Expected output
+----
+NAME         STATUS   ROUTING-KEY   HOST        PORT
+postgresql   Ok       postgresql    localhost   5432
+----
+
+=== Step 6: Create a Listener on OpenShift
+
+On the OpenShift cluster, create a listener for the database:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper listener create postgresql 5432
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener create postgresql 5432
+----
+====
+
+Verify the listener:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME         STATUS   ROUTING-KEY   HOST         PORT   MATCHING-CONNECTOR   MESSAGE
+postgresql   Ready    postgresql    postgresql   5432   true                 OK
+----
+
+A Kubernetes service named `postgresql` is now available on port 5432 in the `site-west` namespace.
+
+=== Step 7: Test the Connection from OpenShift
+
+Deploy a test pod that connects to the PostgreSQL service:
+
+[source,bash,role=execute]
+----
+oc run psql-test \
+  --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  bash -c "microdnf install -y postgresql && psql -h postgresql -U appuser -d appdb -c 'SELECT version();'"
+----
+
+Enter the password `redhat123` when prompted.
+
+You should see the PostgreSQL version string from the database running on the RHEL host.
+This confirms that the OpenShift pod is communicating with the RHEL-hosted database through the Service Interconnect application network.
+
+=== Step 8: Verify Network Topology
+
+Check the network from the OpenShift side:
+
+[source,bash,role=execute]
+----
+oc get site
+----
+
+.Expected output
+----
+NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    2                  OK
+----
+
+The network now includes both the OpenShift site and the RHEL site.
+
+=== Step 9: Clean Up (Optional)
+
+On the RHEL host, remove the connector and site:
+
+[source,bash,role=execute]
+----
+skupper connector delete postgresql
+skupper site delete rhel-db-site
+skupper system stop
+skupper system uninstall
+----
+
+On the OpenShift cluster, remove the listener:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener delete postgresql
+----
+
+Optionally, remove the PostgreSQL installation from the RHEL host:
+
+[source,bash,role=execute]
+----
+sudo systemctl stop postgresql
+sudo dnf remove -y postgresql-server postgresql
+----
+
+== Summary
+
+In this exercise, you:
+
+* Prepared a RHEL 9 system with the Skupper CLI and a local system platform (Podman or Linux)
+* Created a local system site and linked it to an OpenShift cluster
+* Exposed a PostgreSQL database running on RHEL to the application network using a connector
+* Created a listener on OpenShift to make the database accessible as a Kubernetes service
+* Verified end-to-end connectivity from an OpenShift pod to the RHEL-hosted database
+* Learned how Service Interconnect bridges traditional and cloud-native workloads without VPNs or firewall changes
+
+In the next chapter, you will learn about the security model and observability features of Service Interconnect.

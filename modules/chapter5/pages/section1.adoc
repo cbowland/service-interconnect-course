@@ -1,2 +1,123 @@
 = Service Interconnect on RHEL
 :navtitle: SI on RHEL
+
+== Overview
+
+Service Interconnect can run on local systems -- RHEL servers, virtual machines, or edge devices -- in addition to Kubernetes and OpenShift clusters.
+A _local system_ site participates in the same application network as Kubernetes sites, using the same mTLS-secured router mesh to route traffic.
+
+IMPORTANT: Using the Skupper CLI on local systems is a Technology Preview feature.
+Technology Preview features are not supported with Red Hat production service level agreements (SLAs) and might not be functionally complete.
+Red Hat does not recommend using them in production.
+These features provide early access to upcoming product features, enabling customers to test functionality and provide feedback during the development process.
+
+== Supported Platforms
+
+Service Interconnect supports three local system platforms, controlled by the `SKUPPER_PLATFORM` environment variable:
+
+[cols="1,2,2",options="header"]
+|===
+|Platform |Description |Requirements
+
+|`podman`
+|Runs the router as a Podman container
+|Podman 4+, Podman socket enabled, user lingering enabled
+
+|`docker`
+|Runs the router as a Docker container
+|Docker Engine installed and running
+
+|`linux`
+|Runs the router as a systemd service using the `skupper-router` RPM
+|RHEL 8 or 9, `skupper-router` package installed
+|===
+
+NOTE: The `linux` (systemd) platform does not use a container runtime.
+The router runs directly as a system service, which can be preferable in environments where containers are not permitted.
+
+== Installation Requirements
+
+To use Service Interconnect on a RHEL system, you need:
+
+* The `skupper` CLI installed (via binary download or RPM package)
+* For Podman/Docker platforms: the container runtime installed and running
+* For the Linux platform: the `skupper-router` RPM package
+
+=== Installing the CLI on RHEL
+
+If you have not installed the CLI as described in Chapter 2, use the RPM method:
+
+[source,bash,role=execute]
+----
+sudo subscription-manager repos \
+  --enable=service-interconnect-2-for-rhel-9-x86_64-rpms
+sudo dnf install skupper-cli
+----
+
+=== Installing the skupper-router Package (Linux Platform Only)
+
+For the `linux` (systemd) platform, install the router package:
+
+[source,bash,role=execute]
+----
+sudo dnf install skupper-router
+----
+
+NOTE: The `skupper-router` package is only required for Linux local system sites (systemd).
+Podman and Docker sites use container images for the router.
+
+=== Preparing Podman
+
+For Podman-based sites, enable the Podman socket so that Service Interconnect can manage containers:
+
+[source,bash,role=execute]
+----
+systemctl --user enable --now podman.socket
+----
+
+Enable lingering so the site persists after you log out:
+
+[source,bash,role=execute]
+----
+loginctl enable-linger <username>
+----
+
+== Setting the Platform
+
+Before creating a local system site, set the `SKUPPER_PLATFORM` environment variable to tell the CLI which runtime to use:
+
+[source,bash,role=execute]
+----
+export SKUPPER_PLATFORM=podman
+----
+
+Valid values are `podman`, `docker`, and `linux`.
+
+TIP: Add the `export SKUPPER_PLATFORM=...` line to your shell profile (`~/.bashrc` or `~/.bash_profile`) so it persists across sessions.
+
+== Installing the Controller
+
+For Podman and Docker sites, install the controller before creating a site:
+
+[source,bash,role=execute]
+----
+skupper system install
+----
+
+This runs a container that supports site, link, and service operations.
+
+NOTE: The `skupper system install` command is not available on Linux local system sites (systemd).
+On the Linux platform, the router runs as a systemd service managed by the `skupper-router` package.
+
+== Namespaces on Local Systems
+
+By default, all local system sites are created in the `default` namespace.
+If you need multiple sites on the same host, specify a unique namespace:
+
+[source,bash,role=execute]
+----
+skupper site create my-podman-site --platform podman --namespace my-ns
+skupper site create my-linux-site --platform linux --namespace linux-ns
+----
+
+All subsequent `skupper` commands for a namespaced site must include the `--namespace` flag.
