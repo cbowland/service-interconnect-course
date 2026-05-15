@@ -287,7 +287,7 @@ You can also test connectivity from the command line using a temporary pod in `s
 
 [source,bash,role=execute]
 ----
-oc run curl-test --image=curlimages/curl --rm -it --restart=Never -- \
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal --rm -it --restart=Never -- \
   curl -s http://backend:8080/api/hello
 ----
 
