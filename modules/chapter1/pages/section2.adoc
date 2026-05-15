@@ -31,6 +31,19 @@ metadata:
 spec: {}
 ----
 
+To enable link access on a site (allowing other sites to link to it), set the `linkAccess` field:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: site-west
+  namespace: site-west
+spec:
+  linkAccess: default
+----
+
 === Routers
 
 *Routers* are the core infrastructure of the application network.
@@ -52,7 +65,8 @@ To create a link, one site generates an *access token* (or *access grant*), and 
 
 *Access grants* and *access tokens* are the mechanisms for authorizing site-to-site connections.
 
-An *AccessGrant* is created at a site that is willing to accept incoming links.
+An *AccessGrant* is a permission on a listening site that allows redemption of access tokens to create links.
+The component it gives permission to is the *GrantServer*, which is an HTTPS server that ultimately sets up the link.
 It defines how many times the grant can be redeemed and when it expires:
 
 [source,yaml]
@@ -60,25 +74,32 @@ It defines how many times the grant can be redeemed and when it expires:
 apiVersion: skupper.io/v2alpha1
 kind: AccessGrant
 metadata:
-  name: my-grant
+  name: grant-west
   namespace: site-west
 spec:
-  redemptionsAllowed: 1
-  expirationWindow: 24h
+  redemptionsAllowed: 2   # <1>
+  expirationWindow: 25m   # <2>
 ----
+<1> Number of times the grant can be redeemed (default: 1)
+<2> How long the grant remains valid (default: 15m)
 
-An *AccessToken* is generated from an AccessGrant and provided to the remote site to establish a link:
+An *AccessToken* is a short-lived, usually single-use credential that contains the AccessGrant URL, a secret code, and a certificate.
+A connecting site redeems this token for a *Link* resource to establish a link to the listening site:
 
 [source,yaml]
 ----
 apiVersion: skupper.io/v2alpha1
 kind: AccessToken
 metadata:
-  name: my-token
+  name: token-to-west
   namespace: site-east
 spec:
-  # token data from the grant
+  code: "<secret-code>"
+  ca: "<ca-certificate>"
+  url: "<grant-server-url>"
 ----
+
+NOTE: Access to this file provides access to the application network. Protect it appropriately.
 
 === Connectors
 

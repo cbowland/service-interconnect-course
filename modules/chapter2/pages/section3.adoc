@@ -1,2 +1,138 @@
 = The Service Interconnect Console
 :navtitle: SI Console
+
+== Overview
+
+The Service Interconnect console provides a web-based graphical view of your application network.
+It displays the topology of sites, links, and services, and provides real-time traffic flow and metrics information.
+
+In Service Interconnect 2.1, the console functionality is provided by the *Network Observer*, which can be installed as a separate operator or via YAML.
+
+== What the Console Shows
+
+The console provides visibility into:
+
+* **Network topology** -- A visual map of all connected sites and the links between them
+* **Service status** -- Which services are exposed on the application network, including their listeners and connectors
+* **Traffic flow** -- Real-time visualization of traffic between services across sites
+* **Connection metrics** -- Latency, throughput, and connection counts for each service
+
+== Installing the Network Observer Operator
+
+The Network Observer is a separate operator from the main Service Interconnect Operator.
+
+[CAUTION]
+====
+If you use an automatic approval strategy for the Red Hat Service Interconnect Network Observer Operator, make sure all other operators on the same namespace use the same strategy.
+Typically the operator is installed in the `openshift-operators` namespace.
+====
+
+=== Via the OpenShift Console
+
+. In the OpenShift web console, navigate to *Operators -> OperatorHub*.
+. Search for *Red Hat Service Interconnect Network Observer Operator*.
+. Click *Install*.
+. On the *Operator Installation* page, two *Installation mode* options are available:
++
+* *All namespaces on the cluster*
+* *A specific namespace on the cluster*
+
+. Choose an *Update approval* option.
+. Select the namespace and click *Install*.
+. Verify that the Red Hat Service Interconnect Network Observer Operator is displayed and wait until the *Status* changes to *Succeeded*.
+
+=== Via the CLI
+
+Create a `Subscription` resource for the Network Observer operator:
+
+[source,yaml]
+----
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: skupper-operator
+  namespace: openshift-operators
+spec:
+  channel: stable-2
+  installPlanApproval: Automatic
+  name: skupper-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: skupper-network-observer-operator.v2.1.1-rh-8
+----
+
+[NOTE]
+====
+* If you want to keep updates confined to 2.1.x releases, set the value of `channel` to `stable-2.1`.
+* If you do not specify `startingCSV`, the subscription defaults to the latest operator version.
+====
+
+Apply the subscription:
+
+[source,bash,role=execute]
+----
+oc apply -f subscription-all.yaml
+----
+
+== Installing the Network Observer via YAML
+
+As an alternative to the operator, you can install the Network Observer using YAML files.
+
+. Download YAML files from the https://access.redhat.com/downloads[Red Hat Software Downloads,window=_blank] page. Choose the latest *Version* for 2.1 and download the *Skupper deployments (yamls)*.
+
+. Create a site (if you haven't already):
++
+[source,bash,role=execute]
+----
+skupper site create west
+----
+
+. Apply the Network Observer YAML:
++
+[source,bash,role=execute]
+----
+oc apply -f skupper-network-observer-openshift-2.1.0-rh.yaml
+----
+
+== Accessing the Console
+
+After the Network Observer is installed, find the console route:
+
+[source,bash,role=execute]
+----
+oc get routes
+----
+
+The route is prefixed with `skupper-network-observer-<site-namespace>`.
+On OpenShift, you can log in using your OpenShift credentials.
+
+On other Kubernetes distributions, expose the `skupper-network-observer` service.
+A `skupper` user is created and you can retrieve the password using:
+
+[source,bash,role=execute]
+----
+kubectl --namespace <site-namespace> \
+    get secret skupper-network-observer-auth \
+    -o jsonpath='{.data.htpasswd}' | base64 -d | sed 's/\(.*\):{PLAIN}\(.*\)/\1 \2\n/'
+----
+
+== Console vs CLI
+
+Both the console and CLI provide status information, but they serve different purposes:
+
+[cols="1,1",options="header"]
+|===
+|Console |CLI
+
+|Visual topology overview
+|Scripted and automated operations
+
+|Real-time traffic visualization
+|Quick status checks from the terminal
+
+|Useful for presentations and troubleshooting
+|Useful for CI/CD pipelines and day-2 operations
+|===
+
+You do not need the console to use Service Interconnect -- all operations can be performed with the CLI or YAML resources.
+The console is a complementary tool for visibility and troubleshooting.

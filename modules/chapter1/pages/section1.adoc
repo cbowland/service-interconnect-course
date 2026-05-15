@@ -5,8 +5,8 @@
 
 Red Hat Service Interconnect is a multi-site, multi-platform application connectivity solution that enables services running in different environments to communicate securely -- without requiring VPNs, special firewall rules, or elevated network privileges.
 
-Service Interconnect is the commercial, supported distribution of the open-source https://skupper.io[Skupper,window=_blank] project.
-It is available as part of the Red Hat Application Interconnect subscription.
+Service Interconnect is a Red Hat build of the open-source Skupper project.
+It is available through a Red Hat software subscription.
 
 == The Problem
 
@@ -68,9 +68,72 @@ Red Hat Service Interconnect adds:
 
 Service Interconnect 2.1 supports the following platforms:
 
-* **Kubernetes** -- Any conformant Kubernetes distribution
-* **Red Hat OpenShift Container Platform** -- 4.x
-* **Red Hat Enterprise Linux** -- As a gateway for non-Kubernetes workloads
-* **Docker and Podman** -- For containerized gateway deployments on Linux
+=== Kubernetes Sites
+
+* **Red Hat OpenShift Container Platform** -- All versions in Full or Maintenance support
+* **Non-OpenShift Kubernetes** -- Any CNCF-certified distribution, version 1.28 or later
+
+Red Hat provides assistance running Service Interconnect on any CNCF-certified distribution of Kubernetes, though primary testing is done on OpenShift.
+
+The operator is supported with OpenShift 4.x only.
+On non-OpenShift Kubernetes, use YAML or the CLI to install the CRDs and controller.
+
+=== Supported Ingress Types
+
+* **LoadBalancer** and **OpenShift Routes** (supported on OpenShift)
+* **Gateway**, **Contour**, **Nginx** (requires TLS passthrough configuration), and **NodePort** are also supported
+
+=== Local System Sites (Podman, Docker, Linux)
+
+* **Red Hat Enterprise Linux 8** -- Podman sites on x86-64, aarch64, s390x, ppc64le
+* **Red Hat Enterprise Linux 9** -- Podman sites on x86-64, aarch64, s390x, ppc64le
+* **Podman** version 4 or later is required
+
+=== CLI Platforms
+
+The `skupper` CLI is supported on:
+
+[cols="1,1,1,1,1",options="header"]
+|===
+|Platform |x86-64 |aarch64 |s390x |ppc64le
+
+|Red Hat Enterprise Linux 8
+|Yes
+|Yes
+|Yes
+|Yes
+
+|Red Hat Enterprise Linux 9
+|Yes
+|Yes
+|Yes
+|Yes
+
+|Red Hat Enterprise Linux 10
+|Yes
+|
+|
+|
+
+|Linux (other)
+|Yes
+|Yes
+|Yes
+|Yes
+
+|macOS
+|Yes
+|
+|
+|
+
+|Windows
+|Yes
+|
+|
+|
+|===
+
+NOTE: For a Mac with Apple silicon, use Rosetta 2 and the *Skupper CLI for Mac on x86-64* download.
 
 All platforms share a common underlying model and a unified CLI interface, reducing the learning curve when working across heterogeneous environments.

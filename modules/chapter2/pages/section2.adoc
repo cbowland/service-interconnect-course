@@ -1,2 +1,174 @@
 = Installing the skupper CLI
 :navtitle: Installing the CLI
+
+== Overview
+
+The `skupper` CLI provides a command-line interface for creating and managing Service Interconnect resources.
+While you can manage everything through YAML and `oc apply`, the CLI simplifies common operations like creating sites, issuing tokens, and checking status.
+
+The CLI is designed to generate and consume standard resources, ensuring that sites, links, and services configured using the CLI are identical to those configured directly through YAML.
+
+NOTE: For Kubernetes, you must install the CRDs and controller using YAML or the Operator before creating sites.
+
+== CLI Command Structure
+
+The skupper CLI follows a consistent pattern:
+
+[source,bash]
+----
+skupper <resource-type> <operation> <resource-name> [options]
+----
+
+Resource types include `site`, `token`, `listener`, `connector`, and `link`.
+Operations include `create`, `update`, `delete`, `status`, and `generate`.
+
+NOTE: In Service Interconnect 2.1, CLI shortcuts (such as `-r`) have been removed. You must now specify the full parameter name, for example `--routing-key`.
+
+== Installing the CLI
+
+There are two methods to install the CLI:
+
+* Downloading binaries from the Red Hat Software Downloads page
+* Using Red Hat packages on RHEL
+
+=== Method 1: Download Binaries
+
+. Download binary files for your system architecture from the https://access.redhat.com/downloads[Red Hat Software Downloads,window=_blank] page.
+Choose the latest *Version* for 2.1.
+
+. For a Mac with Apple silicon, use https://support.apple.com/en-us/102527[Rosetta 2,window=_blank] and the *Skupper CLI for Mac on x86-64* download.
+
+. Unzip the downloaded file and place the `skupper` executable on your `PATH`.
+
+. Verify the installation:
++
+[source,bash,role=execute]
+----
+skupper version
+----
++
+.Expected output
+----
+COMPONENT          VERSION
+cli                2.1.3-rh-1
+----
+
+=== Method 2: Red Hat Packages (RHEL)
+
+Installing Red Hat packages on Linux ensures you receive the latest updates to the Skupper CLI.
+
+==== Prerequisites
+
+* Your system must be registered with a Red Hat subscription.
+See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/registering_the_system_and_managing_subscriptions/index[Registering the system and managing subscriptions,window=_blank] for more information.
+
+==== Red Hat Enterprise Linux 9
+
+. Use the `subscription-manager` command to subscribe to the required package repository.
+Replace `<version>` with `2` for the main release stream:
++
+[source,bash,role=execute]
+----
+sudo subscription-manager repos \
+  --enable=service-interconnect-_<version>_-for-rhel-9-x86_64-rpms
+----
+
+. Install the `skupper-cli` package:
++
+[source,bash,role=execute]
+----
+sudo dnf install skupper-cli
+----
+
+==== Red Hat Enterprise Linux 8
+
+[source,bash,role=execute]
+----
+sudo subscription-manager repos \
+  --enable=service-interconnect-_<version>_-for-rhel-8-x86_64-rpms
+sudo dnf install skupper-cli
+----
+
+NOTE: You can also install the `skupper-router` package, which is only necessary for Linux local system sites.
+
+== The SKUPPER_PLATFORM Environment Variable
+
+The CLI behavior depends on the target platform, which is controlled by the `SKUPPER_PLATFORM` environment variable:
+
+[cols="1,2",options="header"]
+|===
+|Value |Behavior
+
+|`kubernetes` (default)
+|Commands target the current Kubernetes/OpenShift context
+
+|`podman`
+|Commands target local Podman containers
+
+|`docker`
+|Commands target local Docker containers
+
+|`linux`
+|Commands target local Linux system services
+|===
+
+If `SKUPPER_PLATFORM` is unset, the CLI defaults to `kubernetes`.
+
+[source,bash,role=execute]
+----
+export SKUPPER_PLATFORM=kubernetes
+----
+
+== Verifying the CLI Installation
+
+Run the following command to confirm the CLI is installed and display the version:
+
+[source,bash,role=execute]
+----
+skupper version
+----
+
+.Expected output
+----
+COMPONENT          VERSION
+cli                2.1.3-rh-1
+----
+
+== CLI Auto-completion
+
+Enable shell auto-completion for faster command entry:
+
+=== Bash
+
+[source,bash,role=execute]
+----
+skupper completion bash > /etc/bash_completion.d/skupper
+source /etc/bash_completion.d/skupper
+----
+
+=== Zsh
+
+[source,bash,role=execute]
+----
+skupper completion zsh > "${fpath[1]}/_skupper"
+source ~/.zshrc
+----
+
+== Platform Behavior
+
+The CLI behaves slightly differently depending on the platform:
+
+[cols="1,2",options="header"]
+|===
+|Platform |Behavior
+
+|Kubernetes / OpenShift
+|Commands block until the operation completes, an error occurs, or the timeout is exceeded.
+Use `--wait` and `--timeout` to control this behavior.
+
+|Docker / Podman / Linux
+|Commands place resources in the input location.
+Run `skupper system reload` to apply changes.
+|===
+
+In this course, you will primarily use the CLI on Kubernetes/OpenShift, where commands block by default.

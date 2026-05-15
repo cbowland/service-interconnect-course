@@ -1,2 +1,175 @@
 = Installing the Service Interconnect Operator
 :navtitle: Installing the Operator
+
+== Overview
+
+The Red Hat Service Interconnect Operator manages the lifecycle of Service Interconnect sites on OpenShift.
+It installs the custom resource definitions (CRDs) and deploys the controller that reconciles Site, Listener, Connector, and other resources.
+
+Installing the operator requires cluster-admin privileges, but once installed, application teams can create and manage sites with namespace-level access only.
+
+== Prerequisites
+
+* Access to an OpenShift Container Platform 4.20 cluster with cluster-admin privileges
+* Operator Lifecycle Manager (OLM) is available (enabled by default on OpenShift)
+* Red Hat Container Registry authentication is configured (see https://access.redhat.com/RegistryAuthentication[Red Hat Container Registry Authentication,window=_blank])
+
+[CAUTION]
+====
+If you use an automatic approval strategy for the Red Hat Service Interconnect Operator, make sure all other operators on the same namespace use the same strategy.
+Typically the operator is installed in the `openshift-operators` namespace.
+====
+
+== Installing via OperatorHub (Web Console)
+
+. In the OpenShift web console, navigate to *Operators -> OperatorHub*.
+
+. Search for *Red Hat Service Interconnect Operator* and click *Install*.
+
+. On the *Operator Installation* page, two *Installation mode* options are available:
++
+* *All namespaces on the cluster* -- allows creating sites in any namespace
+* *A specific namespace on the cluster* -- limits the operator to a single namespace
+
+. Choose an *Update approval* option:
++
+By default, *Automatic* approval is selected, and sites will upgrade to the latest version of Service Interconnect.
+If you choose *Manual* approval, sites will not be automatically upgraded to the latest version.
+
+. Select the namespace into which you want to install the Operator, and then click *Install*.
+The *Installed Operators* page appears displaying the status of the Operator installation.
+
+. Verify that the Red Hat Service Interconnect Operator is displayed and wait until the *Status* changes to *Succeeded*.
+
+. If the installation is not successful, troubleshoot the error:
++
+.. Click *Red Hat Service Interconnect Operator* on the *Installed Operators* page.
+.. Select the *Subscription* tab and view any failures or errors.
+
+== Installing via the CLI
+
+If you prefer to install the operator using the command line, create a `Subscription` resource.
+
+. Log in to the cluster as a cluster administrator:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-api-url> -u <admin-user> -p <password>
+----
+
+. Create a file named `subscription-all.yaml` with the following content:
++
+[source,yaml]
+----
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: skupper-operator
+  namespace: openshift-operators
+spec:
+  channel: stable-2
+  installPlanApproval: Automatic
+  name: skupper-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: skupper-operator.v2.1.1-rh-3
+----
++
+[NOTE]
+====
+* If you want to keep updates confined to 2.1.x releases, set the value of `channel` to `stable-2.1`.
+* If you do not specify `startingCSV`, the subscription defaults to the latest operator version.
+* If you specify `installPlanApproval` as `Manual`, sites are not automatically upgraded to the latest version of Service Interconnect.
+
+Available channels:
+
+* `stable-2.1` -- Limit updates to 2.1.x (long term support)
+* `stable-2` -- Limit updates to 2.x
+* `stable` -- All releases
+====
+
+. Apply the subscription YAML:
++
+[source,bash,role=execute]
+----
+oc apply -f subscription-all.yaml
+----
+
+. Verify the operator is running:
++
+[source,bash,role=execute]
+----
+oc get csv -n openshift-operators | grep skupper
+----
++
+.Expected output
+----
+skupper-operator.v2.1.1-rh-3   Red Hat Service Interconnect   Succeeded
+----
+
+== Installing via YAML (Without OLM)
+
+As an alternative to the Operator, you can use YAML to install the CRDs and controller directly.
+
+. Download the YAML files from the https://access.redhat.com/downloads[Red Hat Software Downloads,window=_blank] page. Choose the latest *Version* for 2.1 and download the *Skupper deployments (yamls)*.
+
+. Determine the scope of the installation:
++
+* *Cluster scope* -- you can create a site in any namespace (`skupper-cluster-scope-2.1.0-rh.yaml`)
+* *Namespace scope* -- you can only create a site in the namespace where the YAML is deployed (`skupper-namespace-scope-2.1.0-rh.yaml`)
+
+. To install cluster-wide, apply the YAML:
++
+[source,bash,role=execute]
+----
+oc apply -f skupper-cluster-scope-2.1.0-rh.yaml
+----
++
+NOTE: This YAML installs the controller and supporting resources in the `skupper` namespace.
+
+. To install in a specific namespace:
++
+[source,bash,role=execute]
+----
+oc new-project west
+oc apply -f skupper-namespace-scope-2.1.0-rh.yaml
+----
+
+== Repeat for Additional Clusters
+
+If you are using Option A (two OpenShift clusters) from the Lab Environment setup, repeat the operator installation on your second cluster.
+
+If you are using Option B (single cluster with namespaces), one operator installation covers both namespaces.
+
+== Verifying the Installation
+
+Confirm that the Service Interconnect CRDs are available:
+
+[source,bash,role=execute]
+----
+oc get crd | grep skupper
+----
+
+.Expected output
+----
+accessgrants.skupper.io        ...
+accesstokens.skupper.io        ...
+connectors.skupper.io          ...
+listeners.skupper.io           ...
+links.skupper.io               ...
+sites.skupper.io               ...
+----
+
+== Troubleshooting
+
+If the operator installation does not succeed:
+
+. Navigate to *Operators -> Installed Operators* in the web console.
+. Click *Red Hat Service Interconnect*.
+. Select the *Subscription* tab to view any errors or failures.
+. Check the operator pod logs:
++
+[source,bash,role=execute]
+----
+oc logs -n openshift-operators deployment/skupper-controller
+----

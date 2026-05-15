@@ -106,3 +106,6 @@ dist
 
 # Local VSCode settings
 .vscode/settings*
+
+# Red Hat documentation PDFs (copyrighted, do not redistribute)
+redhat-docs/

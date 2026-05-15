@@ -1,2 +1,16 @@
 = Installation and Setup
 :navtitle: Installation and Setup
+
+== Chapter Overview
+
+In this chapter, you will install Red Hat Service Interconnect on your OpenShift clusters and set up the tools needed to work with service networks throughout the rest of this course.
+
+== Objectives
+
+After completing this chapter, you should be able to:
+
+* Install the Red Hat Service Interconnect Operator from OperatorHub
+* Install the `skupper` CLI on your workstation
+* Create a Service Interconnect site in an OpenShift namespace
+* Access the Service Interconnect console to view network status
+* Verify that your installation is ready for use
