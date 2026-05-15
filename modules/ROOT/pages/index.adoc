@@ -1,12 +1,87 @@
-= An Example Break-fix course
+= Red Hat Service Interconnect
 :navtitle: Home
 
 == Introduction
 
-TITLE1: Red Hat Enterprise Linux 9 (FIXME product)
+This course teaches you how to use Red Hat Service Interconnect (based on the open-source Skupper project) to securely connect application services across multiple Red Hat OpenShift clusters, Kubernetes environments, and Red Hat Enterprise Linux systems -- without requiring VPNs, special firewall rules, or elevated network privileges.
 
-TITLE2: Break-fix Practice 1 (FIXME title)
+Red Hat Service Interconnect creates a Layer 7 service network that enables application-level connectivity between distributed workloads.
+Traffic is encrypted with mutual TLS by default, and no changes to the underlying network infrastructure are required.
 
-Description:
-This break-fix training simulates a problem FIXME . You'll investigate and solve the problem in a hands-on lab environment to complete the training.
+Duration: approximately 8 hours
 
+== Objectives
+
+On completing this course, you should be able to:
+
+* Describe the architecture and key concepts of Red Hat Service Interconnect
+* Install and configure Service Interconnect on OpenShift Container Platform 4.20
+* Create service networks that span multiple clusters and environments
+* Expose and consume services across site boundaries
+* Connect non-Kubernetes workloads using RHEL service gateways
+* Configure mutual TLS and understand the security model
+* Monitor service networks using the Network Observer console
+* Implement multi-cloud, edge, and progressive migration patterns
+
+== Prerequisites
+
+This course assumes that you have the following prior experience:
+
+* Red Hat Certified Specialist in OpenShift Administration (EX280) or equivalent experience administrating OpenShift Container Platform 4.x
+* Basic familiarity with Kubernetes concepts (pods, services, deployments, namespaces)
+* Basic Linux command-line skills (RHCSA-level or equivalent)
+* Access to at least two OpenShift 4.20 clusters (provided in the lab environment)
+
+== Software Versions
+
+Labs in this course were tested with the following software versions:
+
+[cols="1,1",options="header"]
+|===
+|Software |Version
+
+|Red Hat Service Interconnect
+|2.1
+
+|Red Hat OpenShift Container Platform
+|4.20
+
+|Red Hat Enterprise Linux
+|9.x
+|===
+
+== Course Structure
+
+This course is organized into the following chapters:
+
+[cols="1,3",options="header"]
+|===
+|Chapter |Description
+
+|Lab Environment
+|Setting up and accessing your lab environment
+
+|Chapter 1: Introduction to Service Interconnect
+|What Service Interconnect is, its architecture, key concepts, and use cases
+
+|Chapter 2: Installation and Setup
+|Installing the Service Interconnect operator, CLI, and console on OpenShift
+
+|Chapter 3: Creating Your First Service Network
+|Initializing sites, creating links, and exposing services across clusters
+
+|Chapter 4: Multi-cluster Connectivity
+|Multi-site topologies, service distribution, load balancing, and failover
+
+|Chapter 5: Working with RHEL Gateways
+|Connecting non-Kubernetes workloads on RHEL to the service network
+
+|Chapter 6: Security and Observability
+|Mutual TLS, certificate management, Network Observer, and monitoring
+
+|Chapter 7: Advanced Scenarios
+|Multi-cloud connectivity, progressive migration, and edge computing patterns
+
+|Appendix
+|CLI reference, troubleshooting, and additional resources
+|===

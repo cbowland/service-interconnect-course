@@ -1,6 +1,6 @@
 site:
   title: Red Hat Service Interconnect
-  start_page: REPLACEREPONAME::index.adoc
+  start_page: service-interconnect-course::index.adoc
 
 content:
   sources:

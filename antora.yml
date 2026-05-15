@@ -1,5 +1,5 @@
-name: REPLACEREPONAME
-title: Red Hat Servcice Interconnect
+name: service-interconnect-course
+title: Red Hat Service Interconnect
 version: 1
 nav:
 - modules/ROOT/nav.adoc
@@ -7,4 +7,8 @@ nav:
 - modules/chapter1/nav.adoc
 - modules/chapter2/nav.adoc
 - modules/chapter3/nav.adoc
+- modules/chapter4/nav.adoc
+- modules/chapter5/nav.adoc
+- modules/chapter6/nav.adoc
+- modules/chapter7/nav.adoc
 - modules/appendix/nav.adoc
