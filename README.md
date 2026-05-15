@@ -1,7 +1,5 @@
 # Red Hat Service Interconnect Quick Course
 
-**Click here: [![Contribute](https://www.eclipse.org/che/contribute.svg)](https://devspaces.apps.tools-na100.dev.ole.redhat.com/#https://github.com/cbowland/service-interconnect-course) to start the development using devspace.**
-
 This course teaches you how to use Red Hat Service Interconnect (based on the open-source Skupper project) to securely connect application services across multiple Red Hat OpenShift clusters, Kubernetes environments, and Red Hat Enterprise Linux systems — without requiring VPNs, special firewall rules, or elevated network privileges.
 
 # Objectives
