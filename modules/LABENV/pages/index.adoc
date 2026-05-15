@@ -1,27 +1,128 @@
 = Lab Environment
+:navtitle: Lab Environment
 
-== Instructions to Launch Your Lab on the Red Hat Demo Platform (RHDP)
+== Overview
+
+This course requires you to work with multiple Service Interconnect _sites_.
+You can complete the labs using one of two environment options:
+
+[cols="1,1,2",options="header"]
+|===
+|Option |Requirements |Best For
+
+|**Option A: Two OpenShift Clusters**
+|Two OpenShift Container Platform 4.20 clusters
+|Realistic multi-cluster experience; demonstrates cross-network connectivity
+
+|**Option B: Single Cluster with Namespaces**
+|One OpenShift Container Platform 4.20 cluster
+|Quick setup; all SI concepts work identically at the namespace level
+|===
+
+Red Hat Service Interconnect operates at the *namespace level* — each site is initialized within a namespace.
+This means you can simulate a multi-cluster environment by creating separate namespaces on a single cluster.
+All core concepts (sites, tokens, links, exposing services) work the same way in both options.
+
+NOTE: Option B does not demonstrate cross-network connectivity, since both namespaces share the same cluster network.
+For production scenarios and Chapter 5 (RHEL Gateways), Option A with a separate RHEL 9 system is required.
+
+== Option A: Two OpenShift Clusters
+
+=== Lab Architecture
+
+* **Cluster A** (`site-west`) — runs frontend services
+* **Cluster B** (`site-east`) — runs backend services (database, API)
+* **RHEL 9 VM** (`gateway-host`) — used in Chapter 5 for non-Kubernetes workloads (optional)
+
+=== Instructions to Launch Your Lab on the Red Hat Demo Platform (RHDP)
 
 . **Log in** to the xref:#RHDP-Portal-Links[RHDP portal]
-. **Search** for the catalog entry: **FIXME Lab Catalog Name**.
-. **Click** on the catalog entry in the search results.
-. On the catalog page, **click** the **Order** button.
-. **Fill out** the required details in the order form.
+. **Search** for the catalog entry: **Red Hat Service Interconnect Lab**
+. **Click** on the catalog entry in the search results
+. On the catalog page, **click** the **Order** button
+. **Fill out** the required details in the order form
 . **Review the warning** at the bottom of the form and **check the box** labeled: +
-   *“I confirm that I understand the above warnings.”*
-. **Click** the **Order** button to place your lab order.
+   *"I confirm that I understand the above warnings."*
+. **Click** the **Order** button to place your lab order
 
-=== Important Notes:
-- This lab may take approximately **FIXME minutes** to become ready.
-- You will receive an **email with access details** once your lab environment is ready.
-- You can also **retrieve lab access** directly from the RHDP portal.
+==== Important Notes
+- This lab may take approximately *30-45 minutes* to become ready
+- You will receive an *email with access details* once your lab environment is ready
+- You can also *retrieve lab access* directly from the RHDP portal
 
-=== How to Access Your Lab via the RHDP Portal:
-. On the RHDP portal, **click** on the **Services** option in the left-hand menu.
-. **Select your lab** from the listings on the right-hand side of the page to view access details.
+==== How to Access Your Lab via the RHDP Portal
+. On the RHDP portal, **click** on the **Services** option in the left-hand menu
+. **Select your lab** from the listings on the right-hand side of the page to view access details
+
+=== Verify Lab Access
+
+Log in to both clusters using the `oc` CLI:
+
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+----
+
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+----
+
+If your lab includes a RHEL 9 VM, verify SSH access:
+
+[source,bash,role=execute]
+----
+ssh <username>@<gateway-host>
+----
+
+== Option B: Single Cluster with Namespaces
+
+=== Lab Architecture
+
+On a single OpenShift 4.20 cluster, create two namespaces to simulate separate sites:
+
+* **Namespace** `site-west` — runs frontend services
+* **Namespace** `site-east` — runs backend services (database, API)
+
+=== Setup
+
+Log in to your OpenShift cluster:
+
+[source,bash,role=execute]
+----
+oc login --server=<cluster-api-url> -u <username> -p <password>
+----
+
+Create the two namespaces:
+
+[source,bash,role=execute]
+----
+oc new-project site-west
+oc new-project site-east
+----
+
+=== Using Two Namespaces as Separate Sites
+
+Throughout this course, when instructions refer to "Cluster A" or `site-west`, work in the `site-west` namespace:
+
+[source,bash,role=execute]
+----
+oc project site-west
+----
+
+When instructions refer to "Cluster B" or `site-east`, switch to the `site-east` namespace:
+
+[source,bash,role=execute]
+----
+oc project site-east
+----
+
+TIP: You can use two terminal windows — one set to each namespace — to make switching easier.
+
+NOTE: Chapter 5 (Working with RHEL Gateways) requires a separate RHEL 9 system and cannot be completed with the single-cluster option alone.
 
 [[RHDP-Portal-Links]]
-=== RHDP Portal Links
-- RedHat associates: https://demo.redhat.com/[https://demo.redhat.com/,window=_blank]
-- RedHat partners: https://partner.demo.redhat.com/[https://partner.demo.redhat.com/,window=_blank]
+== RHDP Portal Links
 
+- Red Hat associates: https://demo.redhat.com/[https://demo.redhat.com/,window=_blank]
+- Red Hat partners: https://partner.demo.redhat.com/[https://partner.demo.redhat.com/,window=_blank]
