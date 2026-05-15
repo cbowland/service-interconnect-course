@@ -1,2 +1,251 @@
 = Hands-on: Three-site Service Network
-:navtitle: Hands-on: Three-site Service Network
+:navtitle: Hands-on: Three-site Network
+
+== Lab Overview
+
+In this exercise, you will extend the two-site network from Chapter 3 into a three-site topology.
+You will deploy a backend service on two sites with different link costs to observe load balancing and failover behavior.
+
+== Prerequisites
+
+* Completed the Chapter 3 hands-on lab
+* The `skupper` CLI is installed
+* Two linked sites (`site-west` and `site-east`) from Chapter 3
+
+== Exercise Steps
+
+=== Step 1: Create a Third Site
+
+Create a new namespace for the third site:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+Choose one of your clusters for the third site.
+On Cluster A:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc new-project site-south
+skupper site create site-south
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc new-project site-south
+skupper site create site-south
+----
+====
+
+Verify the site is ready:
+
+[source,bash,role=execute]
+----
+skupper site status
+----
+
+=== Step 2: Link site-south to site-west
+
+Issue a token from `site-west` (which already has link access enabled):
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper token issue ~/west-to-south-token.yaml
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper token issue ~/west-to-south-token.yaml
+----
+====
+
+Redeem the token on `site-south`:
+
+[source,bash,role=execute]
+----
+oc project site-south
+skupper token redeem ~/west-to-south-token.yaml
+----
+
+Verify the link:
+
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+Wait until STATUS shows `Ready`.
+
+=== Step 3: Verify the Three-Site Network
+
+Check the network size from any site:
+
+[source,bash,role=execute]
+----
+oc project site-west
+oc get site
+----
+
+.Expected output
+----
+NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    3                  OK
+----
+
+The network now has three sites: `site-west`, `site-east`, and `site-south`.
+
+Note that `site-south` can reach `site-east` even though they are not directly linked -- traffic routes through `site-west`.
+
+=== Step 4: Deploy Backend on Two Sites
+
+You already have a backend deployment in `site-east` from Chapter 3.
+Now deploy the same backend in `site-west`:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+----
+====
+
+Create a connector for the local backend in `site-west`:
+
+[source,bash,role=execute]
+----
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+Now the routing key `backend` has connectors on both `site-west` and `site-east`.
+
+=== Step 5: Consume the Service from site-south
+
+Create a listener in `site-south`:
+
+[source,bash,role=execute]
+----
+oc project site-south
+skupper listener create backend 8080
+----
+
+Verify the listener:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME      STATUS   ROUTING-KEY   HOST      PORT   MATCHING-CONNECTOR   MESSAGE
+backend   Ready    backend       backend   8080   true                 OK
+----
+
+=== Step 6: Test Load Balancing
+
+Send multiple requests from `site-south` and observe which backend responds:
+
+[source,bash,role=execute]
+----
+for i in $(seq 1 10); do
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
+  echo ""
+done
+----
+
+You should see responses from backend pods in both `site-west` and `site-east`.
+
+Because `site-south` has a direct link to `site-west` (cost 1) and reaches `site-east` through `site-west` (cost 2), you will likely see more traffic directed to `site-west` backends.
+
+=== Step 7: Simulate Failover
+
+Scale down the backend in `site-west` to simulate a failure:
+
+[source,bash,role=execute]
+----
+oc project site-west
+oc scale deployment backend --replicas=0
+----
+
+Now test from `site-south` again:
+
+[source,bash,role=execute]
+----
+oc project site-south
+oc run curl-failover --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello
+----
+
+All traffic should now be served by the backends in `site-east`, demonstrating automatic failover.
+
+Restore the backend in `site-west`:
+
+[source,bash,role=execute]
+----
+oc project site-west
+oc scale deployment backend --replicas=2
+----
+
+=== Step 8: Clean Up the Third Site (Optional)
+
+If you want to remove `site-south` before the next chapter:
+
+[source,bash,role=execute]
+----
+oc project site-south
+skupper listener delete backend
+skupper site delete
+oc delete project site-south
+----
+
+The two-site network (`site-west` and `site-east`) remains intact.
+
+You may also want to remove the backend deployment and connector from `site-west` if it was only added for this exercise:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper connector delete backend
+oc delete deployment backend
+----
+
+== Summary
+
+In this exercise, you:
+
+* Created a third site (`site-south`) and linked it to the existing network
+* Verified that the three-site network can route traffic transitively (site-south → site-west → site-east)
+* Deployed the backend service on two sites with connectors using the same routing key
+* Observed load balancing across multiple sites based on link cost
+* Simulated a failure and verified automatic failover to the remaining site
+* Learned how link cost influences traffic distribution in a multi-site network
+
+In the next chapter, you will learn how to extend the application network to include RHEL gateway sites for non-Kubernetes workloads.

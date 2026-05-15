@@ -1,2 +1,99 @@
 = Service Distribution Across Sites
-:navtitle: Service Distribution Across Sites
+:navtitle: Service Distribution
+
+== Overview
+
+Once sites are linked into an application network, services exposed via connectors become available to every site in the network.
+This section explains how service visibility works and how to control which services are available where.
+
+== Automatic Service Distribution
+
+When a connector is created on any site, every other site in the network becomes aware of the service through the router mesh.
+Creating a listener on a consuming site makes the service locally accessible.
+
+This means:
+
+* A connector in `site-east` for `backend:8080` is visible to all linked sites
+* Any site can create a listener with the matching routing key to consume the service
+* You do not need direct links between every pair of sites -- routers forward traffic transitively
+
+=== Example: Three-Site Network
+
+----
+site-west              site-central              site-east
+┌──────────────┐       ┌──────────────┐          ┌──────────────┐
+│              │       │              │          │              │
+│  listener    │       │              │          │  connector   │
+│  (backend)   │       │              │          │  (backend)   │
+│      │       │       │              │          │      ▲       │
+│      ▼       │       │              │          │      │       │
+│  router ─────┼───────┼── router ────┼──────────┼── router     │
+│              │       │              │          │              │
+└──────────────┘       └──────────────┘          └──────────────┘
+----
+
+In this topology:
+
+* The connector is in `site-east`
+* The listener is in `site-west`
+* `site-central` has no listener or connector for `backend`, but its router forwards the traffic
+* Traffic flows: `site-west` → `site-central` → `site-east`
+
+== Routing Keys and Service Identity
+
+Services are identified on the application network by their *routing key*, not by their Kubernetes service name or namespace.
+
+This means:
+
+* Two connectors on different sites with the same routing key expose the *same* logical service (enabling load balancing)
+* A connector and listener must share the same routing key to be matched
+* Routing keys are network-wide -- they are not scoped to a site or namespace
+
+=== Multiple Connectors, One Routing Key
+
+You can deploy the same workload on multiple sites, each with a connector using the same routing key:
+
+----
+site-west                              site-east
+┌──────────────────┐                   ┌──────────────────┐
+│  backend pod     │                   │  backend pod     │
+│  connector       │                   │  connector       │
+│  (key: backend)  │                   │  (key: backend)  │
+└──────────────────┘                   └──────────────────┘
+----
+
+Any listener with routing key `backend` on any site will receive traffic balanced across both connector sites.
+
+== Controlling Service Visibility
+
+Service Interconnect does not have a built-in mechanism to restrict which sites can see which services.
+All connectors are visible to the entire network.
+
+To control visibility:
+
+* **Separate networks** -- Create independent application networks (separate sites with no links between them) for services that should be isolated
+* **Listener placement** -- Only create listeners on the sites that need to consume a service. Without a listener, the service is visible on the network but not accessible to local pods.
+* **Namespace isolation** -- Use different namespaces with separate sites for different security zones
+
+== Services and Kubernetes Services
+
+When a listener is created, Service Interconnect creates a standard Kubernetes `Service` resource in the listener's namespace.
+This service has:
+
+* The name specified by the listener's `host` field (defaults to the listener name)
+* The port specified by the listener
+* A `ClusterIP` type
+
+Applications connect to this service exactly as they would any other Kubernetes service.
+They do not need to know about Service Interconnect, routing keys, or the remote location of the workload.
+
+[source,bash,role=execute]
+----
+oc get service backend -n site-west
+----
+
+.Expected output
+----
+NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+backend   ClusterIP   172.30.45.123   <none>        8080/TCP   5m
+----

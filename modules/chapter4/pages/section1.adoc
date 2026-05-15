@@ -1,2 +1,151 @@
 = Multi-site Topologies
 :navtitle: Multi-site Topologies
+
+== Overview
+
+Service Interconnect sites can be linked in any arrangement.
+The topology you choose affects resilience, latency, and operational complexity.
+Because links are point-to-point and bidirectional, you can build any graph structure by deciding which sites link to which.
+
+== Common Topologies
+
+=== Hub-and-Spoke
+
+A single central site (the hub) links to every other site (the spokes).
+Spokes communicate with each other through the hub.
+
+----
+        ┌──────────┐
+        │   hub    │
+        └─┬──┬──┬──┘
+          │  │  │
+   ┌──────┘  │  └──────┐
+   │         │         │
+┌──┴──┐  ┌───┴──┐  ┌──┴──┐
+│west │  │east  │  │south│
+└─────┘  └──────┘  └─────┘
+----
+
+**When to use:**
+
+* Centralized management -- one team owns the hub
+* Spokes are in restricted environments (e.g., edge sites behind firewalls)
+* Spokes only need to reach shared services hosted at the hub
+
+**Trade-offs:**
+
+* The hub is a single point of failure for cross-spoke traffic
+* All cross-spoke traffic traverses two links (spoke → hub → spoke), adding latency
+* Hub must have link access enabled; spokes initiate outbound connections
+
+=== Full Mesh
+
+Every site links directly to every other site.
+
+----
+┌──────┐───────────┌──────┐
+│west  │           │east  │
+└──┬───┘           └───┬──┘
+   │  ╲             ╱  │
+   │    ╲         ╱    │
+   │      ╲     ╱      │
+   │        ╲ ╱        │
+   │        ╱ ╲        │
+   │      ╱     ╲      │
+   │    ╱         ╲    │
+   │  ╱             ╲  │
+┌──┴───┐           ┌───┴──┐
+│south │───────────│north │
+└──────┘           └──────┘
+----
+
+**When to use:**
+
+* Maximum resilience -- any single link or site can fail without partitioning the network
+* Low latency between any pair of sites (single hop)
+* All sites are in environments with good network connectivity
+
+**Trade-offs:**
+
+* Number of links grows as N×(N-1)/2 -- a 5-site mesh requires 10 links
+* More tokens to manage
+* Best suited for small to medium numbers of sites (3-6)
+
+=== Chain (Linear)
+
+Sites are linked sequentially.
+
+----
+┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐
+│west  │────│central│───│east  │────│far-  │
+│      │    │       │   │      │    │east  │
+└──────┘    └──────┘    └──────┘    └──────┘
+----
+
+**When to use:**
+
+* Geographic progression (e.g., regions along a network backbone)
+* Progressive migration where each stage connects to the next
+
+**Trade-offs:**
+
+* Traffic between distant sites traverses multiple hops, increasing latency
+* A single link failure can partition the network
+* Generally not recommended for production without redundant links
+
+=== Hybrid
+
+Combine patterns based on requirements.
+For example, a hub-and-spoke core with a mesh among the hub sites:
+
+----
+      ┌──────┐         ┌──────┐
+      │hub-1 │─────────│hub-2 │
+      └─┬──┬─┘         └─┬──┬─┘
+        │  │              │  │
+     ┌──┘  └──┐        ┌──┘  └──┐
+     │        │        │        │
+  ┌──┴──┐  ┌──┴──┐  ┌──┴──┐  ┌──┴──┐
+  │edge1│  │edge2│  │edge3│  │edge4│
+  └─────┘  └─────┘  └─────┘  └─────┘
+----
+
+== Choosing a Topology
+
+[cols="1,1,1,1",options="header"]
+|===
+|Factor |Hub-and-Spoke |Full Mesh |Chain
+
+|Resilience
+|Low (hub is SPOF)
+|High
+|Low (any link is SPOF)
+
+|Latency (cross-site)
+|Medium (2 hops max)
+|Low (1 hop)
+|High (N hops)
+
+|Operational complexity
+|Low
+|Medium
+|Low
+
+|Link count (N sites)
+|N-1
+|N×(N-1)/2
+|N-1
+
+|Best for
+|Edge/IoT, centralized services
+|Core infrastructure
+|Migration, geographic chains
+|===
+
+== Topology and Link Direction
+
+Remember that link direction does not affect traffic flow -- it only determines which site initiates the TCP connection.
+Choose link direction based on network reachability:
+
+* If a site is behind a firewall with no inbound access, it should be the *connecting* site (it initiates the outbound link)
+* The site with a public route or load balancer should be the *listening* site (it enables link access)

@@ -1,2 +1,20 @@
 = Multi-cluster Connectivity
 :navtitle: Multi-cluster Connectivity
+
+== Chapter Overview
+
+In the previous chapter, you connected two sites and routed traffic between them.
+In real-world deployments, application networks often span three or more sites with different topologies, load balancing requirements, and failover strategies.
+
+This chapter explores multi-site patterns and how Service Interconnect's routing model enables resilient, distributed applications.
+
+== Objectives
+
+After completing this chapter, you should be able to:
+
+* Describe common multi-site topologies (hub-spoke, mesh, chain)
+* Design a topology that fits a given use case
+* Explain how services are distributed and discovered across the application network
+* Configure load balancing across multiple sites using link cost
+* Implement active-passive failover using link cost
+* Build and verify a three-site application network

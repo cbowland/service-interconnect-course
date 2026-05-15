@@ -1,2 +1,144 @@
 = Load Balancing and Failover
 :navtitle: Load Balancing and Failover
+
+== Overview
+
+Service Interconnect provides built-in load balancing and failover for services exposed across multiple sites.
+This section explains how the routing algorithm distributes traffic and how to configure failover patterns using link cost.
+
+== How Load Balancing Works
+
+Service Interconnect balances *active TCP connections* across workloads deployed at distinct sites.
+The routing algorithm considers two factors:
+
+. **Link cost** -- The configured cost of the path from client to server
+. **Current load** -- The number of open TCP connections on each server
+
+Traffic is directed to the server with the lowest total cost that has available capacity.
+
+NOTE: Traffic load is based on the number of concurrent TCP connections, so "round robin" behavior should not be expected. If one server is more powerful and processes requests more quickly, it will have fewer concurrent connections and receive proportionally more new traffic.
+
+== Understanding Link Cost
+
+Link cost is a configurable value assigned when creating links between sites.
+
+* The default cost is *1*
+* Local workloads (same site) have a cost of *0*
+* If a path traverses multiple links, the total cost is the sum of all link costs along the path
+
+=== Example: Cost-Based Routing
+
+----
+                    cost 1          cost 1
+site-west ─────────────── site-central ─────────────── site-east
+  (listener)                                            (connector)
+  (connector, cost 0)                                   (connector)
+----
+
+In this example, if `site-west` has both a local connector (cost 0) and a remote connector in `site-east` (cost 2 = 1+1):
+
+* Traffic prefers the local connector in `site-west` (cost 0)
+* If the local connector is unavailable or overloaded, traffic flows to `site-east` (cost 2)
+
+== Active-Active Load Balancing
+
+When the same service is deployed on multiple sites with equal link cost, Service Interconnect distributes connections across all available instances:
+
+----
+site-west                          site-east
+┌──────────────────┐               ┌──────────────────┐
+│  backend (x2)    │               │  backend (x2)    │
+│  connector       │  cost 1       │  connector       │
+│  (key: backend)  │───────────────│  (key: backend)  │
+└──────────────────┘               └──────────────────┘
+
+site-south (consumer)
+┌──────────────────┐
+│  frontend        │
+│  listener        │   cost 1 to both sites
+│  (key: backend)  │
+└──────────────────┘
+----
+
+If `site-south` has equal-cost links to both `site-west` and `site-east`, traffic is distributed based on the number of concurrent connections and available capacity at each site.
+
+== Active-Passive Failover
+
+You can configure a failover pattern where a primary site handles all traffic until failure, at which point a backup site takes over.
+
+To achieve this, set the link cost from the client to the backup site to a high value (e.g., 9999):
+
+=== Using the CLI
+
+When issuing a token for the backup link, set the cost:
+
+[source,bash,role=execute]
+----
+# On the primary site (site-west), issue a token with default cost
+skupper token issue ~/primary-token.yaml
+
+# On the backup site (site-east), issue a token with high cost
+skupper token issue ~/backup-token.yaml
+----
+
+When redeeming the tokens on the consumer site:
+
+[source,bash,role=execute]
+----
+# Link to primary with default cost (1)
+skupper token redeem ~/primary-token.yaml
+
+# Link to backup with high cost (9999)
+skupper token redeem ~/backup-token.yaml --cost 9999
+----
+
+=== Using YAML
+
+Set the cost in the Link resource:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: link-to-backup
+  namespace: site-south
+spec:
+  # ... link credentials ...
+  cost: 9999
+----
+
+=== Failover Behavior
+
+Under normal conditions:
+
+* All traffic goes to the primary site (cost 1)
+* The backup site (cost 9999) receives no traffic
+
+When the primary site fails:
+
+* Service Interconnect detects the failure (no active connections)
+* Traffic automatically redirects to the backup site (cost 9999)
+* No manual intervention is required
+
+When the primary site recovers:
+
+* Traffic automatically returns to the primary site (cost 1)
+* The failover is seamless to the application
+
+NOTE: Link cost is configured for all services between two sites. It is currently not possible to set different costs for distinct services on the same link.
+
+== Verifying Load Distribution
+
+You can observe load distribution by checking connector status across sites:
+
+[source,bash,role=execute]
+----
+# On site-west
+skupper connector status
+
+# On site-east
+skupper connector status
+----
+
+If you have the Network Observer console installed, it provides real-time visualization of traffic flow and connection counts across sites.
