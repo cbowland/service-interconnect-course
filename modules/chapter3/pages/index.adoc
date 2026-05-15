@@ -1,2 +1,28 @@
 = Creating Your First Service Network
 :navtitle: Creating Your First Service Network
+
+== Chapter Overview
+
+In this chapter, you will create your first application network by linking two Service Interconnect sites and exposing a service across them.
+You will learn both the CLI and YAML approaches, and practice with a hands-on end-to-end exercise.
+
+== Scenario
+
+You have two sites -- `site-west` and `site-east` -- that you created in the previous chapter.
+In this chapter, you will:
+
+. Link the two sites together using access tokens
+. Deploy a backend application in `site-east`
+. Expose the backend service on the application network
+. Consume the backend service from `site-west`
+
+== Objectives
+
+After completing this chapter, you should be able to:
+
+* Create a Service Interconnect site using the CLI and YAML
+* Enable link access on a site to accept incoming connections
+* Issue and redeem access tokens to link sites together
+* Create connectors to expose local workloads on the application network
+* Create listeners to consume remote services locally
+* Verify link status and service connectivity

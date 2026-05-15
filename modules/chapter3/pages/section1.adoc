@@ -1,2 +1,132 @@
 = Initializing Sites
 :navtitle: Initializing Sites
+
+== Overview
+
+A Service Interconnect site is the foundation of the application network.
+Before you can link sites, expose services, or route traffic, you must create a site in each namespace or location that will participate in the network.
+
+In the previous chapter, you created sites as part of the installation exercise.
+This section covers site creation in more detail, including important options and the YAML alternative.
+
+== Creating a Site with the CLI
+
+The basic command to create a site is:
+
+[source,bash]
+----
+skupper site create <site-name> --namespace <namespace>
+----
+
+Specifying the namespace is not required if your current context is already set to the target namespace.
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper site create site-west
+----
+
+.Expected output
+----
+Waiting for status...
+Site "site-west" is ready.
+----
+
+You can check the status of the site at any time:
+
+[source,bash,role=execute]
+----
+skupper site status
+----
+
+== Enabling Link Access
+
+By default, a site does not accept incoming links from other sites.
+To allow other sites to link to this site, enable link access:
+
+[source,bash,role=execute]
+----
+skupper site create site-west --enable-link-access
+----
+
+You can also enable link access on an existing site:
+
+[source,bash,role=execute]
+----
+skupper site update --enable-link-access
+----
+
+When link access is enabled, the site deploys a grant server that can issue access tokens for remote sites.
+
+== Creating a Site with YAML
+
+You can also create a site by applying a `Site` custom resource:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: site-west
+  namespace: site-west
+spec:
+  linkAccess: default
+----
+
+Apply the resource:
+
+[source,bash,role=execute]
+----
+oc apply -f site-west.yaml
+----
+
+Check the status:
+
+[source,bash,role=execute]
+----
+oc get site
+----
+
+.Expected output (site may be pending briefly)
+----
+NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    1                  OK
+----
+
+== Site Options
+
+There are many options to consider when creating sites:
+
+[cols="1,2",options="header"]
+|===
+|Option |Description
+
+|`--enable-link-access`
+|Allow other sites to create links to this site (CLI). Equivalent to `spec.linkAccess: default` in YAML.
+
+|`--timeout <time>`
+|Maximum time for the CLI to wait for the site to report ready (e.g., `2m`).
+The timeout does not prevent the site from being created.
+
+|`--enable-ha`
+|Enable high availability for the site.
+
+|`--namespace <namespace>`
+|Create the site in a specific namespace (CLI).
+|===
+
+== Deleting a Site
+
+To remove a site using the CLI:
+
+[source,bash,role=execute]
+----
+skupper site delete
+----
+
+Or delete the Site resource directly:
+
+[source,bash,role=execute]
+----
+oc delete site site-west
+----

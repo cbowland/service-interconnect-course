@@ -1,2 +1,185 @@
 = Exposing and Consuming Services
 :navtitle: Exposing and Consuming Services
+
+== Overview
+
+After linking sites, you can expose services from one site and consume them from another.
+This is done using two resource types:
+
+* **Connectors** -- Created on the site where the workload runs, binding a local workload to the application network
+* **Listeners** -- Created on the site where you want to consume the service, providing a local endpoint that routes to the remote workload
+
+Connectors and listeners are matched by a shared *routing key*.
+
+== Creating a Connector (CLI)
+
+A connector binds a local workload to listeners in remote sites.
+
+[source,bash]
+----
+skupper connector create <name> <port> [--routing-key <name>] [--workload <type/name>]
+----
+
+By default, the routing key name is set to the name of the connector.
+If you want to use a custom routing key, set the `--routing-key` to your custom name.
+
+=== Example
+
+Deploy a backend workload and create a connector:
+
+[source,bash,role=execute]
+----
+oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=3
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+Check the connector status:
+
+[source,bash,role=execute]
+----
+skupper connector status
+----
+
+.Expected output
+----
+NAME      STATUS    ROUTING-KEY   SELECTOR      HOST   PORT   HAS MATCHING LISTENER   MESSAGE
+backend   Pending   backend       app=backend          8080   false                    No matching listeners
+----
+
+The status shows `No matching listeners` because we have not yet created a listener on the consuming site.
+
+== Creating a Connector with YAML
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: backend
+  namespace: site-east
+spec:
+  routingKey: backend
+  port: 8080
+  selector: app=backend
+----
+
+[source,bash,role=execute]
+----
+oc apply -f connector.yaml
+----
+
+== Creating a Listener (CLI)
+
+A listener creates a local service endpoint that routes traffic to remote connectors with the same routing key.
+
+[source,bash]
+----
+skupper listener create <name> <port> [--routing-key <name>]
+----
+
+By default, the routing key name is the listener name.
+
+=== Example
+
+On the consuming site, create a listener:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener create backend 8080
+----
+
+.Expected output
+----
+Waiting for create to complete...
+Listener "backend" is ready
+----
+
+Check the listener status:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME      STATUS   ROUTING-KEY   HOST      PORT   MATCHING-CONNECTOR   MESSAGE
+backend   Ready    backend       backend   8080   true                 OK
+----
+
+NOTE: There must be a MATCHING-CONNECTOR for the service to operate. The `true` value confirms that a connector with the matching routing key exists on the network.
+
+== Creating a Listener with YAML
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+  namespace: site-west
+spec:
+  routingKey: backend
+  port: 8080
+  host: backend
+----
+
+[source,bash,role=execute]
+----
+oc apply -f listener.yaml
+----
+
+When a listener is created, Service Interconnect automatically creates a Kubernetes service in the local namespace.
+Applications connect to this service (`backend:8080`) as they would any other local service.
+
+== How It All Fits Together
+
+----
+site-west (namespace)              site-east (namespace)
+┌─────────────────────┐            ┌─────────────────────┐
+│                     │            │                     │
+│  frontend pod       │            │  backend pod (x3)   │
+│    │                │            │    ▲                │
+│    ▼                │            │    │                │
+│  listener           │            │  connector          │
+│  (routing key:      │            │  (routing key:      │
+│   "backend")        │            │   "backend")        │
+│    │                │            │    ▲                │
+│    ▼                │            │    │                │
+│  SI router ─────────┼── mTLS ───┼── SI router         │
+│                     │  (link)    │                     │
+└─────────────────────┘            └─────────────────────┘
+----
+
+. The *frontend pod* in `site-west` connects to `backend:8080` (the service created by the listener).
+. The *listener* forwards the connection to the local SI router.
+. The SI router routes the traffic over the link to `site-east`.
+. The *connector* in `site-east` forwards the connection to one of the backend pods.
+
+== Exposing Services from Other Namespaces
+
+To expose a service from a different namespace than the connector's site, you must use YAML.
+Set the `selector` to match pods in the target namespace:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: database
+  namespace: site-east
+spec:
+  routingKey: database
+  port: 5432
+  selector: app=postgresql
+  includeNotReadyPods: false
+----
+
+== Load Balancing
+
+When multiple connectors share the same routing key (across different sites or within the same site), Service Interconnect balances *active TCP connections* across workloads deployed at distinct sites.
+
+Traffic load is based on the number of concurrent TCP connections, so "round robin" behavior should not be expected.
+If one server is more powerful and has better latency, it processes requests more quickly, resulting in more traffic being directed to that server.

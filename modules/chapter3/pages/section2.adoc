@@ -1,2 +1,147 @@
 = Creating Access Tokens
 :navtitle: Creating Access Tokens
+
+== Overview
+
+Access tokens are the mechanism for authorizing site-to-site connections in Service Interconnect.
+A token provides a secure, time-limited, usage-limited credential that a remote site can redeem to establish a link.
+
+== How Token-Based Linking Works
+
+The token-based linking process involves two roles:
+
+* **Listening site** -- The site that will accept the incoming link. This site must have link access enabled.
+* **Connecting site** -- The site that initiates the link by redeeming a token.
+
+The process works as follows:
+
+. The listening site enables link access, which deploys a *GrantServer* (an HTTPS endpoint).
+. An administrator issues a token on the listening site. The token contains the GrantServer URL, a secret code, and a CA certificate.
+. The token is transferred to the connecting site (via file copy, secure messaging, etc.).
+. The connecting site redeems the token, which exchanges the secret code for a full certificate through the GrantServer.
+. A mutual TLS link is established between the two sites.
+
+All inter-site traffic is protected by mutual TLS using a private, dedicated certificate authority (CA).
+A token is not a certificate -- it is securely exchanged for a certificate during the linking process.
+
+== Issuing a Token with the CLI
+
+On the listening site (where link access is enabled):
+
+[source,bash,role=execute]
+----
+skupper token issue ~/west-token.yaml
+----
+
+This saves a YAML file containing the token credentials to your local filesystem.
+
+CAUTION: Access to this file provides access to the application network. Protect it appropriately.
+
+=== Token Restrictions
+
+By default, a token can only be used once and must be redeemed within 15 minutes.
+You can customize these restrictions:
+
+[cols="1,2,1",options="header"]
+|===
+|Option |Description |Default
+
+|`--expiration-window`
+|How long the token remains valid after being issued
+|15 minutes
+
+|`--redemptions-allowed`
+|How many times the token can be used to create links
+|1
+|===
+
+Examples:
+
+[source,bash,role=execute]
+----
+# Allow 1 hour to redeem the token
+skupper token issue ~/west-token.yaml --expiration-window 60m
+
+# Allow the token to be used 3 times
+skupper token issue ~/west-token.yaml --redemptions-allowed 3
+----
+
+== Creating Tokens with YAML (AccessGrant and AccessToken)
+
+The CLI `skupper token issue` command is a convenience wrapper around two underlying custom resources: `AccessGrant` and `AccessToken`.
+
+=== Step 1: Create an AccessGrant on the Listening Site
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: AccessGrant
+metadata:
+  name: grant-west
+  namespace: site-west
+spec:
+  redemptionsAllowed: 2
+  expirationWindow: 25m
+----
+
+Apply and check status:
+
+[source,bash,role=execute]
+----
+oc apply -f accessgrant.yaml
+oc get accessgrants
+----
+
+.Expected output
+----
+NAME         REDEMPTIONS ALLOWED   REDEMPTIONS MADE   EXPIRATION                  STATUS   MESSAGE
+grant-west   2                     0                  2026-05-15T12:33:04Z        Ready    OK
+----
+
+=== Step 2: Extract Token Credentials
+
+On the listening site, populate environment variables from the AccessGrant status:
+
+[source,bash,role=execute]
+----
+URL="$(oc get accessgrant grant-west -o template --template '{{ .status.url }}')"
+CODE="$(oc get accessgrant grant-west -o template --template '{{ .status.code }}')"
+CA_RAW="$(oc get accessgrant grant-west -o template --template '{{ .status.ca }}')"
+----
+
+=== Step 3: Create an AccessToken YAML File
+
+[source,bash,role=execute]
+----
+cat > token.yaml <<EOF
+apiVersion: skupper.io/v2alpha1
+kind: AccessToken
+metadata:
+  name: token-to-west
+spec:
+  code: "$(printf '%s' "$CODE")"
+  ca: |-
+$(printf '%s\n' "$CA_RAW" | sed 's/^/    /')
+  url: "$(printf '%s' "$URL")"
+EOF
+----
+
+=== Step 4: Apply the AccessToken on the Connecting Site
+
+Transfer the `token.yaml` file to the connecting site and apply it:
+
+[source,bash,role=execute]
+----
+oc project site-east
+oc apply -f token.yaml
+----
+
+The token is automatically redeemed and a link is established.
+
+== Token Security Best Practices
+
+* Use short expiration windows (the 15-minute default is recommended for most scenarios)
+* Limit redemptions to the exact number of sites that need to link
+* Transfer tokens through secure channels (not email or chat)
+* Delete token files after use
+* Monitor AccessGrant status to verify expected redemption counts

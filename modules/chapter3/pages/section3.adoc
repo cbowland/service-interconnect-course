@@ -1,2 +1,173 @@
 = Linking Sites
 :navtitle: Linking Sites
+
+== Overview
+
+Once you have created sites and issued tokens, you can link the sites together to form an application network.
+Linking establishes a mutual TLS connection between the routers at each site, enabling traffic to flow between them.
+
+The link direction is not significant and is typically determined by ease of connectivity.
+For example, if `site-east` is behind a firewall and `site-west` is on the public cloud, linking from `site-east` to `site-west` is the easiest option.
+
+== Linking Sites Using a Token (CLI)
+
+This is the simplest method for linking two sites.
+
+=== Prerequisites
+
+* Two sites created (see previous sections)
+* At least one site with link access enabled
+
+=== Procedure
+
+. On the listening site (`site-west`), ensure link access is enabled:
++
+[source,bash,role=execute]
+----
+skupper site update --enable-link-access
+----
+
+. Issue a token:
++
+[source,bash,role=execute]
+----
+skupper token issue ~/west-token.yaml
+----
+
+. On the connecting site (`site-east`), redeem the token:
++
+[tabs]
+====
+Option A: Two Clusters::
++
+Switch to Cluster B and redeem the token:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+skupper token redeem ~/west-token.yaml
+----
+
+Option B: Single Cluster::
++
+Switch to the `site-east` namespace and redeem the token:
++
+[source,bash,role=execute]
+----
+oc project site-east
+skupper token redeem ~/west-token.yaml
+----
+====
+
+. Check the status of the link:
++
+[source,bash,role=execute]
+----
+skupper link status
+----
++
+You might need to issue the command multiple times before the link is ready:
++
+.Expected output (initially)
+----
+NAME                                           STATUS    COST   MESSAGE
+west-12f75bc8-5dda-4256-88f8-9df48150281a      Pending   1     Not Operational
+----
++
+.Expected output (after a few seconds)
+----
+NAME                                           STATUS   COST   MESSAGE
+west-12f75bc8-5dda-4256-88f8-9df48150281a      Ready    1      OK
+----
+
+== Linking Sites Using a Link Resource (CLI)
+
+An alternative approach is to generate a `Link` resource YAML file and apply it on the connecting site.
+
+. On the listening site, ensure link access is enabled:
++
+[source,bash,role=execute]
+----
+skupper site update --enable-link-access
+----
+
+. Generate a link resource YAML file:
++
+[source,bash,role=execute]
+----
+skupper link generate > ~/link-to-west.yaml
+----
+
+. On the connecting site, apply the link resource:
++
+[source,bash,role=execute]
+----
+oc project site-east
+oc apply -f ~/link-to-west.yaml
+----
+
+. Check link status:
++
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+== Link Cost
+
+Each link has a configurable *cost* value (default: 1).
+The routing algorithm uses cost to determine the best path from client to server.
+
+* Local workloads have a link cost of 0
+* If connecting to a workload requires traversing two or more links, the total of all link costs constitutes the link cost
+* Traffic is directed to the server with the lowest cost that has capacity
+
+Link cost is configured for all services between two sites -- it is not possible to set different costs for distinct services.
+
+=== Using Cost for Failover
+
+You can configure a failover pattern where a primary site handles all traffic until failure, at which point a backup site takes over.
+Set the cost from the client to the backup site high (e.g., 9999):
+
+[source,bash,role=execute]
+----
+skupper token issue ~/backup-token.yaml
+# On the backup site:
+skupper token redeem ~/backup-token.yaml --cost 9999
+----
+
+Under normal conditions, all traffic goes to the primary (cost 1).
+If the primary fails, traffic automatically fails over to the backup (cost 9999).
+
+== Verifying the Link
+
+After linking, verify from either site:
+
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+You can also verify from the listening site that the network has grown:
+
+[source,bash,role=execute]
+----
+oc get site
+----
+
+.Expected output
+----
+NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    2                  OK
+----
+
+== Troubleshooting Links
+
+If the link status shows `Pending` or `Not Operational` for an extended period:
+
+* Verify that the listening site has link access enabled (`skupper site status`)
+* Check that the token has not expired (default: 15 minutes)
+* Check that the token has not exceeded its redemption limit
+* Verify network connectivity between the two clusters (the connecting site must be able to reach the listening site's route or load balancer)
+* Check the router pod logs: `oc logs deployment/skupper-router`

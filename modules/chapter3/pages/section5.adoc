@@ -1,2 +1,332 @@
 = Hands-on: End-to-End Walkthrough
 :navtitle: Hands-on: End-to-End Walkthrough
+
+== Lab Overview
+
+In this exercise, you will complete the full workflow of creating an application network:
+
+. Verify your sites from the previous chapter
+. Link the sites together
+. Deploy a sample application
+. Expose the backend service across the network
+. Verify end-to-end connectivity
+
+By the end of this exercise, you will have a working multi-site application where a frontend in one site communicates with a backend in another site through the Service Interconnect application network.
+
+== Prerequisites
+
+* Completed the Chapter 2 hands-on lab (two sites created: `site-west` and `site-east`)
+* The `skupper` CLI is installed
+* `SKUPPER_PLATFORM` is unset or set to `kubernetes`
+
+== Exercise Steps
+
+=== Step 1: Verify Your Sites
+
+Confirm both sites are still running from the previous chapter.
+
+[tabs]
+====
+Option A: Two Clusters::
++
+On Cluster A:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper site status
+----
++
+On Cluster B:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+skupper site status
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper site status
+----
++
+[source,bash,role=execute]
+----
+oc project site-east
+skupper site status
+----
+====
+
+Both sites should show `Ready` status.
+
+If either site is missing, recreate it:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper site create site-west --enable-link-access
+----
+
+[source,bash,role=execute]
+----
+oc project site-east
+skupper site create site-east
+----
+
+=== Step 2: Link the Sites
+
+Ensure link access is enabled on `site-west`:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+On Cluster A:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper site update --enable-link-access
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper site update --enable-link-access
+----
+====
+
+Issue a token on `site-west`:
+
+[source,bash,role=execute]
+----
+skupper token issue ~/west-token.yaml
+----
+
+Redeem the token on `site-east`:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+skupper token redeem ~/west-token.yaml
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-east
+skupper token redeem ~/west-token.yaml
+----
+====
+
+Verify the link is established:
+
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+Wait until the STATUS column shows `Ready` and the MESSAGE column shows `OK`.
+
+=== Step 3: Deploy the Backend Application
+
+Deploy the sample backend application in `site-east`:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=3
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=3
+----
+====
+
+Verify the backend pods are running:
+
+[source,bash,role=execute]
+----
+oc get pods -l app=backend
+----
+
+.Expected output
+----
+NAME                       READY   STATUS    RESTARTS   AGE
+backend-5b8c5b5b4f-abc12   1/1     Running   0          30s
+backend-5b8c5b5b4f-def34   1/1     Running   0          30s
+backend-5b8c5b5b4f-ghi56   1/1     Running   0          30s
+----
+
+=== Step 4: Create a Connector
+
+Expose the backend on the application network by creating a connector in `site-east`:
+
+[source,bash,role=execute]
+----
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+Verify the connector:
+
+[source,bash,role=execute]
+----
+skupper connector status
+----
+
+.Expected output
+----
+NAME      STATUS    ROUTING-KEY   SELECTOR      HOST   PORT   HAS MATCHING LISTENER   MESSAGE
+backend   Pending   backend       app=backend          8080   false                    No matching listeners
+----
+
+=== Step 5: Create a Listener
+
+On `site-west`, create a listener to consume the backend service:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper listener create backend 8080
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener create backend 8080
+----
+====
+
+Verify the listener:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME      STATUS   ROUTING-KEY   HOST      PORT   MATCHING-CONNECTOR   MESSAGE
+backend   Ready    backend       backend   8080   true                 OK
+----
+
+Verify that a Kubernetes service was created:
+
+[source,bash,role=execute]
+----
+oc get service backend
+----
+
+.Expected output
+----
+NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+backend   ClusterIP   172.30.x.x      <none>        8080/TCP   10s
+----
+
+=== Step 6: Deploy the Frontend and Test
+
+Deploy the frontend application in `site-west`:
+
+[source,bash,role=execute]
+----
+oc project site-west
+oc create deployment frontend --image=quay.io/skupper/hello-world-frontend
+----
+
+Expose the frontend with a route so you can access it from a browser:
+
+[source,bash,role=execute]
+----
+oc expose deployment frontend --port=8080
+oc expose service frontend
+----
+
+Get the route URL:
+
+[source,bash,role=execute]
+----
+oc get route frontend -o jsonpath='{.spec.host}'
+----
+
+Open the URL in a browser.
+You should see the hello-world frontend page displaying messages from the backend pods running in `site-east`.
+
+=== Step 7: Verify from the Command Line
+
+You can also test connectivity from the command line using a temporary pod in `site-west`:
+
+[source,bash,role=execute]
+----
+oc run curl-test --image=curlimages/curl --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello
+----
+
+.Expected output
+----
+Hello from backend-5b8c5b5b4f-abc12 (site-east)
+----
+
+The response confirms that:
+
+* The curl request was sent to the local `backend` service in `site-west` (created by the listener)
+* Service Interconnect routed the request over the link to `site-east`
+* The backend pod in `site-east` processed the request and returned the response
+
+=== Step 8: Inspect the Application Network
+
+Check the overall network status:
+
+[source,bash,role=execute]
+----
+skupper site status
+skupper link status
+skupper connector status
+skupper listener status
+----
+
+== Summary
+
+In this exercise, you:
+
+* Verified two existing Service Interconnect sites
+* Linked the sites together using `skupper token issue` and `skupper token redeem`
+* Deployed a backend application in `site-east`
+* Created a connector to expose the backend on the application network
+* Created a listener in `site-west` to consume the backend service locally
+* Deployed a frontend in `site-west` and verified it can reach the backend in `site-east`
+* Confirmed end-to-end connectivity across the application network
+
+The frontend application in `site-west` has no awareness that the backend is running in `site-east`.
+It simply connects to a local Kubernetes service, and Service Interconnect handles the routing transparently.
+
+In the next chapter, you will explore multi-cluster topologies and advanced networking patterns.
