@@ -1,2 +1,117 @@
 = Use Cases
 :navtitle: Use Cases
+
+== Overview
+
+Red Hat Service Interconnect addresses a range of real-world scenarios where application services need to communicate across environment boundaries.
+This section describes the most common use cases.
+
+== Multi-cloud Connectivity
+
+Organizations running OpenShift clusters across multiple cloud providers (AWS, Azure, GCP) or across cloud and on-premises environments often need services to communicate across these boundaries.
+
+*Example:* A retail company runs its web frontend on OpenShift in AWS and its inventory management system on OpenShift in their on-premises data center.
+Service Interconnect connects the frontend to the inventory API without VPN tunnels or cloud-provider-specific peering.
+
+*Benefits:*
+
+* No vendor lock-in -- works identically across cloud providers
+* No cloud networking expertise required
+* Application teams can set up connectivity independently
+
+== Hybrid Cloud — Legacy Application Integration
+
+Many organizations have legacy applications that will remain on traditional infrastructure for the foreseeable future.
+These applications need to participate in modern, cloud-native architectures.
+
+*Example:* A financial services company has a mainframe-connected transaction processing system running on RHEL VMs.
+New microservices on OpenShift need to query this system.
+Service Interconnect creates a gateway on the RHEL host, exposing the legacy service to the OpenShift application network.
+
+*Benefits:*
+
+* Legacy applications appear as native Kubernetes services to cloud-native consumers
+* No changes to the legacy application are required
+* Bidirectional connectivity -- cloud-native services can also be consumed from RHEL
+
+== Progressive Migration
+
+When migrating from one platform to another (e.g., older OpenShift to newer OpenShift, or VMs to containers), organizations need both environments to coexist during the transition.
+
+*Example:* A healthcare company is migrating from OpenShift 4.14 to OpenShift 4.20.
+During the migration, some services run on the old cluster and some on the new cluster.
+Service Interconnect bridges both clusters so services can communicate regardless of which cluster they currently run on.
+
+*Benefits:*
+
+* Migrate one service at a time with zero downtime
+* No "big bang" cutover -- services move independently
+* Rollback by redirecting traffic back to the original site
+
+== Edge Computing and IoT
+
+Edge locations often have constrained network environments -- limited bandwidth, intermittent connectivity, or no public IP addresses.
+Service Interconnect's outbound-only connection model is well suited to these environments.
+
+*Example:* A manufacturing company has monitoring sensors at factory sites that need to send data to an analytics platform running on OpenShift in a central data center.
+The factory network has no public IP and a strict firewall.
+Service Interconnect initiates the connection outbound from the factory site, requiring no inbound firewall rules.
+
+*Benefits:*
+
+* Works behind NAT and restrictive firewalls (outbound HTTPS only)
+* Lightweight router footprint suitable for edge hardware
+* Automatic reconnection on intermittent networks
+
+== Database Replication Across Sites
+
+Databases that support native replication (PostgreSQL, MySQL, MongoDB) can use Service Interconnect to establish replication links across sites without exposing database ports to the public internet.
+
+*Example:* A SaaS company runs PostgreSQL in two data centers for disaster recovery.
+Service Interconnect exposes the PostgreSQL replication port across sites, enabling streaming replication over a mutually authenticated, encrypted connection.
+
+*Benefits:*
+
+* Database replication without public IP exposure
+* Mutual TLS encryption on the replication channel
+* Works with any database that supports TCP-based replication
+
+== Disaster Recovery
+
+Service Interconnect enables active-passive or active-active disaster recovery topologies by connecting services across geographically separated sites.
+
+*Example:* An e-commerce platform runs its primary services in one region and maintains a standby deployment in another.
+Service Interconnect links both sites.
+During normal operation, traffic flows to the primary.
+If the primary site fails, the standby services are already connected to the application network and can take over.
+
+*Benefits:*
+
+* Pre-established application network -- no connectivity setup during a disaster
+* Automatic failover when multiple connectors share the same routing key
+* Regular DR testing without infrastructure changes
+
+== Summary
+
+[cols="1,2",options="header"]
+|===
+|Use Case |Key Advantage
+
+|Multi-cloud connectivity
+|Cloud-agnostic, no peering required
+
+|Legacy application integration
+|RHEL gateways bridge VMs and containers
+
+|Progressive migration
+|Service-by-service migration with zero downtime
+
+|Edge computing and IoT
+|Outbound-only connections, works behind NAT
+
+|Database replication
+|Encrypted replication without public exposure
+
+|Disaster recovery
+|Pre-connected standby sites with automatic failover
+|===

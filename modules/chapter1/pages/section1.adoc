@@ -1,2 +1,76 @@
 = What is Red Hat Service Interconnect?
 :navtitle: What is Service Interconnect?
+
+== Overview
+
+Red Hat Service Interconnect is a multi-site, multi-platform application connectivity solution that enables services running in different environments to communicate securely -- without requiring VPNs, special firewall rules, or elevated network privileges.
+
+Service Interconnect is the commercial, supported distribution of the open-source https://skupper.io[Skupper,window=_blank] project.
+It is available as part of the Red Hat Application Interconnect subscription.
+
+== The Problem
+
+Modern applications are increasingly distributed across multiple environments:
+
+* Multiple OpenShift or Kubernetes clusters in different regions
+* A mix of on-premises data centers and public cloud providers
+* Legacy applications running on virtual machines or bare-metal servers
+* Edge locations with limited or intermittent connectivity
+
+Connecting services across these boundaries traditionally requires significant network infrastructure work: VPN tunnels, firewall rule changes, network peering agreements, and coordination between network and platform teams.
+These approaches are complex, slow to provision, and often require elevated privileges that application teams do not have.
+
+== The Solution
+
+Service Interconnect creates an *application network* -- a Layer 7 overlay that routes traffic between application endpoints across distributed sites.
+Rather than modifying the underlying network infrastructure, Service Interconnect deploys lightweight routers that establish secure, outbound-only connections between sites.
+
+Key characteristics of this approach:
+
+* **Layer 7 routing** -- Service Interconnect operates at the application layer, routing messages between service endpoints rather than forwarding IP packets.
+Application services appear local to consumers, regardless of where they actually run.
+
+* **No infrastructure changes** -- Sites connect using standard outbound HTTPS connections.
+No VPN tunnels, firewall ingress rules, or network peering is required.
+
+* **Mutual TLS by default** -- All router-to-router connections are encrypted using a private, dedicated certificate authority (CA).
+Each router is uniquely identified by its own certificate.
+
+* **Namespace-level operation** -- Each Service Interconnect site operates within a Kubernetes namespace (or on a Linux host), requiring no cluster-wide privileges to set up.
+
+== Relationship to Skupper
+
+Service Interconnect is built from the Skupper open-source project.
+The relationship is similar to other Red Hat products and their upstream projects:
+
+[cols="1,1",options="header"]
+|===
+|Red Hat Product |Upstream Project
+
+|Red Hat Service Interconnect
+|Skupper
+
+|Red Hat OpenShift Container Platform
+|Kubernetes
+
+|Red Hat Enterprise Linux
+|Fedora / CentOS Stream
+|===
+
+Red Hat Service Interconnect adds:
+
+* Enterprise support and SLA coverage
+* Certified operator for OpenShift
+* Integration with the Red Hat ecosystem (RHEL gateways, OpenShift monitoring)
+* Long-term support releases with backported security fixes
+
+== Platform Support
+
+Service Interconnect 2.1 supports the following platforms:
+
+* **Kubernetes** -- Any conformant Kubernetes distribution
+* **Red Hat OpenShift Container Platform** -- 4.x
+* **Red Hat Enterprise Linux** -- As a gateway for non-Kubernetes workloads
+* **Docker and Podman** -- For containerized gateway deployments on Linux
+
+All platforms share a common underlying model and a unified CLI interface, reducing the learning curve when working across heterogeneous environments.

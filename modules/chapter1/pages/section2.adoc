@@ -1,2 +1,198 @@
 = Architecture and Key Concepts
 :navtitle: Architecture and Key Concepts
+
+== The Application Network
+
+Service Interconnect creates an _application network_ -- a virtual network that connects application services across distributed sites.
+Unlike traditional networks that route IP packets, the application network routes messages between service endpoints at Layer 7.
+
+From an application's perspective, remote services appear as local services within the same namespace.
+The application connects to a local endpoint, and Service Interconnect transparently routes the traffic to the actual service, wherever it runs.
+
+== Core Concepts
+
+=== Sites
+
+A *site* is a location where Service Interconnect is installed and running.
+On Kubernetes or OpenShift, a site corresponds to a namespace.
+On Linux (RHEL), a site runs as a set of containers managed by Podman or as a systemd service.
+
+Each site runs one or more Service Interconnect routers that participate in the application network.
+
+You create a site using the `Site` custom resource:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: site-west
+  namespace: site-west
+spec: {}
+----
+
+=== Routers
+
+*Routers* are the core infrastructure of the application network.
+They are lightweight processes deployed automatically when a site is created.
+
+Routers perform Layer 7 message routing -- they do not forward raw IP packets.
+Instead, they route application-level messages between listeners and connectors based on routing keys.
+
+All router-to-router connections are encrypted with mutual TLS using a private certificate authority.
+
+=== Links
+
+A *link* is a connection between two sites that allows their routers to exchange traffic.
+Links are established using outbound connections only -- no inbound firewall rules are required at either site.
+
+To create a link, one site generates an *access token* (or *access grant*), and the other site uses that token to establish the connection.
+
+=== Access Tokens and Access Grants
+
+*Access grants* and *access tokens* are the mechanisms for authorizing site-to-site connections.
+
+An *AccessGrant* is created at a site that is willing to accept incoming links.
+It defines how many times the grant can be redeemed and when it expires:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: AccessGrant
+metadata:
+  name: my-grant
+  namespace: site-west
+spec:
+  redemptionsAllowed: 1
+  expirationWindow: 24h
+----
+
+An *AccessToken* is generated from an AccessGrant and provided to the remote site to establish a link:
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: AccessToken
+metadata:
+  name: my-token
+  namespace: site-east
+spec:
+  # token data from the grant
+----
+
+=== Connectors
+
+A *connector* binds a local workload to the application network, making it available to remote sites.
+You create a connector on the site where the actual service is running.
+
+A connector specifies:
+
+* The local workload to expose (via a selector or host)
+* A *routing key* that identifies the service on the application network
+* The port the workload is listening on
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: backend
+  namespace: site-east
+spec:
+  routingKey: backend
+  port: 8080
+  selector: app=backend
+----
+
+=== Listeners
+
+A *listener* creates a local service endpoint that forwards traffic to remote connectors.
+You create a listener on the site where you want to _consume_ the service.
+
+A listener specifies:
+
+* A *routing key* that must match the connector's routing key
+* The local port to listen on
+* The hostname for the local service
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+  namespace: site-west
+spec:
+  routingKey: backend
+  port: 8080
+  host: backend
+----
+
+When a listener is created, Service Interconnect automatically creates a Kubernetes service in the local namespace.
+Applications connect to this local service as they would any other service -- the routing to the remote workload is handled transparently.
+
+=== Routing Keys
+
+A *routing key* is a string that matches listeners with connectors across the application network.
+When a listener and a connector share the same routing key, traffic sent to the listener is routed to the connector's workload.
+
+Multiple connectors can share the same routing key, enabling load balancing across sites.
+
+== How Traffic Flows
+
+The following diagram illustrates how a frontend application in `site-west` connects to a backend service in `site-east`:
+
+----
+site-west (namespace)              site-east (namespace)
+┌─────────────────────┐            ┌─────────────────────┐
+│                     │            │                     │
+│  frontend pod       │            │  backend pod        │
+│    │                │            │    ▲                │
+│    ▼                │            │    │                │
+│  listener           │            │  connector          │
+│  (routing key:      │            │  (routing key:      │
+│   "backend")        │            │   "backend")        │
+│    │                │            │    ▲                │
+│    ▼                │            │    │                │
+│  SI router ─────────┼── mTLS ───┼── SI router         │
+│                     │  (link)    │                     │
+└─────────────────────┘            └─────────────────────┘
+----
+
+. The *frontend pod* connects to the local `backend` service (created by the listener) on port 8080.
+. The *listener* receives the connection and forwards it to the local *SI router*.
+. The *SI router* in `site-west` routes the message over the *link* to the *SI router* in `site-east`, using mutual TLS encryption.
+. The *SI router* in `site-east` delivers the message to the *connector*.
+. The *connector* forwards the connection to the *backend pod*.
+
+The frontend application has no awareness that the backend is running in a different site.
+It simply connects to a local service endpoint.
+
+== Custom Resources Summary
+
+Service Interconnect 2.1 uses the following custom resources (CRDs):
+
+[cols="1,2",options="header"]
+|===
+|Resource |Purpose
+
+|`Site`
+|Defines a Service Interconnect site in a namespace
+
+|`Listener`
+|Creates a local service endpoint that routes to remote connectors
+
+|`Connector`
+|Exposes a local workload to the application network
+
+|`AccessGrant`
+|Authorizes remote sites to create links (server side)
+
+|`AccessToken`
+|Redeems an access grant to establish a link (client side)
+
+|`Link`
+|Represents an active connection between two sites
+|===
+
+All resources use the `skupper.io/v2alpha1` API group.

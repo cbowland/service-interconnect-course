@@ -1,2 +1,16 @@
 = Introduction to Service Interconnect
 :navtitle: Introduction to Service Interconnect
+
+== Chapter Overview
+
+In this chapter, you will learn what Red Hat Service Interconnect is, how it works, and why organizations use it to connect application services across distributed environments.
+
+== Objectives
+
+After completing this chapter, you should be able to:
+
+* Describe what Red Hat Service Interconnect is and how it relates to the open-source Skupper project
+* Explain how Layer 7 application networking differs from traditional network connectivity
+* Identify the core architectural components: sites, routers, listeners, and connectors
+* Compare Service Interconnect with VPNs, service meshes, and direct network peering
+* Recognize common use cases for multi-site application connectivity

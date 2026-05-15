@@ -1,2 +1,131 @@
 = How Service Interconnect Differs from Traditional Approaches
 :navtitle: SI vs Traditional Approaches
+
+== Overview
+
+Organizations have several options for connecting services across distributed environments.
+This section compares Service Interconnect with the most common alternatives to help you understand when each approach is appropriate.
+
+== Comparison Table
+
+[cols="1,1,1,1,1",options="header"]
+|===
+|Criteria |Service Interconnect |VPN |Service Mesh |Direct Network Peering
+
+|*Layer*
+|Layer 7 (application)
+|Layer 3 (network)
+|Layer 7 (application)
+|Layer 3 (network)
+
+|*Scope*
+|Cross-cluster, cross-cloud, VMs
+|Site-to-site or client-to-site
+|Single cluster (typically)
+|Between specific networks
+
+|*Setup complexity*
+|CLI or YAML in minutes
+|Network team involvement, firewall changes
+|Per-cluster install, sidecar injection
+|Network team, ISP/cloud provider coordination
+
+|*Privileges required*
+|Namespace-level only
+|Network/infrastructure admin
+|Cluster admin
+|Network admin
+
+|*Encryption*
+|Mutual TLS (automatic)
+|IPsec or TLS (configured)
+|Mutual TLS (automatic)
+|Varies (often unencrypted)
+
+|*Infrastructure changes*
+|None (outbound HTTPS only)
+|Firewall rules, tunnel endpoints
+|Sidecar proxies per pod
+|BGP peering, route tables
+
+|*Multi-cloud support*
+|Native
+|Complex (each provider different)
+|Limited (federation needed)
+|Provider-specific
+
+|*VM/bare-metal support*
+|Yes (RHEL gateways)
+|Yes
+|Limited
+|Yes
+|===
+
+== Service Interconnect vs VPN
+
+A VPN creates a network-level tunnel between two sites, making all hosts on each network reachable to the other.
+This is a broad approach that connects entire networks rather than specific services.
+
+Service Interconnect takes a fundamentally different approach:
+
+* **Selective exposure** -- Only services that are explicitly exposed via connectors are reachable.
+A VPN exposes the entire network, increasing the attack surface.
+
+* **No firewall changes** -- Service Interconnect uses outbound HTTPS connections to establish links.
+VPNs require inbound firewall rules and dedicated tunnel endpoints.
+
+* **Application-level routing** -- Service Interconnect routes at Layer 7, enabling features like load balancing across sites.
+VPNs route IP packets without application awareness.
+
+* **No network team dependency** -- Application teams can set up Service Interconnect with namespace-level access.
+VPN setup typically requires coordination with network infrastructure teams.
+
+== Service Interconnect vs Service Mesh
+
+Service meshes (such as Red Hat OpenShift Service Mesh / Istio) and Service Interconnect are complementary technologies that operate at different scopes:
+
+* **Service mesh** -- Manages traffic _within_ a single cluster: routing, load balancing, circuit breaking, observability, and policy enforcement between pods.
+
+* **Service Interconnect** -- Connects services _across_ clusters, clouds, and non-Kubernetes environments.
+
+In practice, you can use both together: a service mesh to manage intra-cluster traffic and Service Interconnect to bridge services across clusters.
+
+Key differences:
+
+* Service meshes require sidecar proxy injection into every pod.
+Service Interconnect deploys a small number of routers per namespace.
+
+* Service meshes typically require cluster-admin privileges.
+Service Interconnect requires only namespace-level access.
+
+* Service meshes have limited support for non-Kubernetes workloads.
+Service Interconnect natively supports RHEL gateways for VM-based services.
+
+== Service Interconnect vs Direct Network Peering
+
+Direct network peering (VPC peering, AWS Transit Gateway, Azure VNet peering) creates Layer 3 connectivity between cloud provider networks.
+
+* **Provider-specific** -- Each cloud provider has its own peering mechanism, and cross-provider peering is complex or impossible.
+Service Interconnect works identically across any environment.
+
+* **All-or-nothing** -- Peering connects entire networks.
+Service Interconnect exposes only the services you choose.
+
+* **Network team ownership** -- Peering requires network infrastructure access.
+Service Interconnect is managed by application teams.
+
+== When to Use Service Interconnect
+
+Service Interconnect is the best fit when:
+
+* You need to connect specific services across clusters, clouds, or data centers
+* Application teams need self-service connectivity without waiting for network infrastructure changes
+* You want to connect Kubernetes services with legacy applications running on VMs
+* You need mutual TLS encryption between sites without managing certificates manually
+* You are working in a multi-cloud or hybrid cloud environment
+
+Service Interconnect is _not_ designed to replace:
+
+* Intra-cluster service mesh capabilities (traffic splitting, circuit breaking, per-request policies)
+* General-purpose network connectivity (bulk data transfer, non-service traffic)
+* DNS-based global load balancing
