@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Working with RHEL Gateways :: Red Hat Service Interconnect</title>
+    <title>Working with Local System Sites :: Red Hat Service Interconnect</title>
     <link rel="prev" href="../chapter4/section4.html">
     <link rel="next" href="section1.html">
     <meta name="generator" content="Antora 3.1.3">
@@ -149,19 +149,19 @@
 <ul class="nav-list">
   <li class="nav-item is-current-page" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="index.html">Working with RHEL Gateways</a>
+    <a class="nav-link" href="index.html">Local System Sites</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section1.html">SI on RHEL</a>
+    <a class="nav-link" href="section1.html">SI on Linux</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="section2.html">Creating a Gateway Site</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section3.html">Exposing VM-based Services</a>
+    <a class="nav-link" href="section3.html">Exposing Local Services</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section4.html">Hands-on: Connecting a Legacy Database</a>
+    <a class="nav-link" href="section4.html">Hands-on: Legacy Database</a>
   </li>
 </ul>
   </li>
@@ -262,7 +262,7 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Red Hat Service Interconnect</a></li>
-    <li><a href="index.html">Working with RHEL Gateways</a></li>
+    <li><a href="index.html">Local System Sites</a></li>
   </ul>
 </nav>
 </div>
@@ -271,11 +271,56 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Working with RHEL Gateways</h1>
-
+<h1 class="page">Working with Local System Sites</h1>
+<div class="sect1">
+<h2 id="_chapter_overview"><a class="anchor" href="#_chapter_overview"></a>Chapter Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In previous chapters, you connected services across OpenShift clusters.
+Many organizations also run workloads on bare-metal servers, virtual machines, or edge devices running Linux.
+Service Interconnect can extend the application network to these non-Kubernetes environments, enabling seamless connectivity between containerized and traditional workloads.</p>
+</div>
+<div class="paragraph">
+<p>This chapter covers how to create Service Interconnect sites on Linux systems using Podman, Docker, or systemd, link them to OpenShift clusters, and expose services in both directions.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_objectives"><a class="anchor" href="#_objectives"></a>Objectives</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After completing this chapter, you should be able to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Describe the local system site platforms supported by Service Interconnect (Podman, Docker, Linux/systemd)</p>
+</li>
+<li>
+<p>Install and configure Service Interconnect on a Linux system</p>
+</li>
+<li>
+<p>Create a local system site and link it to an OpenShift-based application network</p>
+</li>
+<li>
+<p>Expose services running on a Linux host to OpenShift workloads</p>
+</li>
+<li>
+<p>Consume OpenShift-hosted services from a Linux system</p>
+</li>
+<li>
+<p>Use site bundles to deploy pre-configured sites to remote hosts</p>
+</li>
+<li>
+<p>Manage local system site lifecycle with <code>skupper system</code> commands</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="../chapter4/section4.html">Hands-on: Three-site Network</a></span>
-  <span class="next"><a href="section1.html">SI on RHEL</a></span>
+  <span class="next"><a href="section1.html">SI on Linux</a></span>
 </nav>
 </article>
   </div>

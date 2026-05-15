@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Exposing VM-based Services :: Red Hat Service Interconnect</title>
+    <title>Exposing Local System Services :: Red Hat Service Interconnect</title>
     <link rel="prev" href="section2.html">
     <link rel="next" href="section4.html">
     <meta name="generator" content="Antora 3.1.3">
@@ -149,19 +149,19 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="index.html">Working with RHEL Gateways</a>
+    <a class="nav-link" href="index.html">Local System Sites</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section1.html">SI on RHEL</a>
+    <a class="nav-link" href="section1.html">SI on Linux</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="section2.html">Creating a Gateway Site</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="section3.html">Exposing VM-based Services</a>
+    <a class="nav-link" href="section3.html">Exposing Local Services</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section4.html">Hands-on: Connecting a Legacy Database</a>
+    <a class="nav-link" href="section4.html">Hands-on: Legacy Database</a>
   </li>
 </ul>
   </li>
@@ -262,8 +262,8 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Red Hat Service Interconnect</a></li>
-    <li><a href="index.html">Working with RHEL Gateways</a></li>
-    <li><a href="section3.html">Exposing VM-based Services</a></li>
+    <li><a href="index.html">Local System Sites</a></li>
+    <li><a href="section3.html">Exposing Local Services</a></li>
   </ul>
 </nav>
 </div>
@@ -272,11 +272,313 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Exposing VM-based Services</h1>
-
+<h1 class="page">Exposing Local System Services</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once a local system site is linked to the application network, you can expose services in both directions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Linux to OpenShift</strong>&#8201;&#8212;&#8201;A service running on the Linux host is made available to OpenShift workloads</p>
+</li>
+<li>
+<p><strong>OpenShift to Linux</strong>&#8201;&#8212;&#8201;A service running on OpenShift is made available on the Linux host</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Both directions use the same connector and listener model as Kubernetes sites.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linux_to_openshift_exposing_a_local_service"><a class="anchor" href="#_linux_to_openshift_exposing_a_local_service"></a>Linux to OpenShift: Exposing a Local Service</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To expose a service running on the Linux host (for example, a database listening on port 5432):</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_create_a_connector_on_the_local_system_site"><a class="anchor" href="#_step_1_create_a_connector_on_the_local_system_site"></a>Step 1: Create a Connector on the Local System Site</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector create postgresql 5432 --host localhost</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, the routing key is set to the connector name (<code>postgresql</code>).
+Use <code>--routing-key</code> for a custom name.</p>
+</div>
+<div class="paragraph">
+<p>Apply the configuration:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system reload</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the connector:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME         STATUS   ROUTING-KEY   HOST        PORT
+postgresql   Ok       postgresql    localhost   5432</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_a_listener_on_the_openshift_site"><a class="anchor" href="#_step_2_create_a_listener_on_the_openshift_site"></a>Step 2: Create a Listener on the OpenShift Site</h3>
+<div class="paragraph">
+<p>On the OpenShift cluster where you want to consume the service:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper listener create postgresql 5432</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates a Kubernetes <code>Service</code> named <code>postgresql</code> on port 5432 in the <code>site-west</code> namespace.
+Pods in that namespace can connect to <code>postgresql:5432</code> as if the database were local.</p>
+</div>
+<div class="paragraph">
+<p>Verify the listener:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME         STATUS   ROUTING-KEY   HOST         PORT   MATCHING-CONNECTOR   MESSAGE
+postgresql   Ready    postgresql    postgresql   5432   true                 OK</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_traffic_flow"><a class="anchor" href="#_traffic_flow"></a>Traffic Flow</h3>
+<div class="listingblock">
+<div class="content">
+<pre>OpenShift (site-west)               Linux host (my-local-site)
+┌──────────────────────┐            ┌──────────────────────┐
+│  frontend pod        │            │  PostgreSQL           │
+│    │                 │            │    ▲                  │
+│    ▼                 │            │    │                  │
+│  listener            │   mTLS    │  connector            │
+│  (postgresql:5432)   │◄─────────►│  (localhost:5432)     │
+│    │                 │            │                      │
+│  router ─────────────┼────────────┼── router             │
+└──────────────────────┘            └──────────────────────┘</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_openshift_to_linux_consuming_a_remote_service"><a class="anchor" href="#_openshift_to_linux_consuming_a_remote_service"></a>OpenShift to Linux: Consuming a Remote Service</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To make a service running on OpenShift available on the Linux host:</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_create_a_connector_on_the_openshift_site"><a class="anchor" href="#_step_1_create_a_connector_on_the_openshift_site"></a>Step 1: Create a Connector on the OpenShift Site</h3>
+<div class="paragraph">
+<p>The connector already exists if you exposed the service in a previous chapter.
+If not:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+skupper connector create backend 8080 --workload deployment/backend</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_a_listener_on_the_local_system_site"><a class="anchor" href="#_step_2_create_a_listener_on_the_local_system_site"></a>Step 2: Create a Listener on the Local System Site</h3>
+<div class="paragraph">
+<p>On the Linux host:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener create backend 8080</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply the configuration:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system reload</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME      STATUS   ROUTING-KEY   HOST        PORT
+backend   Ok       backend       localhost   8081</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now local processes on the Linux host can connect to <code>localhost:8081</code> to reach the <code>backend</code> service running on OpenShift.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+On local systems, the listener binds to <code>localhost</code> on a local port.
+The port assignment may differ from the requested port; check <code>skupper listener status</code> for the actual port.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_yaml_on_local_systems"><a class="anchor" href="#_using_yaml_on_local_systems"></a>Using YAML on Local Systems</h2>
+<div class="sectionbody">
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Using YAML on local systems is a Technology Preview feature.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can also define connectors and listeners using YAML files:</p>
+</div>
+<div class="sect2">
+<h3 id="_connector_yaml"><a class="anchor" href="#_connector_yaml"></a>Connector YAML</h3>
+<div class="paragraph">
+<p>Create a file <code>Connector-postgresql.yaml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: postgresql
+spec:
+  routingKey: postgresql
+  host: localhost
+  port: 5432</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_listener_yaml"><a class="anchor" href="#_listener_yaml"></a>Listener YAML</h3>
+<div class="paragraph">
+<p>Create a file <code>Listener-backend.yaml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+spec:
+  routingKey: backend
+  host: localhost
+  port: 8080</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Place the YAML files in the site&#8217;s input directory and apply:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mv Connector-postgresql.yaml \
+  ~/.local/share/skupper/namespaces/default/input/resources/
+skupper system setup --force</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The path shown is for the <code>default</code> namespace.
+If you are using a different namespace, replace <code>default</code> with your namespace name.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bidirectional_connectivity_summary"><a class="anchor" href="#_bidirectional_connectivity_summary"></a>Bidirectional Connectivity Summary</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Direction</th>
+<th class="tableblock halign-left valign-top">Connector Site</th>
+<th class="tableblock halign-left valign-top">Listener Site</th>
+<th class="tableblock halign-left valign-top">Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux → OpenShift</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenShift cluster</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Expose a legacy database, message broker, or file service to cloud workloads</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenShift → Linux</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenShift cluster</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allow on-premises tools to access cloud-hosted APIs or services</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bidirectional</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both sites</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both sites</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Full hybrid integration between cloud and on-premises</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section2.html">Creating a Gateway Site</a></span>
-  <span class="next"><a href="section4.html">Hands-on: Connecting a Legacy Database</a></span>
+  <span class="next"><a href="section4.html">Hands-on: Legacy Database</a></span>
 </nav>
 </article>
   </div>

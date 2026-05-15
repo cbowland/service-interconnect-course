@@ -149,19 +149,19 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="index.html">Working with RHEL Gateways</a>
+    <a class="nav-link" href="index.html">Local System Sites</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section1.html">SI on RHEL</a>
+    <a class="nav-link" href="section1.html">SI on Linux</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="section2.html">Creating a Gateway Site</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section3.html">Exposing VM-based Services</a>
+    <a class="nav-link" href="section3.html">Exposing Local Services</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section4.html">Hands-on: Connecting a Legacy Database</a>
+    <a class="nav-link" href="section4.html">Hands-on: Legacy Database</a>
   </li>
 </ul>
   </li>
@@ -262,7 +262,7 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Red Hat Service Interconnect</a></li>
-    <li><a href="index.html">Working with RHEL Gateways</a></li>
+    <li><a href="index.html">Local System Sites</a></li>
     <li><a href="section2.html">Creating a Gateway Site</a></li>
   </ul>
 </nav>
@@ -273,10 +273,292 @@
 </aside>
 <article class="doc">
 <h1 class="page">Creating a Gateway Site</h1>
-
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A gateway site is a local system site on a Linux host that joins an existing application network.
+This section walks through creating a site, linking it to an OpenShift cluster, and managing its lifecycle.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_site_using_the_cli"><a class="anchor" href="#_creating_a_site_using_the_cli"></a>Creating a Site Using the CLI</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_step_1_set_the_platform_and_install_the_controller"><a class="anchor" href="#_step_1_set_the_platform_and_install_the_controller"></a>Step 1: Set the Platform and Install the Controller</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export SKUPPER_PLATFORM=podman
+skupper system install</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the <code>linux</code> (systemd) platform, skip the <code>skupper system install</code> step&#8201;&#8212;&#8201;the <code>skupper-router</code> RPM provides the router directly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_create_the_site"><a class="anchor" href="#_step_2_create_the_site"></a>Step 2: Create the Site</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper site create my-local-site</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>Waiting for status...
+Site "my-local-site" is ready.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The site is created but not yet running.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_start_the_site"><a class="anchor" href="#_step_3_start_the_site"></a>Step 3: Start the Site</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system start</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This launches the router (as a Podman container, Docker container, or systemd service depending on the platform).</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linking_to_an_openshift_site"><a class="anchor" href="#_linking_to_an_openshift_site"></a>Linking to an OpenShift Site</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To join the application network, you create a link between the local system site and an OpenShift or Kubernetes site.
+The Kubernetes site must have link access enabled.</p>
+</div>
+<div class="sect2">
+<h3 id="_linking_with_a_token"><a class="anchor" href="#_linking_with_a_token"></a>Linking with a Token</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>On the Kubernetes site, ensure link access is enabled and issue a token:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper site update --enable-link-access
+skupper token issue ~/local-site-token.yaml</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Copy the token file to the Linux host (e.g., via <code>scp</code>).</p>
+</li>
+<li>
+<p>On the Linux host, redeem the token:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem ~/local-site-token.yaml</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify the link:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link status</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You might need to run this command multiple times until the link is ready:</p>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME                                          STATUS   COST   MESSAGE
+west-&lt;uuid&gt;                                   Ready    1      OK</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In this release, the CLI does not support issuing tokens from local system sites.
+You can redeem tokens on a local system site and create link resources.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_linking_with_a_link_resource"><a class="anchor" href="#_linking_with_a_link_resource"></a>Linking with a Link Resource</h3>
+<div class="paragraph">
+<p>An alternative to tokens is to generate a link resource YAML file:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>On the Kubernetes site, ensure link access is enabled:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper site update --enable-link-access</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Generate a link resource file:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link generate &gt; ~/link-to-west.yaml</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>On the Linux host, apply the link resource:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system apply -f ~/link-to-west.yaml</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify the link:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link status</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_site_bundles"><a class="anchor" href="#_site_bundles"></a>Site Bundles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Site bundles allow you to package an entire site configuration into a distributable <code>.tar.gz</code> file.
+This is useful when deploying sites to remote Linux hosts where you do not want to install the full CLI.</p>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_bundle"><a class="anchor" href="#_creating_a_bundle"></a>Creating a Bundle</h3>
+<div class="paragraph">
+<p>On a host with the CLI installed:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export SKUPPER_PLATFORM=podman
+skupper system install
+skupper site create remote-site
+skupper system generate-bundle remote-site</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>Site "remote-site" has been created (as a distributable bundle)
+Installation bundle available at: /home/user/.local/share/skupper/bundles/remote-site.tar.gz
+Default namespace: default
+Default platform: podman</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deploying_a_bundle"><a class="anchor" href="#_deploying_a_bundle"></a>Deploying a Bundle</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Transfer the bundle to the remote host:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">scp /home/user/.local/share/skupper/bundles/remote-site.tar.gz user@remote-host:~/</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>On the remote host, extract and install:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">tar -xzvf remote-site.tar.gz
+./install.sh</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The site is now running.
+You can verify with <code>skupper site status</code> if the CLI is installed on the remote host.</p>
+</div>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The bundle includes all configuration files needed to run the site.
+The CLI is not required on the remote host&#8201;&#8212;&#8201;only the container runtime (Podman or Docker) or the <code>skupper-router</code> RPM (Linux platform).
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_lifecycle_management"><a class="anchor" href="#_lifecycle_management"></a>Lifecycle Management</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_applying_configuration_changes"><a class="anchor" href="#_applying_configuration_changes"></a>Applying Configuration Changes</h3>
+<div class="paragraph">
+<p>After modifying site configuration (adding connectors, listeners, or links), apply changes with:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system reload</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stopping_and_starting"><a class="anchor" href="#_stopping_and_starting"></a>Stopping and Starting</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system stop
+skupper system start</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deleting_a_site"><a class="anchor" href="#_deleting_a_site"></a>Deleting a Site</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper site delete &lt;site-name&gt;
+skupper system stop</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_uninstalling_the_controller"><a class="anchor" href="#_uninstalling_the_controller"></a>Uninstalling the Controller</h3>
+<div class="paragraph">
+<p>After deleting all sites, you can remove the controller:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system uninstall</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 <nav class="pagination">
-  <span class="prev"><a href="section1.html">SI on RHEL</a></span>
-  <span class="next"><a href="section3.html">Exposing VM-based Services</a></span>
+  <span class="prev"><a href="section1.html">SI on Linux</a></span>
+  <span class="next"><a href="section3.html">Exposing Local Services</a></span>
 </nav>
 </article>
   </div>

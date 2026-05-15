@@ -149,19 +149,19 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="index.html">Working with RHEL Gateways</a>
+    <a class="nav-link" href="index.html">Local System Sites</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section1.html">SI on RHEL</a>
+    <a class="nav-link" href="section1.html">SI on Linux</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="section2.html">Creating a Gateway Site</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="section3.html">Exposing VM-based Services</a>
+    <a class="nav-link" href="section3.html">Exposing Local Services</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="section4.html">Hands-on: Connecting a Legacy Database</a>
+    <a class="nav-link" href="section4.html">Hands-on: Legacy Database</a>
   </li>
 </ul>
   </li>
@@ -262,8 +262,8 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Red Hat Service Interconnect</a></li>
-    <li><a href="index.html">Working with RHEL Gateways</a></li>
-    <li><a href="section4.html">Hands-on: Connecting a Legacy Database</a></li>
+    <li><a href="index.html">Local System Sites</a></li>
+    <li><a href="section4.html">Hands-on: Legacy Database</a></li>
   </ul>
 </nav>
 </div>
@@ -273,9 +273,493 @@
 </aside>
 <article class="doc">
 <h1 class="page">Hands-on: Connecting a Legacy Database</h1>
-
+<div class="sect1">
+<h2 id="_lab_overview"><a class="anchor" href="#_lab_overview"></a>Lab Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will connect a PostgreSQL database running on a Linux system to a frontend application running on OpenShift.
+This simulates a common hybrid scenario where a legacy database cannot be migrated to the cloud but needs to be accessed by cloud-native workloads.</p>
+</div>
+<div class="paragraph">
+<p>The lab uses a RHEL 9 virtual machine, but the same steps apply to any supported Linux distribution with Podman or systemd.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Using the Skupper CLI on local systems is a Technology Preview feature.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Completed the Chapter 3 hands-on lab (you have a working <code>site-west</code> with link access enabled)</p>
+</li>
+<li>
+<p>A Linux system (RHEL 9 in this lab) with:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The <code>skupper</code> CLI installed</p>
+</li>
+<li>
+<p>Podman installed and the Podman socket enabled, <strong>or</strong> the <code>skupper-router</code> package installed</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Network connectivity between the Linux system and the OpenShift cluster (outbound from the Linux host)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_steps"><a class="anchor" href="#_exercise_steps"></a>Exercise Steps</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_step_1_prepare_the_linux_system"><a class="anchor" href="#_step_1_prepare_the_linux_system"></a>Step 1: Prepare the Linux System</h3>
+<div class="paragraph">
+<p>Verify the CLI is installed:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper version</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>COMPONENT          VERSION
+cli                2.1.3-rh-1</pre>
+</div>
+</div>
+<div id="_tabs_1" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_1_option_a_podman_platform" class="tab">
+<p>Option A: Podman Platform</p>
+</li>
+<li id="_tabs_1_option_b_linux_systemd_platform" class="tab">
+<p>Option B: Linux (systemd) Platform</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_1_option_a_podman_platform--panel" class="tabpanel" aria-labelledby="_tabs_1_option_a_podman_platform">
+<div class="paragraph">
+<p>Enable the Podman socket and user lingering:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">systemctl --user enable --now podman.socket
+loginctl enable-linger $(whoami)
+export SKUPPER_PLATFORM=podman</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_1_option_b_linux_systemd_platform--panel" class="tabpanel" aria-labelledby="_tabs_1_option_b_linux_systemd_platform">
+<div class="paragraph">
+<p>Verify the <code>skupper-router</code> package is installed:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">rpm -q skupper-router
+export SKUPPER_PLATFORM=linux</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_install_postgresql_on_the_linux_host"><a class="anchor" href="#_step_2_install_postgresql_on_the_linux_host"></a>Step 2: Install PostgreSQL on the Linux Host</h3>
+<div class="paragraph">
+<p>Install and start PostgreSQL:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo dnf install -y postgresql-server postgresql
+sudo postgresql-setup --initdb
+sudo systemctl enable --now postgresql</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Create a test database and user:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo -u postgres psql -c "CREATE USER appuser WITH PASSWORD 'redhat123';"
+sudo -u postgres psql -c "CREATE DATABASE appdb OWNER appuser;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE appdb TO appuser;"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Configure PostgreSQL to listen on all interfaces and accept password authentication.
+Edit <code>/var/lib/pgsql/data/postgresql.conf</code>:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" \
+  /var/lib/pgsql/data/postgresql.conf</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Edit <code>/var/lib/pgsql/data/pg_hba.conf</code> to add a line for password authentication:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">echo "host all all 0.0.0.0/0 md5" | sudo tee -a /var/lib/pgsql/data/pg_hba.conf</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Restart PostgreSQL:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo systemctl restart postgresql</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the database is accessible locally:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">psql -h localhost -U appuser -d appdb -c "SELECT 1;"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Enter the password <code>redhat123</code> when prompted.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_create_a_local_system_site"><a class="anchor" href="#_step_3_create_a_local_system_site"></a>Step 3: Create a Local System Site</h3>
+<div id="_tabs_2" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_2_option_a_podman_platform" class="tab">
+<p>Option A: Podman Platform</p>
+</li>
+<li id="_tabs_2_option_b_linux_systemd_platform" class="tab">
+<p>Option B: Linux (systemd) Platform</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_2_option_a_podman_platform--panel" class="tabpanel" aria-labelledby="_tabs_2_option_a_podman_platform">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export SKUPPER_PLATFORM=podman
+skupper system install
+skupper site create rhel-db-site
+skupper system start</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_2_option_b_linux_systemd_platform--panel" class="tabpanel" aria-labelledby="_tabs_2_option_b_linux_systemd_platform">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export SKUPPER_PLATFORM=linux
+skupper site create rhel-db-site
+skupper system start</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the site is running:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper site status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME           STATUS   MESSAGE
+rhel-db-site   Ready    OK</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_link_the_local_system_site_to_openshift"><a class="anchor" href="#_step_4_link_the_local_system_site_to_openshift"></a>Step 4: Link the Local System Site to OpenShift</h3>
+<div class="paragraph">
+<p>On the OpenShift cluster, ensure link access is enabled and issue a token:</p>
+</div>
+<div id="_tabs_3" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_3_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_3_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_3_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_3_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+skupper site update --enable-link-access
+skupper token issue ~/rhel-link-token.yaml</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_3_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_3_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper site update --enable-link-access
+skupper token issue ~/rhel-link-token.yaml</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Copy the token to the Linux host:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">scp ~/rhel-link-token.yaml user@linux-host:~/rhel-link-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On the Linux host, redeem the token:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem ~/rhel-link-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the link is ready:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link status</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run this command multiple times if needed until <code>STATUS</code> shows <code>Ready</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME                                          STATUS   COST   MESSAGE
+west-&lt;uuid&gt;                                   Ready    1      OK</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_expose_postgresql_to_the_application_network"><a class="anchor" href="#_step_5_expose_postgresql_to_the_application_network"></a>Step 5: Expose PostgreSQL to the Application Network</h3>
+<div class="paragraph">
+<p>Create a connector on the Linux host to expose the local PostgreSQL instance:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector create postgresql 5432 --host localhost
+skupper system reload</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the connector:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME         STATUS   ROUTING-KEY   HOST        PORT
+postgresql   Ok       postgresql    localhost   5432</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_create_a_listener_on_openshift"><a class="anchor" href="#_step_6_create_a_listener_on_openshift"></a>Step 6: Create a Listener on OpenShift</h3>
+<div class="paragraph">
+<p>On the OpenShift cluster, create a listener for the database:</p>
+</div>
+<div id="_tabs_4" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_4_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_4_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_4_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_4_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+skupper listener create postgresql 5432</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_4_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_4_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper listener create postgresql 5432</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the listener:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME         STATUS   ROUTING-KEY   HOST         PORT   MATCHING-CONNECTOR   MESSAGE
+postgresql   Ready    postgresql    postgresql   5432   true                 OK</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A Kubernetes service named <code>postgresql</code> is now available on port 5432 in the <code>site-west</code> namespace.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_7_test_the_connection_from_openshift"><a class="anchor" href="#_step_7_test_the_connection_from_openshift"></a>Step 7: Test the Connection from OpenShift</h3>
+<div class="paragraph">
+<p>Deploy a test pod that connects to the PostgreSQL service:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run psql-test \
+  --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  bash -c "microdnf install -y postgresql &amp;&amp; psql -h postgresql -U appuser -d appdb -c 'SELECT version();'"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Enter the password <code>redhat123</code> when prompted.</p>
+</div>
+<div class="paragraph">
+<p>You should see the PostgreSQL version string from the database running on the Linux host.
+This confirms that the OpenShift pod is communicating with the database on the Linux host through the Service Interconnect application network.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_8_verify_network_topology"><a class="anchor" href="#_step_8_verify_network_topology"></a>Step 8: Verify Network Topology</h3>
+<div class="paragraph">
+<p>Check the network from the OpenShift side:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get site</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    2                  OK</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The network now includes both the OpenShift site and the local system site.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_9_clean_up_optional"><a class="anchor" href="#_step_9_clean_up_optional"></a>Step 9: Clean Up (Optional)</h3>
+<div class="paragraph">
+<p>On the Linux host, remove the connector and site:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector delete postgresql
+skupper site delete rhel-db-site
+skupper system stop
+skupper system uninstall</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On the OpenShift cluster, remove the listener:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper listener delete postgresql</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Optionally, remove the PostgreSQL installation from the Linux host:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo systemctl stop postgresql
+sudo dnf remove -y postgresql-server postgresql</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Prepared a Linux system with the Skupper CLI and a local system platform (Podman or systemd)</p>
+</li>
+<li>
+<p>Created a local system site and linked it to an OpenShift cluster</p>
+</li>
+<li>
+<p>Exposed a PostgreSQL database running on a Linux host to the application network using a connector</p>
+</li>
+<li>
+<p>Created a listener on OpenShift to make the database accessible as a Kubernetes service</p>
+</li>
+<li>
+<p>Verified end-to-end connectivity from an OpenShift pod to the Linux-hosted database</p>
+</li>
+<li>
+<p>Learned how Service Interconnect bridges traditional and cloud-native workloads without VPNs or firewall changes</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the next chapter, you will learn about the security model and observability features of Service Interconnect.</p>
+</div>
+</div>
+</div>
 <nav class="pagination">
-  <span class="prev"><a href="section3.html">Exposing VM-based Services</a></span>
+  <span class="prev"><a href="section3.html">Exposing Local Services</a></span>
   <span class="next"><a href="../chapter6/index.html">Security and Observability</a></span>
 </nav>
 </article>
