@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Installing the skupper CLI :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="section1.html">
+    <link rel="next" href="section3.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter1/index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter3/index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter4/index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Installation and Setup</a></li>
+    <li><a href="section2.html">Installing the CLI</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Installing the skupper CLI</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>skupper</code> CLI provides a command-line interface for creating and managing Service Interconnect resources.
+While you can manage everything through YAML and <code>oc apply</code>, the CLI simplifies common operations like creating sites, issuing tokens, and checking status.</p>
+</div>
+<div class="paragraph">
+<p>The CLI is designed to generate and consume standard resources, ensuring that sites, links, and services configured using the CLI are identical to those configured directly through YAML.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For Kubernetes, you must install the CRDs and controller using YAML or the Operator before creating sites.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cli_command_structure"><a class="anchor" href="#_cli_command_structure"></a>CLI Command Structure</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The skupper CLI follows a consistent pattern:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper &lt;resource-type&gt; &lt;operation&gt; &lt;resource-name&gt; [options]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Resource types include <code>site</code>, <code>token</code>, <code>listener</code>, <code>connector</code>, and <code>link</code>.
+Operations include <code>create</code>, <code>update</code>, <code>delete</code>, <code>status</code>, and <code>generate</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In Service Interconnect 2.1, CLI shortcuts (such as <code>-r</code>) have been removed. You must now specify the full parameter name, for example <code>--routing-key</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installing_the_cli"><a class="anchor" href="#_installing_the_cli"></a>Installing the CLI</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There are two methods to install the CLI:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Downloading binaries from the Red Hat Software Downloads page</p>
+</li>
+<li>
+<p>Using Red Hat packages on RHEL</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_method_1_download_binaries"><a class="anchor" href="#_method_1_download_binaries"></a>Method 1: Download Binaries</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Download binary files for your system architecture from the <a href="https://access.redhat.com/downloads" target="_blank" rel="noopener">Red Hat Software Downloads</a> page.
+Choose the latest <strong>Version</strong> for 2.1.</p>
+</li>
+<li>
+<p>For a Mac with Apple silicon, use <a href="https://support.apple.com/en-us/102527" target="_blank" rel="noopener">Rosetta 2</a> and the <strong>Skupper CLI for Mac on x86-64</strong> download.</p>
+</li>
+<li>
+<p>Unzip the downloaded file and place the <code>skupper</code> executable on your <code>PATH</code>.</p>
+</li>
+<li>
+<p>Verify the installation:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper version</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>COMPONENT          VERSION
+cli                2.1.3-rh-1</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_method_2_red_hat_packages_rhel"><a class="anchor" href="#_method_2_red_hat_packages_rhel"></a>Method 2: Red Hat Packages (RHEL)</h3>
+<div class="paragraph">
+<p>Installing Red Hat packages on Linux ensures you receive the latest updates to the Skupper CLI.</p>
+</div>
+<div class="sect3">
+<h4 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Your system must be registered with a Red Hat subscription.
+See <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/registering_the_system_and_managing_subscriptions/index" target="_blank" rel="noopener">Registering the system and managing subscriptions</a> for more information.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_red_hat_enterprise_linux_9"><a class="anchor" href="#_red_hat_enterprise_linux_9"></a>Red Hat Enterprise Linux 9</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Use the <code>subscription-manager</code> command to subscribe to the required package repository.
+Replace <code>&lt;version&gt;</code> with <code>2</code> for the main release stream:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo subscription-manager repos \
+  --enable=service-interconnect-_&lt;version&gt;_-for-rhel-9-x86_64-rpms</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Install the <code>skupper-cli</code> package:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo dnf install skupper-cli</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_red_hat_enterprise_linux_8"><a class="anchor" href="#_red_hat_enterprise_linux_8"></a>Red Hat Enterprise Linux 8</h4>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo subscription-manager repos \
+  --enable=service-interconnect-_&lt;version&gt;_-for-rhel-8-x86_64-rpms
+sudo dnf install skupper-cli</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can also install the <code>skupper-router</code> package, which is only necessary for Linux local system sites.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_skupper_platform_environment_variable"><a class="anchor" href="#_the_skupper_platform_environment_variable"></a>The SKUPPER_PLATFORM Environment Variable</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The CLI behavior depends on the target platform, which is controlled by the <code>SKUPPER_PLATFORM</code> environment variable:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>kubernetes</code> (default)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands target the current Kubernetes/OpenShift context</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>podman</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands target local Podman containers</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>docker</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands target local Docker containers</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>linux</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands target local Linux system services</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>If <code>SKUPPER_PLATFORM</code> is unset, the CLI defaults to <code>kubernetes</code>.</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export SKUPPER_PLATFORM=kubernetes</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_verifying_the_cli_installation"><a class="anchor" href="#_verifying_the_cli_installation"></a>Verifying the CLI Installation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Run the following command to confirm the CLI is installed and display the version:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper version</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>COMPONENT          VERSION
+cli                2.1.3-rh-1</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cli_auto_completion"><a class="anchor" href="#_cli_auto_completion"></a>CLI Auto-completion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Enable shell auto-completion for faster command entry:</p>
+</div>
+<div class="sect2">
+<h3 id="_bash"><a class="anchor" href="#_bash"></a>Bash</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper completion bash &gt; /etc/bash_completion.d/skupper
+source /etc/bash_completion.d/skupper</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_zsh"><a class="anchor" href="#_zsh"></a>Zsh</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper completion zsh &gt; "${fpath[1]}/_skupper"
+source ~/.zshrc</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_platform_behavior"><a class="anchor" href="#_platform_behavior"></a>Platform Behavior</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The CLI behaves slightly differently depending on the platform:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Platform</th>
+<th class="tableblock halign-left valign-top">Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes / OpenShift</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands block until the operation completes, an error occurs, or the timeout is exceeded.
+Use <code>--wait</code> and <code>--timeout</code> to control this behavior.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Docker / Podman / Linux</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands place resources in the input location.
+Run <code>skupper system reload</code> to apply changes.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>In this course, you will primarily use the CLI on Kubernetes/OpenShift, where commands block by default.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="section1.html">Installing the Operator</a></span>
+  <span class="next"><a href="section3.html">SI Console</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>

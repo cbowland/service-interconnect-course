@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Load Balancing and Failover :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="section2.html">
+    <link rel="next" href="section4.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter1/index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter2/index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter3/index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Multi-cluster Connectivity</a></li>
+    <li><a href="section3.html">Load Balancing and Failover</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Load Balancing and Failover</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect provides built-in load balancing and failover for services exposed across multiple sites.
+This section explains how the routing algorithm distributes traffic and how to configure failover patterns using link cost.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_load_balancing_works"><a class="anchor" href="#_how_load_balancing_works"></a>How Load Balancing Works</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect balances <strong>active TCP connections</strong> across workloads deployed at distinct sites.
+The routing algorithm considers two factors:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Link cost</strong>&#8201;&#8212;&#8201;The configured cost of the path from client to server</p>
+</li>
+<li>
+<p><strong>Current load</strong>&#8201;&#8212;&#8201;The number of open TCP connections on each server</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Traffic is directed to the server with the lowest total cost that has available capacity.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Traffic load is based on the number of concurrent TCP connections, so "round robin" behavior should not be expected. If one server is more powerful and processes requests more quickly, it will have fewer concurrent connections and receive proportionally more new traffic.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_understanding_link_cost"><a class="anchor" href="#_understanding_link_cost"></a>Understanding Link Cost</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Link cost is a configurable value assigned when creating links between sites.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The default cost is <strong>1</strong></p>
+</li>
+<li>
+<p>Local workloads (same site) have a cost of <strong>0</strong></p>
+</li>
+<li>
+<p>If a path traverses multiple links, the total cost is the sum of all link costs along the path</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_example_cost_based_routing"><a class="anchor" href="#_example_cost_based_routing"></a>Example: Cost-Based Routing</h3>
+<div class="listingblock">
+<div class="content">
+<pre>                    cost 1          cost 1
+site-west ─────────────── site-central ─────────────── site-east
+  (listener)                                            (connector)
+  (connector, cost 0)                                   (connector)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example, if <code>site-west</code> has both a local connector (cost 0) and a remote connector in <code>site-east</code> (cost 2 = 1+1):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Traffic prefers the local connector in <code>site-west</code> (cost 0)</p>
+</li>
+<li>
+<p>If the local connector is unavailable or overloaded, traffic flows to <code>site-east</code> (cost 2)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_active_active_load_balancing"><a class="anchor" href="#_active_active_load_balancing"></a>Active-Active Load Balancing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When the same service is deployed on multiple sites with equal link cost, Service Interconnect distributes connections across all available instances:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>site-west                          site-east
+┌──────────────────┐               ┌──────────────────┐
+│  backend (x2)    │               │  backend (x2)    │
+│  connector       │  cost 1       │  connector       │
+│  (key: backend)  │───────────────│  (key: backend)  │
+└──────────────────┘               └──────────────────┘
+
+site-south (consumer)
+┌──────────────────┐
+│  frontend        │
+│  listener        │   cost 1 to both sites
+│  (key: backend)  │
+└──────────────────┘</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If <code>site-south</code> has equal-cost links to both <code>site-west</code> and <code>site-east</code>, traffic is distributed based on the number of concurrent connections and available capacity at each site.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_active_passive_failover"><a class="anchor" href="#_active_passive_failover"></a>Active-Passive Failover</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can configure a failover pattern where a primary site handles all traffic until failure, at which point a backup site takes over.</p>
+</div>
+<div class="paragraph">
+<p>To achieve this, set the link cost from the client to the backup site to a high value (e.g., 9999):</p>
+</div>
+<div class="sect2">
+<h3 id="_using_the_cli"><a class="anchor" href="#_using_the_cli"></a>Using the CLI</h3>
+<div class="paragraph">
+<p>When issuing a token for the backup link, set the cost:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># On the primary site (site-west), issue a token with default cost
+skupper token issue ~/primary-token.yaml
+
+# On the backup site (site-east), issue a token with high cost
+skupper token issue ~/backup-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When redeeming the tokens on the consumer site:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Link to primary with default cost (1)
+skupper token redeem ~/primary-token.yaml
+
+# Link to backup with high cost (9999)
+skupper token redeem ~/backup-token.yaml --cost 9999</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_yaml"><a class="anchor" href="#_using_yaml"></a>Using YAML</h3>
+<div class="paragraph">
+<p>Set the cost in the Link resource:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: link-to-backup
+  namespace: site-south
+spec:
+  # ... link credentials ...
+  cost: 9999</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_failover_behavior"><a class="anchor" href="#_failover_behavior"></a>Failover Behavior</h3>
+<div class="paragraph">
+<p>Under normal conditions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>All traffic goes to the primary site (cost 1)</p>
+</li>
+<li>
+<p>The backup site (cost 9999) receives no traffic</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When the primary site fails:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Service Interconnect detects the failure (no active connections)</p>
+</li>
+<li>
+<p>Traffic automatically redirects to the backup site (cost 9999)</p>
+</li>
+<li>
+<p>No manual intervention is required</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When the primary site recovers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Traffic automatically returns to the primary site (cost 1)</p>
+</li>
+<li>
+<p>The failover is seamless to the application</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Link cost is configured for all services between two sites. It is currently not possible to set different costs for distinct services on the same link.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_verifying_load_distribution"><a class="anchor" href="#_verifying_load_distribution"></a>Verifying Load Distribution</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can observe load distribution by checking connector status across sites:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># On site-west
+skupper connector status
+
+# On site-east
+skupper connector status</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you have the Network Observer console installed, it provides real-time visualization of traffic flow and connection counts across sites.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="section2.html">Service Distribution</a></span>
+  <span class="next"><a href="section4.html">Hands-on: Three-site Network</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>

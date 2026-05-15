@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Service Distribution Across Sites :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="section1.html">
+    <link rel="next" href="section3.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter1/index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter2/index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter3/index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Multi-cluster Connectivity</a></li>
+    <li><a href="section2.html">Service Distribution</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Service Distribution Across Sites</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once sites are linked into an application network, services exposed via connectors become available to every site in the network.
+This section explains how service visibility works and how to control which services are available where.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_automatic_service_distribution"><a class="anchor" href="#_automatic_service_distribution"></a>Automatic Service Distribution</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When a connector is created on any site, every other site in the network becomes aware of the service through the router mesh.
+Creating a listener on a consuming site makes the service locally accessible.</p>
+</div>
+<div class="paragraph">
+<p>This means:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A connector in <code>site-east</code> for <code>backend:8080</code> is visible to all linked sites</p>
+</li>
+<li>
+<p>Any site can create a listener with the matching routing key to consume the service</p>
+</li>
+<li>
+<p>You do not need direct links between every pair of sites&#8201;&#8212;&#8201;routers forward traffic transitively</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_example_three_site_network"><a class="anchor" href="#_example_three_site_network"></a>Example: Three-Site Network</h3>
+<div class="listingblock">
+<div class="content">
+<pre>site-west              site-central              site-east
+┌──────────────┐       ┌──────────────┐          ┌──────────────┐
+│              │       │              │          │              │
+│  listener    │       │              │          │  connector   │
+│  (backend)   │       │              │          │  (backend)   │
+│      │       │       │              │          │      ▲       │
+│      ▼       │       │              │          │      │       │
+│  router ─────┼───────┼── router ────┼──────────┼── router     │
+│              │       │              │          │              │
+└──────────────┘       └──────────────┘          └──────────────┘</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this topology:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The connector is in <code>site-east</code></p>
+</li>
+<li>
+<p>The listener is in <code>site-west</code></p>
+</li>
+<li>
+<p><code>site-central</code> has no listener or connector for <code>backend</code>, but its router forwards the traffic</p>
+</li>
+<li>
+<p>Traffic flows: <code>site-west</code> → <code>site-central</code> → <code>site-east</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_routing_keys_and_service_identity"><a class="anchor" href="#_routing_keys_and_service_identity"></a>Routing Keys and Service Identity</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Services are identified on the application network by their <strong>routing key</strong>, not by their Kubernetes service name or namespace.</p>
+</div>
+<div class="paragraph">
+<p>This means:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Two connectors on different sites with the same routing key expose the <strong>same</strong> logical service (enabling load balancing)</p>
+</li>
+<li>
+<p>A connector and listener must share the same routing key to be matched</p>
+</li>
+<li>
+<p>Routing keys are network-wide&#8201;&#8212;&#8201;they are not scoped to a site or namespace</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_multiple_connectors_one_routing_key"><a class="anchor" href="#_multiple_connectors_one_routing_key"></a>Multiple Connectors, One Routing Key</h3>
+<div class="paragraph">
+<p>You can deploy the same workload on multiple sites, each with a connector using the same routing key:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>site-west                              site-east
+┌──────────────────┐                   ┌──────────────────┐
+│  backend pod     │                   │  backend pod     │
+│  connector       │                   │  connector       │
+│  (key: backend)  │                   │  (key: backend)  │
+└──────────────────┘                   └──────────────────┘</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Any listener with routing key <code>backend</code> on any site will receive traffic balanced across both connector sites.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_controlling_service_visibility"><a class="anchor" href="#_controlling_service_visibility"></a>Controlling Service Visibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect does not have a built-in mechanism to restrict which sites can see which services.
+All connectors are visible to the entire network.</p>
+</div>
+<div class="paragraph">
+<p>To control visibility:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Separate networks</strong>&#8201;&#8212;&#8201;Create independent application networks (separate sites with no links between them) for services that should be isolated</p>
+</li>
+<li>
+<p><strong>Listener placement</strong>&#8201;&#8212;&#8201;Only create listeners on the sites that need to consume a service. Without a listener, the service is visible on the network but not accessible to local pods.</p>
+</li>
+<li>
+<p><strong>Namespace isolation</strong>&#8201;&#8212;&#8201;Use different namespaces with separate sites for different security zones</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_services_and_kubernetes_services"><a class="anchor" href="#_services_and_kubernetes_services"></a>Services and Kubernetes Services</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When a listener is created, Service Interconnect creates a standard Kubernetes <code>Service</code> resource in the listener&#8217;s namespace.
+This service has:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The name specified by the listener&#8217;s <code>host</code> field (defaults to the listener name)</p>
+</li>
+<li>
+<p>The port specified by the listener</p>
+</li>
+<li>
+<p>A <code>ClusterIP</code> type</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Applications connect to this service exactly as they would any other Kubernetes service.
+They do not need to know about Service Interconnect, routing keys, or the remote location of the workload.</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get service backend -n site-west</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+backend   ClusterIP   172.30.45.123   &lt;none&gt;        8080/TCP   5m</pre>
+</div>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="section1.html">Multi-site Topologies</a></span>
+  <span class="next"><a href="section3.html">Load Balancing and Failover</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>

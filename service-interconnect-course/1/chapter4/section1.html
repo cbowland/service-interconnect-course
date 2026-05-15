@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Multi-site Topologies :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="index.html">
+    <link rel="next" href="section2.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter1/index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter2/index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter3/index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Multi-cluster Connectivity</a></li>
+    <li><a href="section1.html">Multi-site Topologies</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Multi-site Topologies</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect sites can be linked in any arrangement.
+The topology you choose affects resilience, latency, and operational complexity.
+Because links are point-to-point and bidirectional, you can build any graph structure by deciding which sites link to which.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_common_topologies"><a class="anchor" href="#_common_topologies"></a>Common Topologies</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_hub_and_spoke"><a class="anchor" href="#_hub_and_spoke"></a>Hub-and-Spoke</h3>
+<div class="paragraph">
+<p>A single central site (the hub) links to every other site (the spokes).
+Spokes communicate with each other through the hub.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>        ┌──────────┐
+        │   hub    │
+        └─┬──┬──┬──┘
+          │  │  │
+   ┌──────┘  │  └──────┐
+   │         │         │
+┌──┴──┐  ┌───┴──┐  ┌──┴──┐
+│west │  │east  │  │south│
+└─────┘  └──────┘  └─────┘</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>When to use:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Centralized management&#8201;&#8212;&#8201;one team owns the hub</p>
+</li>
+<li>
+<p>Spokes are in restricted environments (e.g., edge sites behind firewalls)</p>
+</li>
+<li>
+<p>Spokes only need to reach shared services hosted at the hub</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Trade-offs:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The hub is a single point of failure for cross-spoke traffic</p>
+</li>
+<li>
+<p>All cross-spoke traffic traverses two links (spoke → hub → spoke), adding latency</p>
+</li>
+<li>
+<p>Hub must have link access enabled; spokes initiate outbound connections</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_full_mesh"><a class="anchor" href="#_full_mesh"></a>Full Mesh</h3>
+<div class="paragraph">
+<p>Every site links directly to every other site.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>┌──────┐───────────┌──────┐
+│west  │           │east  │
+└──┬───┘           └───┬──┘
+   │  ╲             ╱  │
+   │    ╲         ╱    │
+   │      ╲     ╱      │
+   │        ╲ ╱        │
+   │        ╱ ╲        │
+   │      ╱     ╲      │
+   │    ╱         ╲    │
+   │  ╱             ╲  │
+┌──┴───┐           ┌───┴──┐
+│south │───────────│north │
+└──────┘           └──────┘</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>When to use:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Maximum resilience&#8201;&#8212;&#8201;any single link or site can fail without partitioning the network</p>
+</li>
+<li>
+<p>Low latency between any pair of sites (single hop)</p>
+</li>
+<li>
+<p>All sites are in environments with good network connectivity</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Trade-offs:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Number of links grows as N×(N-1)/2&#8201;&#8212;&#8201;a 5-site mesh requires 10 links</p>
+</li>
+<li>
+<p>More tokens to manage</p>
+</li>
+<li>
+<p>Best suited for small to medium numbers of sites (3-6)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_chain_linear"><a class="anchor" href="#_chain_linear"></a>Chain (Linear)</h3>
+<div class="paragraph">
+<p>Sites are linked sequentially.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐
+│west  │────│central│───│east  │────│far-  │
+│      │    │       │   │      │    │east  │
+└──────┘    └──────┘    └──────┘    └──────┘</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>When to use:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Geographic progression (e.g., regions along a network backbone)</p>
+</li>
+<li>
+<p>Progressive migration where each stage connects to the next</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Trade-offs:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Traffic between distant sites traverses multiple hops, increasing latency</p>
+</li>
+<li>
+<p>A single link failure can partition the network</p>
+</li>
+<li>
+<p>Generally not recommended for production without redundant links</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hybrid"><a class="anchor" href="#_hybrid"></a>Hybrid</h3>
+<div class="paragraph">
+<p>Combine patterns based on requirements.
+For example, a hub-and-spoke core with a mesh among the hub sites:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>      ┌──────┐         ┌──────┐
+      │hub-1 │─────────│hub-2 │
+      └─┬──┬─┘         └─┬──┬─┘
+        │  │              │  │
+     ┌──┘  └──┐        ┌──┘  └──┐
+     │        │        │        │
+  ┌──┴──┐  ┌──┴──┐  ┌──┴──┐  ┌──┴──┐
+  │edge1│  │edge2│  │edge3│  │edge4│
+  └─────┘  └─────┘  └─────┘  └─────┘</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_choosing_a_topology"><a class="anchor" href="#_choosing_a_topology"></a>Choosing a Topology</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Factor</th>
+<th class="tableblock halign-left valign-top">Hub-and-Spoke</th>
+<th class="tableblock halign-left valign-top">Full Mesh</th>
+<th class="tableblock halign-left valign-top">Chain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resilience</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low (hub is SPOF)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">High</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low (any link is SPOF)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latency (cross-site)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Medium (2 hops max)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low (1 hop)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">High (N hops)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Operational complexity</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Medium</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Low</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Link count (N sites)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N-1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N×(N-1)/2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N-1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Best for</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Edge/IoT, centralized services</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Core infrastructure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Migration, geographic chains</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_topology_and_link_direction"><a class="anchor" href="#_topology_and_link_direction"></a>Topology and Link Direction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Remember that link direction does not affect traffic flow&#8201;&#8212;&#8201;it only determines which site initiates the TCP connection.
+Choose link direction based on network reachability:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If a site is behind a firewall with no inbound access, it should be the <strong>connecting</strong> site (it initiates the outbound link)</p>
+</li>
+<li>
+<p>The site with a public route or load balancer should be the <strong>listening</strong> site (it enables link access)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="index.html">Multi-cluster Connectivity</a></span>
+  <span class="next"><a href="section2.html">Service Distribution</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>

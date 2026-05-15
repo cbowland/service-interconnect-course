@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Exposing and Consuming Services :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="section3.html">
+    <link rel="next" href="section5.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter1/index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter1/section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter2/index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter4/index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Creating Your First Service Network</a></li>
+    <li><a href="section4.html">Exposing and Consuming Services</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Exposing and Consuming Services</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After linking sites, you can expose services from one site and consume them from another.
+This is done using two resource types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Connectors</strong>&#8201;&#8212;&#8201;Created on the site where the workload runs, binding a local workload to the application network</p>
+</li>
+<li>
+<p><strong>Listeners</strong>&#8201;&#8212;&#8201;Created on the site where you want to consume the service, providing a local endpoint that routes to the remote workload</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Connectors and listeners are matched by a shared <strong>routing key</strong>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_connector_cli"><a class="anchor" href="#_creating_a_connector_cli"></a>Creating a Connector (CLI)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A connector binds a local workload to listeners in remote sites.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector create &lt;name&gt; &lt;port&gt; [--routing-key &lt;name&gt;] [--workload &lt;type/name&gt;]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, the routing key name is set to the name of the connector.
+If you want to use a custom routing key, set the <code>--routing-key</code> to your custom name.</p>
+</div>
+<div class="sect2">
+<h3 id="_example"><a class="anchor" href="#_example"></a>Example</h3>
+<div class="paragraph">
+<p>Deploy a backend workload and create a connector:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=3
+skupper connector create backend 8080 --workload deployment/backend</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check the connector status:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME      STATUS    ROUTING-KEY   SELECTOR      HOST   PORT   HAS MATCHING LISTENER   MESSAGE
+backend   Pending   backend       app=backend          8080   false                    No matching listeners</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The status shows <code>No matching listeners</code> because we have not yet created a listener on the consuming site.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_connector_with_yaml"><a class="anchor" href="#_creating_a_connector_with_yaml"></a>Creating a Connector with YAML</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: backend
+  namespace: site-east
+spec:
+  routingKey: backend
+  port: 8080
+  selector: app=backend</code></pre>
+</div>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f connector.yaml</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_listener_cli"><a class="anchor" href="#_creating_a_listener_cli"></a>Creating a Listener (CLI)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A listener creates a local service endpoint that routes traffic to remote connectors with the same routing key.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener create &lt;name&gt; &lt;port&gt; [--routing-key &lt;name&gt;]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, the routing key name is the listener name.</p>
+</div>
+<div class="sect2">
+<h3 id="_example_2"><a class="anchor" href="#_example_2"></a>Example</h3>
+<div class="paragraph">
+<p>On the consuming site, create a listener:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper listener create backend 8080</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>Waiting for create to complete...
+Listener "backend" is ready</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check the listener status:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME      STATUS   ROUTING-KEY   HOST      PORT   MATCHING-CONNECTOR   MESSAGE
+backend   Ready    backend       backend   8080   true                 OK</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+There must be a MATCHING-CONNECTOR for the service to operate. The <code>true</code> value confirms that a connector with the matching routing key exists on the network.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_listener_with_yaml"><a class="anchor" href="#_creating_a_listener_with_yaml"></a>Creating a Listener with YAML</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+  namespace: site-west
+spec:
+  routingKey: backend
+  port: 8080
+  host: backend</code></pre>
+</div>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f listener.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When a listener is created, Service Interconnect automatically creates a Kubernetes service in the local namespace.
+Applications connect to this service (<code>backend:8080</code>) as they would any other local service.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_it_all_fits_together"><a class="anchor" href="#_how_it_all_fits_together"></a>How It All Fits Together</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre>site-west (namespace)              site-east (namespace)
+┌─────────────────────┐            ┌─────────────────────┐
+│                     │            │                     │
+│  frontend pod       │            │  backend pod (x3)   │
+│    │                │            │    ▲                │
+│    ▼                │            │    │                │
+│  listener           │            │  connector          │
+│  (routing key:      │            │  (routing key:      │
+│   "backend")        │            │   "backend")        │
+│    │                │            │    ▲                │
+│    ▼                │            │    │                │
+│  SI router ─────────┼── mTLS ───┼── SI router         │
+│                     │  (link)    │                     │
+└─────────────────────┘            └─────────────────────┘</pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The <strong>frontend pod</strong> in <code>site-west</code> connects to <code>backend:8080</code> (the service created by the listener).</p>
+</li>
+<li>
+<p>The <strong>listener</strong> forwards the connection to the local SI router.</p>
+</li>
+<li>
+<p>The SI router routes the traffic over the link to <code>site-east</code>.</p>
+</li>
+<li>
+<p>The <strong>connector</strong> in <code>site-east</code> forwards the connection to one of the backend pods.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exposing_services_from_other_namespaces"><a class="anchor" href="#_exposing_services_from_other_namespaces"></a>Exposing Services from Other Namespaces</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To expose a service from a different namespace than the connector&#8217;s site, you must use YAML.
+Set the <code>selector</code> to match pods in the target namespace:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: database
+  namespace: site-east
+spec:
+  routingKey: database
+  port: 5432
+  selector: app=postgresql
+  includeNotReadyPods: false</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_load_balancing"><a class="anchor" href="#_load_balancing"></a>Load Balancing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When multiple connectors share the same routing key (across different sites or within the same site), Service Interconnect balances <strong>active TCP connections</strong> across workloads deployed at distinct sites.</p>
+</div>
+<div class="paragraph">
+<p>Traffic load is based on the number of concurrent TCP connections, so "round robin" behavior should not be expected.
+If one server is more powerful and has better latency, it processes requests more quickly, resulting in more traffic being directed to that server.</p>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="section3.html">Linking Sites</a></span>
+  <span class="next"><a href="section5.html">Hands-on: End-to-End Walkthrough</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>

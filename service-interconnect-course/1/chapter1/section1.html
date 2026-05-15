@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>What is Red Hat Service Interconnect? :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="index.html">
+    <link rel="next" href="section2.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter2/index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter3/index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter4/index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Introduction to Service Interconnect</a></li>
+    <li><a href="section1.html">What is Service Interconnect?</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">What is Red Hat Service Interconnect?</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Red Hat Service Interconnect is a multi-site, multi-platform application connectivity solution that enables services running in different environments to communicate securely&#8201;&#8212;&#8201;without requiring VPNs, special firewall rules, or elevated network privileges.</p>
+</div>
+<div class="paragraph">
+<p>Service Interconnect is a Red Hat build of the open-source Skupper project.
+It is available through a Red Hat software subscription.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_problem"><a class="anchor" href="#_the_problem"></a>The Problem</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Modern applications are increasingly distributed across multiple environments:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Multiple OpenShift or Kubernetes clusters in different regions</p>
+</li>
+<li>
+<p>A mix of on-premises data centers and public cloud providers</p>
+</li>
+<li>
+<p>Legacy applications running on virtual machines or bare-metal servers</p>
+</li>
+<li>
+<p>Edge locations with limited or intermittent connectivity</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Connecting services across these boundaries traditionally requires significant network infrastructure work: VPN tunnels, firewall rule changes, network peering agreements, and coordination between network and platform teams.
+These approaches are complex, slow to provision, and often require elevated privileges that application teams do not have.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_solution"><a class="anchor" href="#_the_solution"></a>The Solution</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect creates an <strong>application network</strong>&#8201;&#8212;&#8201;a Layer 7 overlay that routes traffic between application endpoints across distributed sites.
+Rather than modifying the underlying network infrastructure, Service Interconnect deploys lightweight routers that establish secure, outbound-only connections between sites.</p>
+</div>
+<div class="paragraph">
+<p>Key characteristics of this approach:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Layer 7 routing</strong>&#8201;&#8212;&#8201;Service Interconnect operates at the application layer, routing messages between service endpoints rather than forwarding IP packets.
+Application services appear local to consumers, regardless of where they actually run.</p>
+</li>
+<li>
+<p><strong>No infrastructure changes</strong>&#8201;&#8212;&#8201;Sites connect using standard outbound HTTPS connections.
+No VPN tunnels, firewall ingress rules, or network peering is required.</p>
+</li>
+<li>
+<p><strong>Mutual TLS by default</strong>&#8201;&#8212;&#8201;All router-to-router connections are encrypted using a private, dedicated certificate authority (CA).
+Each router is uniquely identified by its own certificate.</p>
+</li>
+<li>
+<p><strong>Namespace-level operation</strong>&#8201;&#8212;&#8201;Each Service Interconnect site operates within a Kubernetes namespace (or on a Linux host), requiring no cluster-wide privileges to set up.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_relationship_to_skupper"><a class="anchor" href="#_relationship_to_skupper"></a>Relationship to Skupper</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect is built from the Skupper open-source project.
+The relationship is similar to other Red Hat products and their upstream projects:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Red Hat Product</th>
+<th class="tableblock halign-left valign-top">Upstream Project</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Red Hat Service Interconnect</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Red Hat OpenShift Container Platform</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Kubernetes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Red Hat Enterprise Linux</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fedora / CentOS Stream</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Red Hat Service Interconnect adds:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Enterprise support and SLA coverage</p>
+</li>
+<li>
+<p>Certified operator for OpenShift</p>
+</li>
+<li>
+<p>Integration with the Red Hat ecosystem (RHEL gateways, OpenShift monitoring)</p>
+</li>
+<li>
+<p>Long-term support releases with backported security fixes</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_platform_support"><a class="anchor" href="#_platform_support"></a>Platform Support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect 2.1 supports the following platforms:</p>
+</div>
+<div class="sect2">
+<h3 id="_kubernetes_sites"><a class="anchor" href="#_kubernetes_sites"></a>Kubernetes Sites</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Red Hat OpenShift Container Platform</strong>&#8201;&#8212;&#8201;All versions in Full or Maintenance support</p>
+</li>
+<li>
+<p><strong>Non-OpenShift Kubernetes</strong>&#8201;&#8212;&#8201;Any CNCF-certified distribution, version 1.28 or later</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Red Hat provides assistance running Service Interconnect on any CNCF-certified distribution of Kubernetes, though primary testing is done on OpenShift.</p>
+</div>
+<div class="paragraph">
+<p>The operator is supported with OpenShift 4.x only.
+On non-OpenShift Kubernetes, use YAML or the CLI to install the CRDs and controller.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_supported_ingress_types"><a class="anchor" href="#_supported_ingress_types"></a>Supported Ingress Types</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>LoadBalancer</strong> and <strong>OpenShift Routes</strong> (supported on OpenShift)</p>
+</li>
+<li>
+<p><strong>Gateway</strong>, <strong>Contour</strong>, <strong>Nginx</strong> (requires TLS passthrough configuration), and <strong>NodePort</strong> are also supported</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_local_system_sites_podman_docker_linux"><a class="anchor" href="#_local_system_sites_podman_docker_linux"></a>Local System Sites (Podman, Docker, Linux)</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Red Hat Enterprise Linux 8</strong>&#8201;&#8212;&#8201;Podman sites on x86-64, aarch64, s390x, ppc64le</p>
+</li>
+<li>
+<p><strong>Red Hat Enterprise Linux 9</strong>&#8201;&#8212;&#8201;Podman sites on x86-64, aarch64, s390x, ppc64le</p>
+</li>
+<li>
+<p><strong>Podman</strong> version 4 or later is required</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cli_platforms"><a class="anchor" href="#_cli_platforms"></a>CLI Platforms</h3>
+<div class="paragraph">
+<p>The <code>skupper</code> CLI is supported on:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Platform</th>
+<th class="tableblock halign-left valign-top">x86-64</th>
+<th class="tableblock halign-left valign-top">aarch64</th>
+<th class="tableblock halign-left valign-top">s390x</th>
+<th class="tableblock halign-left valign-top">ppc64le</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Red Hat Enterprise Linux 8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Red Hat Enterprise Linux 9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Red Hat Enterprise Linux 10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux (other)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">macOS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Windows</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For a Mac with Apple silicon, use Rosetta 2 and the <strong>Skupper CLI for Mac on x86-64</strong> download.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>All platforms share a common underlying model and a unified CLI interface, reducing the learning curve when working across heterogeneous environments.</p>
+</div>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="index.html">Introduction to Service Interconnect</a></span>
+  <span class="next"><a href="section2.html">Architecture and Key Concepts</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>

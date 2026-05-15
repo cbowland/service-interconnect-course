@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>How Service Interconnect Differs from Traditional Approaches :: Red Hat Service Interconnect</title>
+    <link rel="prev" href="section2.html">
+    <link rel="next" href="section4.html">
+    <meta name="generator" content="Antora 3.1.3">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/collapsible.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/reading-time.css">
+    <script>var uiRootPath = '../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://www.redhat.com" target="_blank"><img src="../../../_/img/redhat-logo.png" height="40px" alt="Red Hat"></a>
+      <a class="navbar-item" style="font-size: 24px; color: white" href="../../..">Red Hat Service Interconnect</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/cbowland/service-interconnect-course/issues" target="_blank">Report Issues</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="service-interconnect-course" data-version="1">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../index.html">Red Hat Service Interconnect</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../index.html">Home</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../LABENV/index.html">Lab Environment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="index.html">Introduction to Service Interconnect</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section1.html">What is Service Interconnect?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section2.html">Architecture and Key Concepts</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="section3.html">SI vs Traditional Approaches</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="section4.html">Use Cases</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter2/index.html">Installation and Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section1.html">Installing the Operator</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section2.html">Installing the CLI</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section3.html">SI Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter2/section4.html">Hands-on: Install and Verify</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter3/index.html">Creating Your First Service Network</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section1.html">Initializing Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section2.html">Creating Access Tokens</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section3.html">Linking Sites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section4.html">Exposing and Consuming Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter3/section5.html">Hands-on: End-to-End Walkthrough</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter4/index.html">Multi-cluster Connectivity</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section1.html">Multi-site Topologies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section2.html">Service Distribution</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section3.html">Load Balancing and Failover</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter4/section4.html">Hands-on: Three-site Network</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter5/index.html">Working with RHEL Gateways</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section1.html">SI on RHEL</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section2.html">Creating a Gateway Site</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section3.html">Exposing VM-based Services</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter5/section4.html">Hands-on: Connecting a Legacy Database</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter6/index.html">Security and Observability</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section1.html">The Security Model</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section2.html">Certificate and Token Management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section3.html">Network Observer and the Console</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section4.html">Integration with OpenShift Monitoring</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter6/section5.html">Hands-on: Securing and Monitoring</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../chapter7/index.html">Advanced Scenarios</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section1.html">Multi-cloud Connectivity</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section2.html">Progressive Migration Patterns</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section3.html">Edge Computing and IoT</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../chapter7/section4.html">Hands-on: Multi-cloud Migration</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../appendix/appendix.html">Appendix</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/cli-reference.html">CLI Reference</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/troubleshooting.html">Troubleshooting</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../appendix/resources.html">Additional Resources</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Red Hat Service Interconnect</span>
+    <span class="version">1</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="../index.html">Red Hat Service Interconnect</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../index.html">1</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Red Hat Service Interconnect</a></li>
+    <li><a href="index.html">Introduction to Service Interconnect</a></li>
+    <li><a href="section3.html">SI vs Traditional Approaches</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">How Service Interconnect Differs from Traditional Approaches</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Organizations have several options for connecting services across distributed environments.
+This section compares Service Interconnect with the most common alternatives to help you understand when each approach is appropriate.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comparison_table"><a class="anchor" href="#_comparison_table"></a>Comparison Table</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Criteria</th>
+<th class="tableblock halign-left valign-top">Service Interconnect</th>
+<th class="tableblock halign-left valign-top">VPN</th>
+<th class="tableblock halign-left valign-top">Service Mesh</th>
+<th class="tableblock halign-left valign-top">Direct Network Peering</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Layer</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Layer 7 (application)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Layer 3 (network)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Layer 7 (application)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Layer 3 (network)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Scope</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cross-cluster, cross-cloud, VMs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Site-to-site or client-to-site</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Single cluster (typically)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Between specific networks</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Setup complexity</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CLI or YAML in minutes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network team involvement, firewall changes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Per-cluster install, sidecar injection</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network team, ISP/cloud provider coordination</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Privileges required</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Namespace-level only</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network/infrastructure admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cluster admin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network admin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Encryption</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mutual TLS (automatic)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IPsec or TLS (configured)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mutual TLS (automatic)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Varies (often unencrypted)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Infrastructure changes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None (outbound HTTPS only)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Firewall rules, tunnel endpoints</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sidecar proxies per pod</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BGP peering, route tables</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Multi-cloud support</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Native</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Complex (each provider different)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Limited (federation needed)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provider-specific</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>VM/bare-metal support</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes (RHEL gateways)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Limited</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_service_interconnect_vs_vpn"><a class="anchor" href="#_service_interconnect_vs_vpn"></a>Service Interconnect vs VPN</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A VPN creates a network-level tunnel between two sites, making all hosts on each network reachable to the other.
+This is a broad approach that connects entire networks rather than specific services.</p>
+</div>
+<div class="paragraph">
+<p>Service Interconnect takes a fundamentally different approach:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Selective exposure</strong>&#8201;&#8212;&#8201;Only services that are explicitly exposed via connectors are reachable.
+A VPN exposes the entire network, increasing the attack surface.</p>
+</li>
+<li>
+<p><strong>No firewall changes</strong>&#8201;&#8212;&#8201;Service Interconnect uses outbound HTTPS connections to establish links.
+VPNs require inbound firewall rules and dedicated tunnel endpoints.</p>
+</li>
+<li>
+<p><strong>Application-level routing</strong>&#8201;&#8212;&#8201;Service Interconnect routes at Layer 7, enabling features like load balancing across sites.
+VPNs route IP packets without application awareness.</p>
+</li>
+<li>
+<p><strong>No network team dependency</strong>&#8201;&#8212;&#8201;Application teams can set up Service Interconnect with namespace-level access.
+VPN setup typically requires coordination with network infrastructure teams.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_service_interconnect_vs_service_mesh"><a class="anchor" href="#_service_interconnect_vs_service_mesh"></a>Service Interconnect vs Service Mesh</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service meshes (such as Red Hat OpenShift Service Mesh / Istio) and Service Interconnect are complementary technologies that operate at different scopes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Service mesh</strong>&#8201;&#8212;&#8201;Manages traffic <em>within</em> a single cluster: routing, load balancing, circuit breaking, observability, and policy enforcement between pods.</p>
+</li>
+<li>
+<p><strong>Service Interconnect</strong>&#8201;&#8212;&#8201;Connects services <em>across</em> clusters, clouds, and non-Kubernetes environments.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In practice, you can use both together: a service mesh to manage intra-cluster traffic and Service Interconnect to bridge services across clusters.</p>
+</div>
+<div class="paragraph">
+<p>Key differences:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Service meshes require sidecar proxy injection into every pod.
+Service Interconnect deploys a small number of routers per namespace.</p>
+</li>
+<li>
+<p>Service meshes typically require cluster-admin privileges.
+Service Interconnect requires only namespace-level access.</p>
+</li>
+<li>
+<p>Service meshes have limited support for non-Kubernetes workloads.
+Service Interconnect natively supports RHEL gateways for VM-based services.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_service_interconnect_vs_direct_network_peering"><a class="anchor" href="#_service_interconnect_vs_direct_network_peering"></a>Service Interconnect vs Direct Network Peering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Direct network peering (VPC peering, AWS Transit Gateway, Azure VNet peering) creates Layer 3 connectivity between cloud provider networks.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Provider-specific</strong>&#8201;&#8212;&#8201;Each cloud provider has its own peering mechanism, and cross-provider peering is complex or impossible.
+Service Interconnect works identically across any environment.</p>
+</li>
+<li>
+<p><strong>All-or-nothing</strong>&#8201;&#8212;&#8201;Peering connects entire networks.
+Service Interconnect exposes only the services you choose.</p>
+</li>
+<li>
+<p><strong>Network team ownership</strong>&#8201;&#8212;&#8201;Peering requires network infrastructure access.
+Service Interconnect is managed by application teams.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_when_to_use_service_interconnect"><a class="anchor" href="#_when_to_use_service_interconnect"></a>When to Use Service Interconnect</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect is the best fit when:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>You need to connect specific services across clusters, clouds, or data centers</p>
+</li>
+<li>
+<p>Application teams need self-service connectivity without waiting for network infrastructure changes</p>
+</li>
+<li>
+<p>You want to connect Kubernetes services with legacy applications running on VMs</p>
+</li>
+<li>
+<p>You need mutual TLS encryption between sites without managing certificates manually</p>
+</li>
+<li>
+<p>You are working in a multi-cloud or hybrid cloud environment</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Service Interconnect is <em>not</em> designed to replace:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Intra-cluster service mesh capabilities (traffic splitting, circuit breaking, per-request policies)</p>
+</li>
+<li>
+<p>General-purpose network connectivity (bulk data transfer, non-service traffic)</p>
+</li>
+<li>
+<p>DNS-based global load balancing</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<nav class="pagination">
+  <span class="prev"><a href="section2.html">Architecture and Key Concepts</a></span>
+  <span class="next"><a href="section4.html">Use Cases</a></span>
+</nav>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <img src="../../../_/img/rhl-logo-red.png" height="40px" alt="Red Hat"  href="https://redhat.com" >
+</footer><script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script defer src="../../../_/js/vendor/tabs.js"></script>
+<script defer src="../../../_/js/vendor/reading-time.js"></script>
+  </body>
+</html>
