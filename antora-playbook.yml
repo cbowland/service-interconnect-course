@@ -1,5 +1,5 @@
 site:
-  title: FIXME Course Title
+  title: Red Hat Service Interconnect
   start_page: REPLACEREPONAME::index.adoc
 
 content:

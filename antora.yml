@@ -1,5 +1,5 @@
 name: REPLACEREPONAME
-title: FIXME Course Title
+title: Red Hat Servcice Interconnect
 version: 1
 nav:
 - modules/ROOT/nav.adoc
