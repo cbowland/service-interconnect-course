@@ -272,7 +272,68 @@
 </aside>
 <article class="doc">
 <h1 class="page">Security and Observability</h1>
-
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Red Hat Service Interconnect provides built-in security and observability features that make it suitable for production deployments across sensitive environments.
+Security is not an add-on — it is fundamental to how Service Interconnect operates.
+Every inter-site connection is encrypted with mutual TLS by default, using a private certificate authority that is created automatically when a site is initialized.</p>
+</div>
+<div class="paragraph">
+<p>Observability is provided through the Network Observer, a dedicated component that visualizes the topology of your application network and monitors communication between sites and services.</p>
+</div>
+<div class="paragraph">
+<p>This chapter covers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The security model, including mutual TLS, network isolation, and zero-trust principles</p>
+</li>
+<li>
+<p>Certificate and token lifecycle management</p>
+</li>
+<li>
+<p>The Network Observer console for monitoring your application network</p>
+</li>
+<li>
+<p>Integration with the OpenShift monitoring stack for alerting</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_objectives"><a class="anchor" href="#_objectives"></a>Objectives</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>On completing this chapter, you should be able to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Explain how Service Interconnect secures inter-site communication with mutual TLS</p>
+</li>
+<li>
+<p>Describe the certificate authority hierarchy and how certificates are managed</p>
+</li>
+<li>
+<p>Manage access tokens and understand their security properties</p>
+</li>
+<li>
+<p>Deploy and configure the Network Observer console</p>
+</li>
+<li>
+<p>Create Prometheus alerting rules for Network Observer resources</p>
+</li>
+<li>
+<p>Inspect certificates and verify the security posture of your application network</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="../chapter5/section4.html">Hands-on: Legacy Database</a></span>
   <span class="next"><a href="section1.html">The Security Model</a></span>

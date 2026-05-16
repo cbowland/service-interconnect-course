@@ -273,7 +273,398 @@
 </aside>
 <article class="doc">
 <h1 class="page">Network Observer and the Console</h1>
-
+<div class="sect1">
+<h2 id="_what_is_the_network_observer"><a class="anchor" href="#_what_is_the_network_observer"></a>What is the Network Observer?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Network Observer is a dedicated component that provides a web-based console for monitoring your Service Interconnect application network.
+The console provides a visual overview of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Sites</strong> — All sites in the network and their status</p>
+</li>
+<li>
+<p><strong>Links</strong> — Connections between sites with latency and throughput data</p>
+</li>
+<li>
+<p><strong>Services</strong> — Exposed services and the connectors/listeners that bind them</p>
+</li>
+<li>
+<p><strong>Traffic flow</strong> — Communication patterns between services across sites</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The Network Observer is installed as a separate operator from the Service Interconnect operator.
+It runs in the same namespace as the site it monitors and collects data from the local router.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installing_the_network_observer_operator"><a class="anchor" href="#_installing_the_network_observer_operator"></a>Installing the Network Observer Operator</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Network Observer operator is available from OperatorHub on OpenShift Container Platform.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>In the OpenShift web console, navigate to <strong>Operators &#8594; OperatorHub</strong></p>
+</li>
+<li>
+<p>Search for <strong>Red Hat Service Interconnect Network Observer</strong></p>
+</li>
+<li>
+<p>Click the operator tile and then click <strong>Install</strong></p>
+</li>
+<li>
+<p>Accept the default settings:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Update channel:</strong> <code>stable-2</code></p>
+</li>
+<li>
+<p><strong>Installation mode:</strong> All namespaces on the cluster</p>
+</li>
+<li>
+<p><strong>Update approval:</strong> Automatic</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Click <strong>Install</strong> and wait for the operator to reach the <code>Succeeded</code> phase</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Verify the operator is running:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get csv -A | grep network-observer</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deploying_a_network_observer_instance"><a class="anchor" href="#_deploying_a_network_observer_instance"></a>Deploying a Network Observer Instance</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After installing the operator, create a NetworkObserver custom resource in a namespace that has a Service Interconnect site.</p>
+</div>
+<div class="sect2">
+<h3 id="_using_the_openshift_console"><a class="anchor" href="#_using_the_openshift_console"></a>Using the OpenShift Console</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to <strong>Operators &#8594; Installed Operators</strong></p>
+</li>
+<li>
+<p>Select the <strong>Red Hat Service Interconnect Network Observer Operator</strong></p>
+</li>
+<li>
+<p>Click <strong>Create Instance</strong></p>
+</li>
+<li>
+<p>Accept the defaults and click <strong>Create</strong></p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_the_cli"><a class="anchor" href="#_using_the_cli"></a>Using the CLI</h3>
+<div class="paragraph">
+<p>Create a NetworkObserver resource YAML file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec: {}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply the resource:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f network-observer.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The operator creates the Network Observer deployment, service, and route in the specified namespace.</p>
+</div>
+<div class="paragraph">
+<p>Verify the deployment:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get networkobserver -n site-west</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_accessing_the_console"><a class="anchor" href="#_accessing_the_console"></a>Accessing the Console</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The operator creates an OpenShift route for the console.
+Determine the console URL:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route -n site-west | grep network-observer</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The route is named using the pattern <code>skupper-network-observer-&lt;namespace&gt;</code>.
+For a site in the <code>site-west</code> namespace, the route will be <code>skupper-network-observer-site-west</code>.</p>
+</div>
+<div class="paragraph">
+<p>Open the URL in a browser to access the console.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuring_the_network_observer"><a class="anchor" href="#_configuring_the_network_observer"></a>Configuring the Network Observer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can customize the Network Observer by specifying additional fields in the CR spec.</p>
+</div>
+<div class="sect2">
+<h3 id="_resource_configuration"><a class="anchor" href="#_resource_configuration"></a>Resource Configuration</h3>
+<div class="paragraph">
+<p>For medium-to-large networks, you may need to increase the default resource allocation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "4Gi"
+    limits:
+      cpu: "1"
+      memory: "8Gi"</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resources.requests.cpu</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Minimum CPU guaranteed to the Network Observer. Increase if the console feels sluggish under high network load.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resources.requests.memory</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Initial memory allocation. 4Gi is the recommended minimum for medium-sized networks.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resources.limits.cpu</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum CPU the Network Observer can consume.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resources.limits.memory</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Upper bound of memory. If usage exceeds this limit, the pod is terminated due to insufficient memory.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_authentication_strategies"><a class="anchor" href="#_authentication_strategies"></a>Authentication Strategies</h3>
+<div class="paragraph">
+<p>The Network Observer console supports three authentication strategies:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Strategy</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><code>openshift</code></strong> (default)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uses the OpenShift OAuth2 proxy. Users log in with their OpenShift credentials. The operator automatically creates a ServiceAccount and session cookie secret.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><code>basic</code></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Username and password authentication. Credentials are stored in an htpasswd-format Secret.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><code>none</code></strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No authentication. The console is accessible to anyone who can reach the route. Only use this for development or testing.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>To configure the authentication strategy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec:
+  auth:
+    strategy: "openshift"
+    openshift:
+      createCookieSecret: true
+      cookieSecretName: ""
+      serviceAccount:
+        create: true
+        nameOverride: ""</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the <code>basic</code> strategy, you need to create an htpasswd Secret before deploying the Network Observer.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_retrieving_basic_auth_credentials"><a class="anchor" href="#_retrieving_basic_auth_credentials"></a>Retrieving Basic Auth Credentials</h3>
+<div class="paragraph">
+<p>When using the <code>basic</code> authentication strategy, the operator generates an htpasswd Secret.
+To retrieve the credentials:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get secret &lt;network-observer-name&gt;-htpasswd -n site-west -o jsonpath='{.data.htpasswd}' | base64 -d</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The output contains the username and hashed password in htpasswd format.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_the_console"><a class="anchor" href="#_using_the_console"></a>Using the Console</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Network Observer console provides several views:</p>
+</div>
+<div class="sect2">
+<h3 id="_topology_view"><a class="anchor" href="#_topology_view"></a>Topology View</h3>
+<div class="paragraph">
+<p>The topology view shows all sites in the network and the links between them.
+Each site is displayed as a node, and links are displayed as edges.
+The view updates in real time as sites and links are added or removed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_services_view"><a class="anchor" href="#_services_view"></a>Services View</h3>
+<div class="paragraph">
+<p>The services view shows all exposed services in the network, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The routing key name</p>
+</li>
+<li>
+<p>Which sites have connectors (providers)</p>
+</li>
+<li>
+<p>Which sites have listeners (consumers)</p>
+</li>
+<li>
+<p>Active connection count and throughput</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_traffic_flow"><a class="anchor" href="#_traffic_flow"></a>Traffic Flow</h3>
+<div class="paragraph">
+<p>The console displays traffic flow between services, showing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Request rate and throughput</p>
+</li>
+<li>
+<p>Latency between sites</p>
+</li>
+<li>
+<p>Connection status</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This information is collected from the local router&#8217;s metrics and does not require any additional monitoring infrastructure.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_verifying_the_configuration"><a class="anchor" href="#_verifying_the_configuration"></a>Verifying the Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After deploying the Network Observer, verify its configuration:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc describe networkobserver networkobserver-sample -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The output displays the configured parameters and the status of the Network Observer deployment.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Parameters in the <code>describe</code> output that are not part of the CR spec are managed by the operator and are not configurable.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section2.html">Certificate and Token Management</a></span>
   <span class="next"><a href="section4.html">Integration with OpenShift Monitoring</a></span>

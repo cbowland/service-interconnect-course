@@ -273,7 +273,270 @@
 </aside>
 <article class="doc">
 <h1 class="page">Certificate and Token Management</h1>
-
+<div class="sect1">
+<h2 id="_certificate_lifecycle"><a class="anchor" href="#_certificate_lifecycle"></a>Certificate Lifecycle</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When the Service Interconnect operator creates a site, it automatically generates the CA hierarchy and issues certificates for the router.
+These certificates are stored as Kubernetes Secrets in the site&#8217;s namespace.</p>
+</div>
+<div class="sect2">
+<h3 id="_viewing_certificates"><a class="anchor" href="#_viewing_certificates"></a>Viewing Certificates</h3>
+<div class="paragraph">
+<p>You can inspect the certificate Secrets in a site&#8217;s namespace:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get secrets -n site-west | grep skupper</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output (partial)</div>
+<div class="content">
+<pre>skupper-local-ca       kubernetes.io/tls   3
+skupper-site-ca        kubernetes.io/tls   3
+skupper-service-ca     kubernetes.io/tls   3
+skupper-site-server    kubernetes.io/tls   2</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each CA Secret contains three items: the TLS certificate (<code>tls.crt</code>), the TLS private key (<code>tls.key</code>), and the CA certificate (<code>ca.crt</code>).</p>
+</div>
+<div class="paragraph">
+<p>To examine the details of a certificate:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get secret skupper-site-ca -n site-west -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -text -noout</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This displays the certificate&#8217;s issuer, subject, validity period, and other attributes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_certificate_rotation"><a class="anchor" href="#_certificate_rotation"></a>Certificate Rotation</h3>
+<div class="paragraph">
+<p>The Service Interconnect operator handles certificate rotation automatically.
+When certificates approach expiration, the operator generates new certificates and updates the router configuration.
+No manual intervention is required.</p>
+</div>
+<div class="paragraph">
+<p>If you need to force certificate regeneration (for example, after a suspected compromise), you can delete the certificate Secrets and the operator will recreate them:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete secret skupper-site-server -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The operator detects the missing Secret and generates a new certificate.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Deleting CA Secrets (<code>skupper-site-ca</code>, <code>skupper-local-ca</code>, <code>skupper-service-ca</code>) will break existing links because the trust chain changes. Only delete the server certificate Secrets unless you intend to re-establish all links.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_access_token_management"><a class="anchor" href="#_access_token_management"></a>Access Token Management</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Access tokens are the mechanism for establishing trust between sites.
+A token contains the information needed for one site to create a link to another site.</p>
+</div>
+<div class="sect2">
+<h3 id="_token_properties"><a class="anchor" href="#_token_properties"></a>Token Properties</h3>
+<div class="paragraph">
+<p>Tokens created with the <code>skupper token issue</code> command have these default properties:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Property</th>
+<th class="tableblock halign-left valign-top">Default</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Uses</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of times the token can be redeemed. After redemption, the token is invalidated.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Expiry</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">15 minutes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Time after which an unredeemed token becomes invalid.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>These defaults follow the principle of least privilege — a token provides the minimum access needed for the minimum time.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_issuing_tokens_with_custom_properties"><a class="anchor" href="#_issuing_tokens_with_custom_properties"></a>Issuing Tokens with Custom Properties</h3>
+<div class="paragraph">
+<p>You can customize token properties when issuing:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/my-token.yaml --uses 5 --expiry 1h</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates a token that can be redeemed up to 5 times within 1 hour of issuance.</p>
+</div>
+<div class="paragraph">
+<p>Use multiple-use tokens when you need to link several sites to the same hub site, or when you want to prepare tokens in advance for sites that will be set up later.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Multiple-use tokens and longer expiry windows increase the risk if a token is intercepted. Use the shortest expiry and fewest uses that meet your requirements.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_token_lifecycle_using_yaml_resources"><a class="anchor" href="#_token_lifecycle_using_yaml_resources"></a>Token Lifecycle Using YAML Resources</h3>
+<div class="paragraph">
+<p>Tokens can also be managed using Kubernetes custom resources.
+This approach provides more control and integrates with GitOps workflows.</p>
+</div>
+<div class="paragraph">
+<p><strong>AccessGrant</strong> — Created on the site that accepts incoming links. Defines the token&#8217;s properties.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: AccessGrant
+metadata:
+  name: my-grant
+  namespace: site-west
+spec:
+  redemptionsAllowed: 3
+  expirationWindow: 30m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply the grant:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f access-grant.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After the grant is created, retrieve the generated token data:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get accessgrant my-grant -n site-west -o yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>status</code> field contains the <code>ca</code>, <code>code</code>, and <code>url</code> values needed to create an AccessToken on the remote site.</p>
+</div>
+<div class="paragraph">
+<p><strong>AccessToken</strong> — Created on the site that initiates the link. Contains the trust information from the AccessGrant.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: AccessToken
+metadata:
+  name: my-token
+  namespace: site-east
+spec:
+  ca: &lt;base64-encoded-ca-from-grant&gt;
+  code: &lt;code-from-grant&gt;
+  url: &lt;url-from-grant&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply the token:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f access-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates a Link resource automatically, connecting <code>site-east</code> to <code>site-west</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_revoking_access"><a class="anchor" href="#_revoking_access"></a>Revoking Access</h3>
+<div class="paragraph">
+<p>To revoke access for a linked site, delete the corresponding Link resource:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To prevent future links from being created with a specific grant, delete the AccessGrant:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete accessgrant my-grant -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Tokens that have already been redeemed are not affected by deleting the grant — you must also delete the Link to disconnect the site.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_security_best_practices"><a class="anchor" href="#_security_best_practices"></a>Security Best Practices</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Use single-use tokens</strong> whenever possible. Issue a new token for each site you link.</p>
+</li>
+<li>
+<p><strong>Minimize token expiry windows.</strong> The default 15-minute window is appropriate for most scenarios. Only extend it when operationally necessary.</p>
+</li>
+<li>
+<p><strong>Protect token files.</strong> Treat token files like credentials. Delete them after redemption. Do not store them in version control.</p>
+</li>
+<li>
+<p><strong>Monitor link status.</strong> Regularly check <code>skupper link status</code> and <code>oc get link</code> to verify that only expected sites are connected.</p>
+</li>
+<li>
+<p><strong>Audit AccessGrant resources.</strong> Review grants periodically to ensure unused or expired grants are cleaned up.</p>
+</li>
+<li>
+<p><strong>Use namespaces for isolation.</strong> Each Service Interconnect site operates within a single namespace. Use separate namespaces for separate trust domains.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section1.html">The Security Model</a></span>
   <span class="next"><a href="section3.html">Network Observer and the Console</a></span>

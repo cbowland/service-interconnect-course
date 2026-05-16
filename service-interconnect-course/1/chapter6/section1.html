@@ -273,7 +273,214 @@
 </aside>
 <article class="doc">
 <h1 class="page">The Security Model</h1>
-
+<div class="sect1">
+<h2 id="_security_challenges_in_hybrid_cloud"><a class="anchor" href="#_security_challenges_in_hybrid_cloud"></a>Security Challenges in Hybrid Cloud</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Moving applications to the cloud — or distributing them across multiple clusters — raises security risks.
+Traditional approaches to multi-cluster connectivity require one of the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Exposing services on the public internet</strong>, which creates a large attack surface</p>
+</li>
+<li>
+<p><strong>Setting up VPNs</strong>, which require complex Layer 3 network controls, firewall rules, and access policies</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These network controls do not extend easily to multiple clusters.
+Each new cluster added to the network requires its own set of firewall rules, VPN tunnels, and access policies.
+The complexity grows with every additional site.</p>
+</div>
+<div class="paragraph">
+<p>Red Hat Service Interconnect takes a fundamentally different approach.
+It creates a Layer 7 application network that provides secure connectivity without requiring changes to the underlying network infrastructure.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_built_in_network_isolation"><a class="anchor" href="#_built_in_network_isolation"></a>Built-in Network Isolation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect provides default, built-in security that scales across clusters and clouds.
+The connections between routers are secured with mutual TLS using a private, dedicated certificate authority (CA).
+Each router is uniquely identified by its own certificate.</p>
+</div>
+<div class="paragraph">
+<p>This design provides several security properties:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Network isolation</strong> — The application network is isolated from external access. Only sites that have been explicitly linked can participate in the network.</p>
+</li>
+<li>
+<p><strong>Lateral attack prevention</strong> — Because the network is isolated, it prevents lateral attacks, malware propagation, and data exfiltration between the application network and external systems.</p>
+</li>
+<li>
+<p><strong>No open inbound ports</strong> — Sites initiate outbound connections to establish links. No inbound ports need to be opened on firewalls, reducing the attack surface.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mutual_tls_by_default"><a class="anchor" href="#_mutual_tls_by_default"></a>Mutual TLS by Default</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>All communication between Service Interconnect routers is encrypted and authenticated using mutual TLS (mTLS).
+This is enabled automatically — there is no option to disable it and no configuration required to turn it on.</p>
+</div>
+<div class="paragraph">
+<p>With mTLS:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Both sides of a connection present certificates to prove their identity</p>
+</li>
+<li>
+<p>All traffic is encrypted in transit</p>
+</li>
+<li>
+<p>Each router has a unique certificate issued by the site&#8217;s CA</p>
+</li>
+<li>
+<p>Certificates are automatically rotated by the operator</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This differs from standard TLS (used by HTTPS), where only the server presents a certificate.
+With mTLS, both the client and server authenticate each other, providing stronger identity guarantees.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_certificate_authority_hierarchy"><a class="anchor" href="#_certificate_authority_hierarchy"></a>Certificate Authority Hierarchy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When the Service Interconnect operator creates a site, it generates a private CA hierarchy with three levels:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">CA</th>
+<th class="tableblock halign-left valign-top">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Local CA</strong> (<code>skupper-local-ca</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Issues certificates for internal communication within the site (between the router and local components)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Site CA</strong> (<code>skupper-site-ca</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Issues the router&#8217;s identity certificate, used for inter-site mTLS connections</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Service CA</strong> (<code>skupper-service-ca</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Issues certificates for service-level TLS between the router and application workloads</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Each CA is stored as a Kubernetes Secret in the site&#8217;s namespace.
+The private keys never leave the namespace, and the CAs are unique to each site.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_zero_trust_principles"><a class="anchor" href="#_zero_trust_principles"></a>Zero-Trust Principles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect follows zero-trust networking principles:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Explicit trust</strong> — Sites must be explicitly linked using access tokens. There is no implicit trust based on network proximity.</p>
+</li>
+<li>
+<p><strong>Least privilege</strong> — Access tokens are single-use by default and expire after 15 minutes. A token can only be redeemed once, limiting the window for misuse.</p>
+</li>
+<li>
+<p><strong>No ambient authority</strong> — Being on the same physical network does not grant access to the application network. Every participant must be authenticated through the linking process.</p>
+</li>
+<li>
+<p><strong>Encrypted by default</strong> — All inter-site traffic is encrypted with mTLS. There is no unencrypted mode.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comparison_with_traditional_security_approaches"><a class="anchor" href="#_comparison_with_traditional_security_approaches"></a>Comparison with Traditional Security Approaches</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Feature</th>
+<th class="tableblock halign-left valign-top">VPN / Network-Level Security</th>
+<th class="tableblock halign-left valign-top">Service Interconnect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Encryption</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Varies (IPsec, WireGuard)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mTLS always on</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authentication</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pre-shared keys or certificates</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automatic mTLS with per-router certificates</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network changes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Firewall rules, NAT, routing tables</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None required</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inbound ports</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Not required (outbound-only connections)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scope</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">All traffic between sites (L3/L4)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Application traffic only (L7)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Management</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Manual certificate/key rotation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Automatic certificate management</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Isolation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Network-level</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Application-level (namespace-scoped)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Service Interconnect does not replace network-level security controls.
+It complements them by providing application-level security that is independent of the underlying network topology.</p>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="index.html">Security and Observability</a></span>
   <span class="next"><a href="section2.html">Certificate and Token Management</a></span>

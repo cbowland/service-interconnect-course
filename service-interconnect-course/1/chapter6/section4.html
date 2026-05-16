@@ -273,7 +273,269 @@
 </aside>
 <article class="doc">
 <h1 class="page">Integration with OpenShift Monitoring</h1>
-
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Network Observer runs as a pod in your site&#8217;s namespace and can be monitored using the standard OpenShift monitoring stack.
+You can create Prometheus alerting rules to detect issues with the Network Observer itself, such as high memory usage that could indicate a problem with a large or rapidly changing network.</p>
+</div>
+<div class="paragraph">
+<p>This section covers how to configure Prometheus alerts for the Network Observer using the OpenShift user workload monitoring feature.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before creating alerting rules, ensure that user workload monitoring is enabled on your OpenShift cluster.</p>
+</div>
+<div class="paragraph">
+<p>Verify that user workload monitoring is enabled:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n openshift-user-workload-monitoring</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see <code>prometheus-user-workload</code> and <code>thanos-ruler-user-workload</code> pods in a <code>Running</code> state.
+If the namespace does not exist or the pods are not running, user workload monitoring needs to be enabled by a cluster administrator.</p>
+</div>
+<div class="paragraph">
+<p>To enable user workload monitoring, create or update the <code>cluster-monitoring-config</code> ConfigMap:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply the ConfigMap:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f cluster-monitoring-config.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the user workload monitoring pods to start in the <code>openshift-user-workload-monitoring</code> namespace.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_prometheus_alerting_rule"><a class="anchor" href="#_creating_a_prometheus_alerting_rule"></a>Creating a Prometheus Alerting Rule</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following example creates a PrometheusRule that triggers an alert when the Network Observer pod&#8217;s memory usage exceeds 90% of its configured memory limit for more than 5 minutes.</p>
+</div>
+<div class="paragraph">
+<p>Create a file named <code>network-observer-alert.yaml</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-memory-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer.rules
+    rules:
+    - alert: NetworkObserverHighMemory
+      expr: |
+        (container_memory_working_set_bytes{namespace="site-west", container="network-observer"}
+        /
+        kube_pod_container_resource_limits{namespace="site-west", container="network-observer", resource="memory"}) &gt; 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer pod in namespace {{ $labels.namespace }} is using &gt; 90% of its memory limit."
+        description: "Pod {{ $labels.pod }} is currently using {{ $value | humanizePercentage }} of its memory limit."</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply the rule:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f network-observer-alert.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the rule is loaded:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get prometheusrule -n site-west</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME                              AGE
+network-observer-memory-alert     10s</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_understanding_the_alert_expression"><a class="anchor" href="#_understanding_the_alert_expression"></a>Understanding the Alert Expression</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The PromQL expression compares two metrics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>container_memory_working_set_bytes</code> — The current memory usage of the Network Observer container</p>
+</li>
+<li>
+<p><code>kube_pod_container_resource_limits</code> — The configured memory limit for the container</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When the ratio exceeds 0.9 (90%) for more than 5 minutes, the alert fires with a <code>warning</code> severity.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Replace the <code>namespace</code> value in the expression with the namespace where your site and Network Observer are deployed.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_responding_to_memory_alerts"><a class="anchor" href="#_responding_to_memory_alerts"></a>Responding to Memory Alerts</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If the <code>NetworkObserverHighMemory</code> alert fires, consider the following actions:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Increase the memory limit</strong> — Update the NetworkObserver CR with a higher memory limit:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch networkobserver networkobserver-sample -n site-west --type merge \
+  -p '{"spec":{"resources":{"limits":{"memory":"16Gi"},"requests":{"memory":"8Gi"}}}}'</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Investigate network size</strong> — A large number of sites, services, or high traffic volume can increase memory consumption. Check the console to understand the network scale.</p>
+</li>
+<li>
+<p><strong>Check for issues</strong> — Rapidly creating and deleting links or services can cause memory spikes. Review recent changes to the network topology.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_additional_alerting_examples"><a class="anchor" href="#_additional_alerting_examples"></a>Additional Alerting Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_pod_restart_alert"><a class="anchor" href="#_pod_restart_alert"></a>Pod Restart Alert</h3>
+<div class="paragraph">
+<p>Monitor if the Network Observer pod restarts frequently:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-restart-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer-restarts.rules
+    rules:
+    - alert: NetworkObserverFrequentRestarts
+      expr: |
+        increase(kube_pod_container_status_restarts_total{namespace="site-west", container="network-observer"}[1h]) &gt; 3
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer in namespace {{ $labels.namespace }} has restarted more than 3 times in the last hour."
+        description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times."</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cpu_throttling_alert"><a class="anchor" href="#_cpu_throttling_alert"></a>CPU Throttling Alert</h3>
+<div class="paragraph">
+<p>Detect if the Network Observer is being CPU-throttled:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-cpu-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer-cpu.rules
+    rules:
+    - alert: NetworkObserverCPUThrottled
+      expr: |
+        rate(container_cpu_cfs_throttled_seconds_total{namespace="site-west", container="network-observer"}[5m]) &gt; 0.25
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer in namespace {{ $labels.namespace }} is experiencing CPU throttling."
+        description: "Container {{ $labels.container }} is being throttled. Consider increasing the CPU limit."</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_viewing_alerts_in_the_openshift_console"><a class="anchor" href="#_viewing_alerts_in_the_openshift_console"></a>Viewing Alerts in the OpenShift Console</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to <strong>Observe &#8594; Alerting</strong> in the OpenShift web console</p>
+</li>
+<li>
+<p>Switch to the <strong>User</strong> tab to see alerts from user workload monitoring</p>
+</li>
+<li>
+<p>Look for alerts with names matching <code>NetworkObserver*</code></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You can also view the alert status using the CLI:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get prometheusrule -n site-west -o yaml | grep -A 5 "alert:"</code></pre>
+</div>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section3.html">Network Observer and the Console</a></span>
   <span class="next"><a href="section5.html">Hands-on: Securing and Monitoring</a></span>
