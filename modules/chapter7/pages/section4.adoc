@@ -1,2 +1,401 @@
 = Hands-on: Multi-cloud Migration Scenario
 :navtitle: Hands-on: Multi-cloud Migration
+
+== Lab Overview
+
+In this exercise, you will simulate a progressive migration scenario using Service Interconnect.
+You will start with an application running entirely in one environment (simulating an on-premises data center), deploy a copy of one service in a second environment (simulating a cloud), and use link cost to control traffic routing as you progressively shift traffic to the new environment.
+
+This exercise uses your existing lab namespaces to simulate two separate clouds.
+The concepts and commands are identical to what you would use in a real multi-cloud migration.
+
+== Prerequisites
+
+* Completed the Chapter 3 hands-on lab
+* The `skupper` CLI is installed
+* Two linked sites (`site-west` and `site-east`) from Chapter 3
+
+== Scenario
+
+You have a two-tier application:
+
+* **Frontend** — Serves user requests, calls the backend
+* **Backend** — Processes requests, returns data
+
+Currently, both services run in `site-west` (simulating the on-premises data center).
+You will migrate the backend to `site-east` (simulating a cloud environment) using a progressive approach.
+
+== Exercise Steps
+
+=== Step 1: Deploy the Full Application in site-west
+
+Deploy both the frontend and backend in `site-west`:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+oc create deployment frontend --image=quay.io/skupper/hello-world-frontend --replicas=1
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+oc expose deployment frontend --port=8080
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+oc create deployment frontend --image=quay.io/skupper/hello-world-frontend --replicas=1
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+oc expose deployment frontend --port=8080
+----
+====
+
+Create a route to access the frontend:
+
+[source,bash,role=execute]
+----
+oc expose service frontend -n site-west
+----
+
+Verify the application is working:
+
+[source,bash,role=execute]
+----
+FRONTEND_URL=$(oc get route frontend -n site-west -o jsonpath='{.spec.host}')
+curl -s http://$FRONTEND_URL/api/hello
+----
+
+You should see a response from the backend running in `site-west`.
+
+=== Step 2: Deploy the Backend in site-east (Cloud)
+
+Deploy a copy of the backend in `site-east`:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+----
+====
+
+Now both `site-west` and `site-east` have backend deployments.
+
+=== Step 3: Expose the Backend in Both Sites
+
+Create a connector for the backend in `site-west` (the original environment):
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper connector create backend 8080 --workload deployment/backend
+----
+====
+
+Create a connector for the backend in `site-east` (the cloud environment):
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-east
+skupper connector create backend 8080 --workload deployment/backend
+----
+====
+
+Both sites now have connectors with the routing key `backend`.
+
+Create a listener in `site-west` so the frontend can reach the backend through the application network:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper listener create backend 8080
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener create backend 8080
+----
+====
+
+Verify the listener:
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+.Expected output
+----
+NAME      STATUS   ROUTING-KEY   HOST      PORT   MATCHING-CONNECTOR   MESSAGE
+backend   Ready    backend       backend   8080   true                 OK
+----
+
+=== Step 4: Observe Load Balancing
+
+With both connectors active, traffic from the frontend is balanced across backends in both sites.
+Send multiple requests and observe:
+
+[source,bash,role=execute]
+----
+for i in $(seq 1 10); do
+  curl -s http://$FRONTEND_URL/api/hello
+  echo ""
+done
+----
+
+You should see responses from backend pods in both `site-west` and `site-east`.
+The traffic distribution depends on the number of active TCP connections and link cost.
+
+=== Step 5: Simulate Testing Phase — Route All Traffic to On-premises
+
+In a real migration, you would first want to test the cloud backend without affecting production traffic.
+To do this, set a high link cost on the link from `site-west` to `site-east`:
+
+Check the current link:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+oc get link -n site-west
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+oc get link -n site-west
+----
+====
+
+Note the link name, then patch the link cost:
+
+[source,bash,role=execute]
+----
+oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":9999}}'
+----
+
+Now send requests again:
+
+[source,bash,role=execute]
+----
+for i in $(seq 1 10); do
+  curl -s http://$FRONTEND_URL/api/hello
+  echo ""
+done
+----
+
+All responses should now come from the backend in `site-west`, because the high link cost makes the `site-east` backend a failover-only option.
+
+You can still test the `site-east` backend directly by sending requests from within that namespace:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-east
+skupper listener create backend-test 8080 --routing-key backend
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  curl -s http://backend-test:8080/api/hello
+skupper listener delete backend-test
+----
+====
+
+=== Step 6: Simulate Cutover — Route All Traffic to Cloud
+
+When you are confident the cloud backend is working correctly, shift all traffic to it.
+
+First, restore the link cost to normal:
+
+[source,bash,role=execute]
+----
+oc project site-west
+oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":1}}'
+----
+
+Then scale down the on-premises backend to force all traffic to the cloud:
+
+[source,bash,role=execute]
+----
+oc scale deployment backend -n site-west --replicas=0
+----
+
+Verify that the frontend still works, now served entirely by the cloud backend:
+
+[source,bash,role=execute]
+----
+for i in $(seq 1 5); do
+  curl -s http://$FRONTEND_URL/api/hello
+  echo ""
+done
+----
+
+All responses should come from the backend pods in `site-east`.
+
+=== Step 7: Simulate Rollback
+
+If issues are detected, roll back by scaling the on-premises backend back up:
+
+[source,bash,role=execute]
+----
+oc scale deployment backend -n site-west --replicas=2
+----
+
+Traffic automatically distributes across both sites again.
+If you want all traffic to go back to on-premises, set the link cost to 9999 again.
+
+=== Step 8: Complete the Migration
+
+Once the migration is validated, clean up the old backend:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper connector delete backend
+oc delete deployment backend -n site-west
+----
+
+The frontend in `site-west` now permanently uses the backend in `site-east` through the Service Interconnect application network.
+
+Verify the final state:
+
+[source,bash,role=execute]
+----
+curl -s http://$FRONTEND_URL/api/hello
+----
+
+The frontend continues to work seamlessly, even though the backend is now in a different site (simulating a different cloud).
+
+=== Step 9: Clean Up
+
+Remove the lab resources:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+On Cluster A:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc project site-west
+skupper listener delete backend
+oc delete route frontend
+oc delete service frontend
+oc delete deployment frontend
+----
++
+On Cluster B:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc project site-east
+skupper connector delete backend
+oc delete deployment backend
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc project site-west
+skupper listener delete backend
+oc delete route frontend
+oc delete service frontend
+oc delete deployment frontend
+
+oc project site-east
+skupper connector delete backend
+oc delete deployment backend
+----
+====
+
+The sites and links remain intact for use in other exercises.
+
+== Summary
+
+In this exercise, you:
+
+* Deployed a two-tier application in a single site (simulating on-premises)
+* Deployed a copy of the backend in a second site (simulating cloud)
+* Created connectors in both sites to enable load balancing across environments
+* Used link cost to control traffic routing between environments
+* Simulated a testing phase where all production traffic stayed on-premises
+* Performed a cutover by scaling down the on-premises backend
+* Verified rollback capability by scaling the on-premises backend back up
+* Completed the migration by removing the on-premises backend
+
+These techniques apply directly to real multi-cloud migrations.
+The same link cost and connector/listener mechanics work identically whether the sites are namespaces on one cluster, separate clusters, or clusters in different cloud providers.

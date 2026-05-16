@@ -1,2 +1,133 @@
 = Multi-cloud Connectivity
 :navtitle: Multi-cloud Connectivity
+
+== The Multi-cloud Challenge
+
+Organizations increasingly deploy applications across multiple cloud providers and on-premises data centers.
+Reasons include:
+
+* **Avoiding vendor lock-in** — Distributing workloads across providers reduces dependency on any single vendor
+* **Regulatory compliance** — Data residency requirements may mandate that certain services run in specific geographic regions or sovereign clouds
+* **Best-of-breed services** — Different cloud providers may offer specialized services (GPU compute, managed databases, analytics) that an application needs
+* **Disaster recovery** — Running in multiple clouds provides resilience against provider-level outages
+* **Mergers and acquisitions** — Integrating applications from organizations that use different infrastructure
+
+The challenge is connecting services across these environments.
+Each cloud provider has its own networking model, and establishing connectivity between them typically requires VPN tunnels, dedicated interconnects, or exposing services on the public internet.
+
+== How Service Interconnect Solves Multi-cloud Connectivity
+
+Service Interconnect creates an application network that is independent of the underlying infrastructure.
+A site can run on any platform that supports Kubernetes or Linux, and sites link to each other using outbound connections over standard HTTPS (port 443).
+
+This means:
+
+* **No VPN tunnels** — Sites connect using standard outbound HTTPS. No special network infrastructure is required.
+* **No firewall changes** — Links are initiated outbound. No inbound ports need to be opened.
+* **No cloud-specific configuration** — The same Service Interconnect resources (Site, Link, Connector, Listener) work identically on any Kubernetes distribution.
+* **Cross-cloud mTLS** — All inter-site traffic is encrypted with mutual TLS, regardless of the cloud provider.
+
+== Multi-cloud Topology Patterns
+
+=== Hub and Spoke
+
+A central hub site connects to all other sites.
+Spoke sites do not link directly to each other — they communicate through the hub.
+
+----
+                    +-------------+
+                    |   Hub Site  |
+                    | (on-prem)   |
+                    +------+------+
+                     / | \
+                    /  |  \
+    +-----------+ +----+-----+ +-----------+
+    | Spoke A   | | Spoke B  | | Spoke C   |
+    | (AWS)     | | (Azure)  | | (GCP)     |
+    +-----------+ +----------+ +-----------+
+----
+
+**When to use:** When you have a primary data center and want centralized control over routing. Good for organizations with an existing on-premises hub.
+
+**Trade-off:** All cross-cloud traffic routes through the hub, adding latency. The hub is a single point of failure for cross-site connectivity (though each site continues to operate independently if the hub goes down).
+
+=== Full Mesh
+
+Every site links directly to every other site.
+
+----
+    +-----------+       +-----------+
+    | Site A    +-------+ Site B    |
+    | (AWS)     |       | (Azure)   |
+    +-----+-----+       +-----+-----+
+          \                   /
+           \                 /
+            \               /
+         +---+-------------+---+
+         |      Site C         |
+         |      (on-prem)      |
+         +---------------------+
+----
+
+**When to use:** When sites need to communicate directly with low latency. Good for small numbers of sites (3-5) where each site hosts services consumed by the others.
+
+**Trade-off:** The number of links grows quadratically (n*(n-1)/2). Managing tokens and links becomes complex with many sites.
+
+=== Tiered
+
+A hybrid approach where a small number of hub sites form a mesh, and spoke sites connect to their nearest hub.
+
+----
+    +--------+          +--------+
+    | Hub A  +----------+ Hub B  |
+    | (US)   |          | (EU)   |
+    +---+----+          +---+----+
+       / \                 / \
+      /   \               /   \
+  +--+--+ +--+--+    +--+--+ +--+--+
+  |Spk 1| |Spk 2|    |Spk 3| |Spk 4|
+  +-----+ +-----+    +-----+ +-----+
+----
+
+**When to use:** When you have many sites across geographic regions. Hubs provide regional connectivity, and spokes connect to the nearest hub.
+
+**Trade-off:** More complex to set up than hub-and-spoke, but provides better latency and resilience than routing all traffic through a single hub.
+
+== Practical Considerations
+
+=== Link Cost for Cloud Preference
+
+Use link cost to influence traffic routing between clouds.
+For example, if you want traffic to prefer the on-premises database over a cloud replica:
+
+* Set cost `1` on the link between the application site and the on-premises database site
+* Set cost `9999` on the link between the application site and the cloud database site
+
+This ensures the on-premises database handles all traffic under normal conditions, with automatic failover to the cloud replica if the on-premises site becomes unavailable.
+
+=== Namespace Isolation
+
+Each Service Interconnect site is scoped to a single Kubernetes namespace.
+In multi-cloud deployments, use consistent namespace naming across clouds to simplify management:
+
+* `app-frontend` on all clusters that run frontend services
+* `app-backend` on all clusters that run backend services
+* `app-data` on clusters that host databases
+
+=== Token Distribution Across Clouds
+
+When linking sites across cloud providers, you need to transfer access tokens between environments.
+Options include:
+
+* **Direct transfer** — Copy the token file using `scp` or a secure channel
+* **Secret management** — Store the token temporarily in a secrets manager (HashiCorp Vault, AWS Secrets Manager) accessible from both environments
+* **GitOps** — Use AccessGrant/AccessToken YAML resources managed through a Git repository with sealed secrets or external secrets operators
+
+IMPORTANT: Tokens contain sensitive credential material. Always use secure channels for transfer and delete token files after redemption.
+
+=== DNS and Service Naming
+
+Service Interconnect creates Kubernetes services for listeners, making remote services available as local DNS names.
+In a multi-cloud setup, this means your application code does not need to know which cloud hosts a given service — it simply connects to `backend:8080` or `database:5432` as if the service were local.
+
+This is a significant advantage over traditional multi-cloud approaches, which often require application changes to handle cloud-specific service discovery.

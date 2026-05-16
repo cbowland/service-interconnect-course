@@ -1,2 +1,148 @@
 = Progressive Migration Patterns
 :navtitle: Progressive Migration Patterns
+
+== What is Progressive Migration?
+
+Progressive migration is the practice of moving application workloads from one environment to another incrementally, rather than in a single cutover.
+This approach reduces risk by allowing you to validate each step before proceeding to the next.
+
+Common migration scenarios include:
+
+* **On-premises to cloud** — Moving workloads from a data center to OpenShift on a cloud provider
+* **Cloud to cloud** — Moving from one cloud provider to another
+* **Monolith to microservices** — Decomposing a monolithic application and deploying individual services to new environments
+* **Cluster upgrades** — Migrating workloads from an older OpenShift cluster to a newer one
+
+Service Interconnect enables progressive migration by allowing services in both the old and new environments to communicate as if they were co-located.
+You can move services one at a time, validate each move, and roll back individual services if needed.
+
+== The Strangler Fig Pattern
+
+The strangler fig pattern (named after the tropical plant that gradually envelops its host) is a progressive migration strategy where you incrementally replace components of an existing system with new implementations.
+
+With Service Interconnect, the pattern works as follows:
+
+=== Phase 1: Establish Connectivity
+
+Create Service Interconnect sites in both the old and new environments and link them.
+
+----
+    +------------------+         +------------------+
+    |  Old Environment |         |  New Environment |
+    |                  +------>  |                  |
+    | frontend         |  link   |                  |
+    | backend          |         |                  |
+    | database         |         |                  |
+    +------------------+         +------------------+
+----
+
+At this point, no services are exposed across the link.
+All traffic continues to flow within the old environment.
+
+=== Phase 2: Deploy in Parallel
+
+Deploy the first service to migrate (for example, `backend`) in the new environment.
+Create a connector in the new environment and a listener in the old environment so both copies are accessible.
+
+----
+    +------------------+         +------------------+
+    |  Old Environment |         |  New Environment |
+    |                  +------>  |                  |
+    | frontend         |  link   | backend (new)    |
+    | backend (old)    |         |   connector      |
+    | database         |         |                  |
+    +------------------+         +------------------+
+----
+
+Both the old and new backends are running.
+Use link cost to control which one receives traffic:
+
+* **Test the new backend** — Set cost `9999` on the link to the new environment so all production traffic continues to go to the old backend. Test the new backend directly.
+* **Shift traffic** — When confident, update link costs or scale down the old backend to shift traffic to the new one.
+
+=== Phase 3: Cut Over and Decommission
+
+Once the new backend is validated, remove the old backend and the connector/listener that bridged them.
+
+----
+    +------------------+         +------------------+
+    |  Old Environment |         |  New Environment |
+    |                  +------>  |                  |
+    | frontend         |  link   | backend          |
+    | database         |         |                  |
+    +------------------+         +------------------+
+----
+
+Repeat for the next service.
+
+=== Phase 4: Complete
+
+After all services are migrated, remove the link and decommission the old environment.
+
+----
+                                 +------------------+
+                                 |  New Environment |
+                                 |                  |
+                                 | frontend         |
+                                 | backend          |
+                                 | database         |
+                                 +------------------+
+----
+
+== Traffic Shifting Strategies
+
+=== Using Link Cost
+
+Link cost controls the routing preference between sites.
+By adjusting link cost, you can gradually shift traffic from the old to the new environment:
+
+[cols="1,1,2",options="header"]
+|===
+|Phase |Link Cost (old -> new) |Effect
+
+|Testing
+|9999
+|All traffic goes to old environment. New environment accessible only for direct testing.
+
+|Canary
+|1 (equal to old)
+|Traffic is balanced between old and new based on active connections and capacity.
+
+|Primary
+|1 (new), 9999 (old)
+|All traffic goes to new environment. Old environment serves as failover only.
+
+|Complete
+|N/A (link removed)
+|Old environment decommissioned.
+|===
+
+=== Using Parallel Connectors
+
+Deploy connectors for the same routing key in both environments.
+Service Interconnect automatically balances traffic across all connectors with the same routing key.
+
+This approach works well for stateless services where any instance can handle any request.
+For stateful services (like databases), use link cost to ensure all traffic goes to a single instance and only fails over when that instance is unavailable.
+
+== Rollback Strategy
+
+One of the key advantages of progressive migration with Service Interconnect is easy rollback.
+If a migrated service has issues in the new environment:
+
+. Scale up the old service in the old environment
+. Adjust link cost to route traffic back to the old environment
+. Investigate and fix the issue in the new environment
+. Resume migration when ready
+
+Because both environments remain connected through the application network, rollback is a matter of adjusting routing — not re-deploying infrastructure.
+
+== Planning a Migration
+
+Before starting a progressive migration, consider:
+
+* **Service dependencies** — Map which services depend on which others. Migrate leaf services (those with no downstream dependencies) first.
+* **Stateful services** — Databases and other stateful services are typically migrated last. Use Service Interconnect to maintain connectivity while the database remains in the old environment.
+* **Testing** — Use the high-cost link approach to test each service in the new environment before shifting production traffic.
+* **Monitoring** — Deploy the Network Observer in both environments to monitor traffic patterns during migration. Watch for unexpected traffic flows that might indicate missed dependencies.
+* **Timeline** — Progressive migrations can run for days or weeks. Service Interconnect's application network can run indefinitely, so there is no pressure to complete the migration quickly.
