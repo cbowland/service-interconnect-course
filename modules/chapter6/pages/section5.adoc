@@ -1,2 +1,308 @@
 = Hands-on: Securing and Monitoring Your Network
 :navtitle: Hands-on: Securing and Monitoring
+
+== Lab Overview
+
+In this exercise, you will inspect the security posture of your Service Interconnect application network, deploy the Network Observer console, and create a Prometheus alerting rule.
+You will verify that mTLS is in place, examine certificates, and use the console to visualize your network topology.
+
+== Prerequisites
+
+* Completed the Chapter 3 hands-on lab (you have two linked sites: `site-west` and `site-east`)
+* The Service Interconnect operator is running on your cluster(s)
+* Access to the OpenShift web console
+
+== Exercise Steps
+
+=== Step 1: Inspect Site Certificates
+
+Examine the certificate Secrets in the `site-west` namespace:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-a-api-url> -u <username> -p <password>
+oc get secrets -n site-west | grep skupper
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+oc get secrets -n site-west | grep skupper
+----
+====
+
+.Expected output (partial)
+----
+skupper-local-ca       kubernetes.io/tls   3
+skupper-site-ca        kubernetes.io/tls   3
+skupper-service-ca     kubernetes.io/tls   3
+skupper-site-server    kubernetes.io/tls   2
+----
+
+You should see at least four Secrets: the three CAs (`local-ca`, `site-ca`, `service-ca`) and the server certificate (`site-server`).
+
+=== Step 2: Examine a Certificate
+
+Decode and inspect the site CA certificate:
+
+[source,bash,role=execute]
+----
+oc get secret skupper-site-ca -n site-west \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -text -noout
+----
+
+Note the following fields in the output:
+
+* **Issuer** — The CA that issued this certificate (self-signed for the root CA)
+* **Subject** — The identity this certificate represents
+* **Validity** — The not-before and not-after dates
+* **Key Usage** — Should include `Certificate Sign` for a CA certificate
+
+Now inspect the server certificate issued by the site CA:
+
+[source,bash,role=execute]
+----
+oc get secret skupper-site-server -n site-west \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -text -noout
+----
+
+Compare the **Issuer** of the server certificate with the **Subject** of the site CA.
+They should match, confirming the trust chain.
+
+=== Step 3: Verify mTLS on Links
+
+Check the link status to confirm that the connection between sites is encrypted:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper link status
+----
+
+.Expected output
+----
+NAME                                          STATUS   COST   MESSAGE
+link-<uuid>                                   Ready    1      OK
+----
+
+A `Ready` link status confirms that the mTLS handshake completed successfully.
+Both sites have exchanged certificates and verified each other's identity.
+
+You can also inspect the link resource for more detail:
+
+[source,bash,role=execute]
+----
+oc get link -n site-west -o yaml
+----
+
+The `status` section shows the connection state and any certificate-related information.
+
+=== Step 4: Compare Certificates Across Sites
+
+To verify that each site has its own unique CA, compare the site CA fingerprints:
+
+[tabs]
+====
+Option A: Two Clusters::
++
+On Cluster A:
++
+[source,bash,role=execute]
+----
+oc get secret skupper-site-ca -n site-west \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -fingerprint -noout
+----
++
+On Cluster B:
++
+[source,bash,role=execute]
+----
+oc login --server=<cluster-b-api-url> -u <username> -p <password>
+oc get secret skupper-site-ca -n site-east \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -fingerprint -noout
+----
+
+Option B: Single Cluster::
++
+[source,bash,role=execute]
+----
+echo "=== site-west ==="
+oc get secret skupper-site-ca -n site-west \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -fingerprint -noout
+
+echo "=== site-east ==="
+oc get secret skupper-site-ca -n site-east \
+  -o jsonpath='{.data.tls\.crt}' | base64 -d | \
+  openssl x509 -fingerprint -noout
+----
+====
+
+The fingerprints should be *different*, confirming that each site has its own independent CA.
+This is a key security property — compromising one site's CA does not compromise the other.
+
+=== Step 5: Install the Network Observer Operator
+
+. In the OpenShift web console, navigate to **Operators -> OperatorHub**
+. Search for **Red Hat Service Interconnect Network Observer**
+. Click **Install**, accept the defaults, and click **Install** again
+. Wait for the operator to reach the `Succeeded` phase
+
+Verify from the CLI:
+
+[source,bash,role=execute]
+----
+oc get csv -A | grep network-observer
+----
+
+.Expected output
+----
+openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded
+----
+
+=== Step 6: Deploy the Network Observer
+
+Create a NetworkObserver instance in the `site-west` namespace:
+
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec: {}
+EOF
+----
+
+Wait for the deployment to become available:
+
+[source,bash,role=execute]
+----
+oc rollout status deployment -n site-west -l app.kubernetes.io/component=network-observer --timeout=120s
+----
+
+Verify the NetworkObserver resource:
+
+[source,bash,role=execute]
+----
+oc get networkobserver -n site-west
+----
+
+=== Step 7: Access the Console
+
+Get the console route URL:
+
+[source,bash,role=execute]
+----
+oc get route -n site-west -o jsonpath='{.items[?(@.metadata.name=="skupper-network-observer-site-west")].spec.host}'
+----
+
+Open the URL in a browser.
+If using the default `openshift` authentication strategy, log in with your OpenShift credentials.
+
+In the console, you should see:
+
+* Both sites (`site-west` and `site-east`) in the topology view
+* The link connecting the two sites
+* Any exposed services (from Chapter 3) showing as connectors and listeners
+
+Take a moment to explore the different views and understand the information available.
+
+=== Step 8: Create a Memory Alert
+
+Ensure user workload monitoring is enabled:
+
+[source,bash,role=execute]
+----
+oc get pods -n openshift-user-workload-monitoring
+----
+
+If the namespace exists and pods are running, proceed.
+If not, ask your cluster administrator to enable user workload monitoring.
+
+Create the PrometheusRule:
+
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-memory-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer.rules
+    rules:
+    - alert: NetworkObserverHighMemory
+      expr: |
+        (container_memory_working_set_bytes{namespace="site-west", container="network-observer"}
+        /
+        kube_pod_container_resource_limits{namespace="site-west", container="network-observer", resource="memory"}) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer pod in namespace {{ \$labels.namespace }} is using > 90% of its memory limit."
+        description: "Pod {{ \$labels.pod }} is currently using {{ \$value | humanizePercentage }} of its memory limit."
+EOF
+----
+
+Verify the rule was created:
+
+[source,bash,role=execute]
+----
+oc get prometheusrule -n site-west
+----
+
+.Expected output
+----
+NAME                              AGE
+network-observer-memory-alert     10s
+----
+
+You can view this alert in the OpenShift console under **Observe -> Alerting -> User** tab.
+
+=== Step 9: Clean Up (Optional)
+
+Remove the alerting rule:
+
+[source,bash,role=execute]
+----
+oc delete prometheusrule network-observer-memory-alert -n site-west
+----
+
+Remove the Network Observer instance:
+
+[source,bash,role=execute]
+----
+oc delete networkobserver networkobserver-sample -n site-west
+----
+
+NOTE: Leave the Network Observer operator installed — you can use it in later chapters.
+Do not remove the site certificates or links, as they are needed for subsequent exercises.
+
+== Summary
+
+In this exercise, you:
+
+* Inspected the certificate Secrets that Service Interconnect creates for each site
+* Examined certificate details using `openssl` and verified the CA trust chain
+* Confirmed that each site has an independent certificate authority
+* Verified that links between sites use mutual TLS authentication
+* Installed the Network Observer operator and deployed a NetworkObserver instance
+* Accessed the Network Observer console to visualize the network topology
+* Created a Prometheus alerting rule to monitor Network Observer memory usage
+
+In the next chapter, you will explore advanced scenarios including multi-cloud connectivity, progressive migration, and edge computing patterns.

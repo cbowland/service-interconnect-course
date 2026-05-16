@@ -1,2 +1,28 @@
 = Security and Observability
 :navtitle: Security and Observability
+
+== Overview
+
+Red Hat Service Interconnect provides built-in security and observability features that make it suitable for production deployments across sensitive environments.
+Security is not an add-on — it is fundamental to how Service Interconnect operates.
+Every inter-site connection is encrypted with mutual TLS by default, using a private certificate authority that is created automatically when a site is initialized.
+
+Observability is provided through the Network Observer, a dedicated component that visualizes the topology of your application network and monitors communication between sites and services.
+
+This chapter covers:
+
+* The security model, including mutual TLS, network isolation, and zero-trust principles
+* Certificate and token lifecycle management
+* The Network Observer console for monitoring your application network
+* Integration with the OpenShift monitoring stack for alerting
+
+== Objectives
+
+On completing this chapter, you should be able to:
+
+* Explain how Service Interconnect secures inter-site communication with mutual TLS
+* Describe the certificate authority hierarchy and how certificates are managed
+* Manage access tokens and understand their security properties
+* Deploy and configure the Network Observer console
+* Create Prometheus alerting rules for Network Observer resources
+* Inspect certificates and verify the security posture of your application network

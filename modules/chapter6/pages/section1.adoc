@@ -1,2 +1,112 @@
 = The Security Model
 :navtitle: The Security Model
+
+== Security Challenges in Hybrid Cloud
+
+Moving applications to the cloud — or distributing them across multiple clusters — raises security risks.
+Traditional approaches to multi-cluster connectivity require one of the following:
+
+* **Exposing services on the public internet**, which creates a large attack surface
+* **Setting up VPNs**, which require complex Layer 3 network controls, firewall rules, and access policies
+
+These network controls do not extend easily to multiple clusters.
+Each new cluster added to the network requires its own set of firewall rules, VPN tunnels, and access policies.
+The complexity grows with every additional site.
+
+Red Hat Service Interconnect takes a fundamentally different approach.
+It creates a Layer 7 application network that provides secure connectivity without requiring changes to the underlying network infrastructure.
+
+== Built-in Network Isolation
+
+Service Interconnect provides default, built-in security that scales across clusters and clouds.
+The connections between routers are secured with mutual TLS using a private, dedicated certificate authority (CA).
+Each router is uniquely identified by its own certificate.
+
+This design provides several security properties:
+
+* **Network isolation** — The application network is isolated from external access. Only sites that have been explicitly linked can participate in the network.
+* **Lateral attack prevention** — Because the network is isolated, it prevents lateral attacks, malware propagation, and data exfiltration between the application network and external systems.
+* **No open inbound ports** — Sites initiate outbound connections to establish links. No inbound ports need to be opened on firewalls, reducing the attack surface.
+
+== Mutual TLS by Default
+
+All communication between Service Interconnect routers is encrypted and authenticated using mutual TLS (mTLS).
+This is enabled automatically — there is no option to disable it and no configuration required to turn it on.
+
+With mTLS:
+
+* Both sides of a connection present certificates to prove their identity
+* All traffic is encrypted in transit
+* Each router has a unique certificate issued by the site's CA
+* Certificates are automatically rotated by the operator
+
+This differs from standard TLS (used by HTTPS), where only the server presents a certificate.
+With mTLS, both the client and server authenticate each other, providing stronger identity guarantees.
+
+== Certificate Authority Hierarchy
+
+When the Service Interconnect operator creates a site, it generates a private CA hierarchy with three levels:
+
+[cols="1,2",options="header"]
+|===
+|CA |Purpose
+
+|**Local CA** (`skupper-local-ca`)
+|Issues certificates for internal communication within the site (between the router and local components)
+
+|**Site CA** (`skupper-site-ca`)
+|Issues the router's identity certificate, used for inter-site mTLS connections
+
+|**Service CA** (`skupper-service-ca`)
+|Issues certificates for service-level TLS between the router and application workloads
+|===
+
+Each CA is stored as a Kubernetes Secret in the site's namespace.
+The private keys never leave the namespace, and the CAs are unique to each site.
+
+== Zero-Trust Principles
+
+Service Interconnect follows zero-trust networking principles:
+
+* **Explicit trust** — Sites must be explicitly linked using access tokens. There is no implicit trust based on network proximity.
+* **Least privilege** — Access tokens are single-use by default and expire after 15 minutes. A token can only be redeemed once, limiting the window for misuse.
+* **No ambient authority** — Being on the same physical network does not grant access to the application network. Every participant must be authenticated through the linking process.
+* **Encrypted by default** — All inter-site traffic is encrypted with mTLS. There is no unencrypted mode.
+
+== Comparison with Traditional Security Approaches
+
+[cols="1,1,1",options="header"]
+|===
+|Feature |VPN / Network-Level Security |Service Interconnect
+
+|Encryption
+|Varies (IPsec, WireGuard)
+|mTLS always on
+
+|Authentication
+|Pre-shared keys or certificates
+|Automatic mTLS with per-router certificates
+
+|Network changes
+|Firewall rules, NAT, routing tables
+|None required
+
+|Inbound ports
+|Required
+|Not required (outbound-only connections)
+
+|Scope
+|All traffic between sites (L3/L4)
+|Application traffic only (L7)
+
+|Management
+|Manual certificate/key rotation
+|Automatic certificate management
+
+|Isolation
+|Network-level
+|Application-level (namespace-scoped)
+|===
+
+Service Interconnect does not replace network-level security controls.
+It complements them by providing application-level security that is independent of the underlying network topology.

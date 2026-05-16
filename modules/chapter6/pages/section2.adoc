@@ -1,2 +1,177 @@
 = Certificate and Token Management
 :navtitle: Certificate and Token Management
+
+== Certificate Lifecycle
+
+When the Service Interconnect operator creates a site, it automatically generates the CA hierarchy and issues certificates for the router.
+These certificates are stored as Kubernetes Secrets in the site's namespace.
+
+=== Viewing Certificates
+
+You can inspect the certificate Secrets in a site's namespace:
+
+[source,bash,role=execute]
+----
+oc get secrets -n site-west | grep skupper
+----
+
+.Expected output (partial)
+----
+skupper-local-ca       kubernetes.io/tls   3
+skupper-site-ca        kubernetes.io/tls   3
+skupper-service-ca     kubernetes.io/tls   3
+skupper-site-server    kubernetes.io/tls   2
+----
+
+Each CA Secret contains three items: the TLS certificate (`tls.crt`), the TLS private key (`tls.key`), and the CA certificate (`ca.crt`).
+
+To examine the details of a certificate:
+
+[source,bash,role=execute]
+----
+oc get secret skupper-site-ca -n site-west -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -text -noout
+----
+
+This displays the certificate's issuer, subject, validity period, and other attributes.
+
+=== Certificate Rotation
+
+The Service Interconnect operator handles certificate rotation automatically.
+When certificates approach expiration, the operator generates new certificates and updates the router configuration.
+No manual intervention is required.
+
+If you need to force certificate regeneration (for example, after a suspected compromise), you can delete the certificate Secrets and the operator will recreate them:
+
+[source,bash,role=execute]
+----
+oc delete secret skupper-site-server -n site-west
+----
+
+The operator detects the missing Secret and generates a new certificate.
+
+IMPORTANT: Deleting CA Secrets (`skupper-site-ca`, `skupper-local-ca`, `skupper-service-ca`) will break existing links because the trust chain changes. Only delete the server certificate Secrets unless you intend to re-establish all links.
+
+== Access Token Management
+
+Access tokens are the mechanism for establishing trust between sites.
+A token contains the information needed for one site to create a link to another site.
+
+=== Token Properties
+
+Tokens created with the `skupper token issue` command have these default properties:
+
+[cols="1,1,2",options="header"]
+|===
+|Property |Default |Description
+
+|**Uses**
+|1
+|Number of times the token can be redeemed. After redemption, the token is invalidated.
+
+|**Expiry**
+|15 minutes
+|Time after which an unredeemed token becomes invalid.
+|===
+
+These defaults follow the principle of least privilege — a token provides the minimum access needed for the minimum time.
+
+=== Issuing Tokens with Custom Properties
+
+You can customize token properties when issuing:
+
+[source,bash,role=execute]
+----
+skupper token issue ~/my-token.yaml --uses 5 --expiry 1h
+----
+
+This creates a token that can be redeemed up to 5 times within 1 hour of issuance.
+
+Use multiple-use tokens when you need to link several sites to the same hub site, or when you want to prepare tokens in advance for sites that will be set up later.
+
+IMPORTANT: Multiple-use tokens and longer expiry windows increase the risk if a token is intercepted. Use the shortest expiry and fewest uses that meet your requirements.
+
+=== Token Lifecycle Using YAML Resources
+
+Tokens can also be managed using Kubernetes custom resources.
+This approach provides more control and integrates with GitOps workflows.
+
+**AccessGrant** — Created on the site that accepts incoming links. Defines the token's properties.
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: AccessGrant
+metadata:
+  name: my-grant
+  namespace: site-west
+spec:
+  redemptionsAllowed: 3
+  expirationWindow: 30m
+----
+
+Apply the grant:
+
+[source,bash,role=execute]
+----
+oc apply -f access-grant.yaml
+----
+
+After the grant is created, retrieve the generated token data:
+
+[source,bash,role=execute]
+----
+oc get accessgrant my-grant -n site-west -o yaml
+----
+
+The `status` field contains the `ca`, `code`, and `url` values needed to create an AccessToken on the remote site.
+
+**AccessToken** — Created on the site that initiates the link. Contains the trust information from the AccessGrant.
+
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: AccessToken
+metadata:
+  name: my-token
+  namespace: site-east
+spec:
+  ca: <base64-encoded-ca-from-grant>
+  code: <code-from-grant>
+  url: <url-from-grant>
+----
+
+Apply the token:
+
+[source,bash,role=execute]
+----
+oc apply -f access-token.yaml
+----
+
+This creates a Link resource automatically, connecting `site-east` to `site-west`.
+
+=== Revoking Access
+
+To revoke access for a linked site, delete the corresponding Link resource:
+
+[source,bash,role=execute]
+----
+oc delete link <link-name> -n site-west
+----
+
+To prevent future links from being created with a specific grant, delete the AccessGrant:
+
+[source,bash,role=execute]
+----
+oc delete accessgrant my-grant -n site-west
+----
+
+Tokens that have already been redeemed are not affected by deleting the grant — you must also delete the Link to disconnect the site.
+
+== Security Best Practices
+
+* **Use single-use tokens** whenever possible. Issue a new token for each site you link.
+* **Minimize token expiry windows.** The default 15-minute window is appropriate for most scenarios. Only extend it when operationally necessary.
+* **Protect token files.** Treat token files like credentials. Delete them after redemption. Do not store them in version control.
+* **Monitor link status.** Regularly check `skupper link status` and `oc get link` to verify that only expected sites are connected.
+* **Audit AccessGrant resources.** Review grants periodically to ensure unused or expired grants are cleaned up.
+* **Use namespaces for isolation.** Each Service Interconnect site operates within a single namespace. Use separate namespaces for separate trust domains.

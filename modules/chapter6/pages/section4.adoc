@@ -1,2 +1,190 @@
 = Integration with OpenShift Monitoring
 :navtitle: Integration with OpenShift Monitoring
+
+== Overview
+
+The Network Observer runs as a pod in your site's namespace and can be monitored using the standard OpenShift monitoring stack.
+You can create Prometheus alerting rules to detect issues with the Network Observer itself, such as high memory usage that could indicate a problem with a large or rapidly changing network.
+
+This section covers how to configure Prometheus alerts for the Network Observer using the OpenShift user workload monitoring feature.
+
+== Prerequisites
+
+Before creating alerting rules, ensure that user workload monitoring is enabled on your OpenShift cluster.
+
+Verify that user workload monitoring is enabled:
+
+[source,bash,role=execute]
+----
+oc get pods -n openshift-user-workload-monitoring
+----
+
+You should see `prometheus-user-workload` and `thanos-ruler-user-workload` pods in a `Running` state.
+If the namespace does not exist or the pods are not running, user workload monitoring needs to be enabled by a cluster administrator.
+
+To enable user workload monitoring, create or update the `cluster-monitoring-config` ConfigMap:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+----
+
+Apply the ConfigMap:
+
+[source,bash,role=execute]
+----
+oc apply -f cluster-monitoring-config.yaml
+----
+
+Wait for the user workload monitoring pods to start in the `openshift-user-workload-monitoring` namespace.
+
+== Creating a Prometheus Alerting Rule
+
+The following example creates a PrometheusRule that triggers an alert when the Network Observer pod's memory usage exceeds 90% of its configured memory limit for more than 5 minutes.
+
+Create a file named `network-observer-alert.yaml`:
+
+[source,yaml]
+----
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-memory-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer.rules
+    rules:
+    - alert: NetworkObserverHighMemory
+      expr: |
+        (container_memory_working_set_bytes{namespace="site-west", container="network-observer"}
+        /
+        kube_pod_container_resource_limits{namespace="site-west", container="network-observer", resource="memory"}) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer pod in namespace {{ $labels.namespace }} is using > 90% of its memory limit."
+        description: "Pod {{ $labels.pod }} is currently using {{ $value | humanizePercentage }} of its memory limit."
+----
+
+Apply the rule:
+
+[source,bash,role=execute]
+----
+oc apply -f network-observer-alert.yaml
+----
+
+Verify the rule is loaded:
+
+[source,bash,role=execute]
+----
+oc get prometheusrule -n site-west
+----
+
+.Expected output
+----
+NAME                              AGE
+network-observer-memory-alert     10s
+----
+
+== Understanding the Alert Expression
+
+The PromQL expression compares two metrics:
+
+* `container_memory_working_set_bytes` — The current memory usage of the Network Observer container
+* `kube_pod_container_resource_limits` — The configured memory limit for the container
+
+When the ratio exceeds 0.9 (90%) for more than 5 minutes, the alert fires with a `warning` severity.
+
+IMPORTANT: Replace the `namespace` value in the expression with the namespace where your site and Network Observer are deployed.
+
+== Responding to Memory Alerts
+
+If the `NetworkObserverHighMemory` alert fires, consider the following actions:
+
+. **Increase the memory limit** — Update the NetworkObserver CR with a higher memory limit:
++
+[source,bash,role=execute]
+----
+oc patch networkobserver networkobserver-sample -n site-west --type merge \
+  -p '{"spec":{"resources":{"limits":{"memory":"16Gi"},"requests":{"memory":"8Gi"}}}}'
+----
+
+. **Investigate network size** — A large number of sites, services, or high traffic volume can increase memory consumption. Check the console to understand the network scale.
+
+. **Check for issues** — Rapidly creating and deleting links or services can cause memory spikes. Review recent changes to the network topology.
+
+== Additional Alerting Examples
+
+=== Pod Restart Alert
+
+Monitor if the Network Observer pod restarts frequently:
+
+[source,yaml]
+----
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-restart-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer-restarts.rules
+    rules:
+    - alert: NetworkObserverFrequentRestarts
+      expr: |
+        increase(kube_pod_container_status_restarts_total{namespace="site-west", container="network-observer"}[1h]) > 3
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer in namespace {{ $labels.namespace }} has restarted more than 3 times in the last hour."
+        description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times."
+----
+
+=== CPU Throttling Alert
+
+Detect if the Network Observer is being CPU-throttled:
+
+[source,yaml]
+----
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: network-observer-cpu-alert
+  namespace: site-west
+spec:
+  groups:
+  - name: network-observer-cpu.rules
+    rules:
+    - alert: NetworkObserverCPUThrottled
+      expr: |
+        rate(container_cpu_cfs_throttled_seconds_total{namespace="site-west", container="network-observer"}[5m]) > 0.25
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Network Observer in namespace {{ $labels.namespace }} is experiencing CPU throttling."
+        description: "Container {{ $labels.container }} is being throttled. Consider increasing the CPU limit."
+----
+
+== Viewing Alerts in the OpenShift Console
+
+. Navigate to **Observe -> Alerting** in the OpenShift web console
+. Switch to the **User** tab to see alerts from user workload monitoring
+. Look for alerts with names matching `NetworkObserver*`
+
+You can also view the alert status using the CLI:
+
+[source,bash,role=execute]
+----
+oc get prometheusrule -n site-west -o yaml | grep -A 5 "alert:"
+----

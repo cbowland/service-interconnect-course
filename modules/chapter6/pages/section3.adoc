@@ -1,2 +1,236 @@
 = Network Observer and the Console
 :navtitle: Network Observer and the Console
+
+== What is the Network Observer?
+
+The Network Observer is a dedicated component that provides a web-based console for monitoring your Service Interconnect application network.
+The console provides a visual overview of:
+
+* **Sites** — All sites in the network and their status
+* **Links** — Connections between sites with latency and throughput data
+* **Services** — Exposed services and the connectors/listeners that bind them
+* **Traffic flow** — Communication patterns between services across sites
+
+The Network Observer is installed as a separate operator from the Service Interconnect operator.
+It runs in the same namespace as the site it monitors and collects data from the local router.
+
+== Installing the Network Observer Operator
+
+The Network Observer operator is available from OperatorHub on OpenShift Container Platform.
+
+. In the OpenShift web console, navigate to **Operators -> OperatorHub**
+. Search for **Red Hat Service Interconnect Network Observer**
+. Click the operator tile and then click **Install**
+. Accept the default settings:
+* **Update channel:** `stable-2`
+* **Installation mode:** All namespaces on the cluster
+* **Update approval:** Automatic
+. Click **Install** and wait for the operator to reach the `Succeeded` phase
+
+Verify the operator is running:
+
+[source,bash,role=execute]
+----
+oc get csv -A | grep network-observer
+----
+
+.Expected output
+----
+openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded
+----
+
+== Deploying a Network Observer Instance
+
+After installing the operator, create a NetworkObserver custom resource in a namespace that has a Service Interconnect site.
+
+=== Using the OpenShift Console
+
+. Navigate to **Operators -> Installed Operators**
+. Select the **Red Hat Service Interconnect Network Observer Operator**
+. Click **Create Instance**
+. Accept the defaults and click **Create**
+
+=== Using the CLI
+
+Create a NetworkObserver resource YAML file:
+
+[source,yaml]
+----
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec: {}
+----
+
+Apply the resource:
+
+[source,bash,role=execute]
+----
+oc apply -f network-observer.yaml
+----
+
+The operator creates the Network Observer deployment, service, and route in the specified namespace.
+
+Verify the deployment:
+
+[source,bash,role=execute]
+----
+oc get networkobserver -n site-west
+----
+
+== Accessing the Console
+
+The operator creates an OpenShift route for the console.
+Determine the console URL:
+
+[source,bash,role=execute]
+----
+oc get route -n site-west | grep network-observer
+----
+
+The route is named using the pattern `skupper-network-observer-<namespace>`.
+For a site in the `site-west` namespace, the route will be `skupper-network-observer-site-west`.
+
+Open the URL in a browser to access the console.
+
+== Configuring the Network Observer
+
+You can customize the Network Observer by specifying additional fields in the CR spec.
+
+=== Resource Configuration
+
+For medium-to-large networks, you may need to increase the default resource allocation:
+
+[source,yaml]
+----
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "4Gi"
+    limits:
+      cpu: "1"
+      memory: "8Gi"
+----
+
+[cols="1,1,2",options="header"]
+|===
+|Parameter |Type |Description
+
+|`resources.requests.cpu`
+|String
+|Minimum CPU guaranteed to the Network Observer. Increase if the console feels sluggish under high network load.
+
+|`resources.requests.memory`
+|String
+|Initial memory allocation. 4Gi is the recommended minimum for medium-sized networks.
+
+|`resources.limits.cpu`
+|String
+|Maximum CPU the Network Observer can consume.
+
+|`resources.limits.memory`
+|String
+|Upper bound of memory. If usage exceeds this limit, the pod is terminated due to insufficient memory.
+|===
+
+=== Authentication Strategies
+
+The Network Observer console supports three authentication strategies:
+
+[cols="1,2",options="header"]
+|===
+|Strategy |Description
+
+|**`openshift`** (default)
+|Uses the OpenShift OAuth2 proxy. Users log in with their OpenShift credentials. The operator automatically creates a ServiceAccount and session cookie secret.
+
+|**`basic`**
+|Username and password authentication. Credentials are stored in an htpasswd-format Secret.
+
+|**`none`**
+|No authentication. The console is accessible to anyone who can reach the route. Only use this for development or testing.
+|===
+
+To configure the authentication strategy:
+
+[source,yaml]
+----
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: networkobserver-sample
+  namespace: site-west
+spec:
+  auth:
+    strategy: "openshift"
+    openshift:
+      createCookieSecret: true
+      cookieSecretName: ""
+      serviceAccount:
+        create: true
+        nameOverride: ""
+----
+
+For the `basic` strategy, you need to create an htpasswd Secret before deploying the Network Observer.
+
+=== Retrieving Basic Auth Credentials
+
+When using the `basic` authentication strategy, the operator generates an htpasswd Secret.
+To retrieve the credentials:
+
+[source,bash,role=execute]
+----
+oc get secret <network-observer-name>-htpasswd -n site-west -o jsonpath='{.data.htpasswd}' | base64 -d
+----
+
+The output contains the username and hashed password in htpasswd format.
+
+== Using the Console
+
+The Network Observer console provides several views:
+
+=== Topology View
+
+The topology view shows all sites in the network and the links between them.
+Each site is displayed as a node, and links are displayed as edges.
+The view updates in real time as sites and links are added or removed.
+
+=== Services View
+
+The services view shows all exposed services in the network, including:
+
+* The routing key name
+* Which sites have connectors (providers)
+* Which sites have listeners (consumers)
+* Active connection count and throughput
+
+=== Traffic Flow
+
+The console displays traffic flow between services, showing:
+
+* Request rate and throughput
+* Latency between sites
+* Connection status
+
+This information is collected from the local router's metrics and does not require any additional monitoring infrastructure.
+
+== Verifying the Configuration
+
+After deploying the Network Observer, verify its configuration:
+
+[source,bash,role=execute]
+----
+oc describe networkobserver networkobserver-sample -n site-west
+----
+
+The output displays the configured parameters and the status of the Network Observer deployment.
+
+NOTE: Parameters in the `describe` output that are not part of the CR spec are managed by the operator and are not configurable.
