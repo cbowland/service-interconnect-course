@@ -1,3 +1,8 @@
 = Appendix
+:navtitle: Appendix
 
-Content for Appendix...
+This appendix provides reference material to support your work with Red Hat Service Interconnect.
+
+* xref:cli-reference.adoc[CLI Reference] — Complete reference for the `skupper` command-line interface
+* xref:troubleshooting.adoc[Troubleshooting] — Common issues and diagnostic commands
+* xref:resources.adoc[Additional Resources] — Official documentation, related courses, and community resources

@@ -1,2 +1,30 @@
 = Additional Resources
 :navtitle: Additional Resources
+
+== Official Red Hat Documentation
+
+* https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1[Red Hat Service Interconnect 2.1 Documentation^] — Complete product documentation including installation, usage, and release notes
+* https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1/html/installing_service_interconnect/index[Installing Service Interconnect^] — Operator and CLI installation guide
+* https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1/html/using_service_interconnect/index[Using Service Interconnect^] — Complete usage guide covering sites, links, services, and the Network Observer
+
+== Red Hat Training and Certification
+
+* https://www.redhat.com/en/services/training-and-certification[Red Hat Training and Certification^] — Browse the full catalog of Red Hat training courses
+* https://www.redhat.com/en/services/certification/red-hat-certified-specialist-in-openshift-administration-exam[EX280 — Red Hat Certified Specialist in OpenShift Administration^] — Recommended prerequisite certification
+
+== Upstream Project
+
+* https://skupper.io[Skupper.io^] — The open-source project that Red Hat Service Interconnect is based on
+* https://skupper.io/docs/index.html[Skupper Documentation^] — Community documentation (may differ from Red Hat product documentation)
+* https://github.com/skupperproject[Skupper GitHub Organization^] — Source code repositories
+
+== Related Technologies
+
+* https://docs.redhat.com/en/documentation/openshift_container_platform/4.20[OpenShift Container Platform 4.20 Documentation^] — Platform documentation for the clusters used in this course
+* https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9[Red Hat Enterprise Linux 9 Documentation^] — Reference for the Linux systems used in Chapter 5
+* https://www.redhat.com/en/technologies/cloud-computing/openshift/microshift[MicroShift^] — Lightweight OpenShift for edge devices, compatible with Service Interconnect
+
+== Community and Support
+
+* https://access.redhat.com/support[Red Hat Customer Portal^] — File support cases and access the knowledge base
+* https://developers.redhat.com[Red Hat Developer^] — Developer resources, tutorials, and free developer subscriptions

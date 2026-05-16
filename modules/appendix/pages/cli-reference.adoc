@@ -1,2 +1,390 @@
 = CLI Reference
 :navtitle: CLI Reference
+
+== Overview
+
+The `skupper` CLI is the primary tool for managing Service Interconnect sites, links, and services.
+It generates and consumes standard Kubernetes custom resources, so anything done with the CLI can also be done by applying YAML directly.
+
+Verify your CLI version:
+
+[source,bash,role=execute]
+----
+skupper version
+----
+
+.Expected output
+----
+COMPONENT          VERSION
+cli                2.1.3-rh-1
+----
+
+== Environment Variables
+
+[cols="1,2,1",options="header"]
+|===
+|Variable |Description |Values
+
+|`SKUPPER_PLATFORM`
+|Sets the target platform for CLI operations
+|`kubernetes` (default), `podman`, `docker`, `linux`
+
+|`KUBECONFIG`
+|Path to the Kubernetes config file (standard Kubernetes variable)
+|File path
+|===
+
+== Site Management
+
+=== skupper site create
+
+Create a new Service Interconnect site in the current namespace.
+
+[source,bash]
+----
+skupper site create <site-name> [options]
+----
+
+[cols="1,2",options="header"]
+|===
+|Option |Description
+
+|`--enable-link-access`
+|Allow other sites to link to this site (creates an AccessGrant server)
+
+|`--namespace <namespace>`
+|Create the site in a specific namespace (defaults to current context)
+
+|`--timeout <duration>`
+|Maximum time to wait for the site to become ready (e.g., `2m`)
+|===
+
+.Example
+[source,bash,role=execute]
+----
+skupper site create my-site --enable-link-access
+----
+
+=== skupper site status
+
+Display the status of the site in the current namespace.
+
+[source,bash,role=execute]
+----
+skupper site status
+----
+
+=== skupper site update
+
+Update site configuration.
+
+[source,bash]
+----
+skupper site update [options]
+----
+
+.Example — enable link access on an existing site
+[source,bash,role=execute]
+----
+skupper site update --enable-link-access
+----
+
+=== skupper site delete
+
+Delete the site in the current namespace.
+
+[source,bash,role=execute]
+----
+skupper site delete
+----
+
+== Token and Link Management
+
+=== skupper token issue
+
+Issue an access token from a site that has link access enabled.
+
+[source,bash]
+----
+skupper token issue <filename> [options]
+----
+
+[cols="1,2",options="header"]
+|===
+|Option |Description
+
+|`--expiry <duration>`
+|Time until the token expires (default: `15m`)
+
+|`--uses <count>`
+|Number of times the token can be redeemed (default: `1`)
+|===
+
+.Example
+[source,bash,role=execute]
+----
+skupper token issue ~/my-token.yaml --expiry 1h --uses 3
+----
+
+NOTE: The official docs use `--expiration-window` and `--redemptions-allowed` for the YAML-based AccessGrant approach. The CLI flags `--expiry` and `--uses` are the CLI equivalents.
+
+=== skupper token redeem
+
+Redeem a token on a site to create a link to the token-issuing site.
+
+[source,bash]
+----
+skupper token redeem <filename>
+----
+
+.Example
+[source,bash,role=execute]
+----
+skupper token redeem ~/my-token.yaml
+----
+
+=== skupper link status
+
+Display the status of all links from the current site.
+
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+.Example output
+----
+NAME                                          STATUS   COST   MESSAGE
+west-12f75bc8-5dda-4256-88f8-9df48150281a     Ready    1      OK
+----
+
+=== skupper link generate
+
+Generate a Link resource YAML file (alternative to token-based linking).
+
+[source,bash]
+----
+skupper link generate > <filename>
+----
+
+The generated YAML can be applied on a remote site using `oc apply -f` or `skupper system apply -f`.
+
+== Connector and Listener Management
+
+=== skupper connector create
+
+Create a connector to expose a local workload on the application network.
+
+[source,bash]
+----
+skupper connector create <name> <port> [options]
+----
+
+[cols="1,2",options="header"]
+|===
+|Option |Description
+
+|`--workload <type/name>`
+|The workload to expose (e.g., `deployment/backend`)
+
+|`--host <hostname>`
+|Host to connect to (for local system sites, e.g., `localhost`)
+
+|`--routing-key <key>`
+|Custom routing key (defaults to the connector name)
+|===
+
+.Example — Kubernetes
+[source,bash,role=execute]
+----
+skupper connector create backend 8080 --workload deployment/backend
+----
+
+.Example — local system site
+[source,bash,role=execute]
+----
+skupper connector create postgresql 5432 --host localhost
+----
+
+=== skupper connector status
+
+Display the status of connectors in the current site.
+
+[source,bash,role=execute]
+----
+skupper connector status
+----
+
+=== skupper connector delete
+
+Delete a connector.
+
+[source,bash]
+----
+skupper connector delete <name>
+----
+
+=== skupper listener create
+
+Create a listener to consume a remote service on the application network.
+
+[source,bash]
+----
+skupper listener create <name> <port> [options]
+----
+
+[cols="1,2",options="header"]
+|===
+|Option |Description
+
+|`--routing-key <key>`
+|Custom routing key to match (defaults to the listener name)
+|===
+
+.Example
+[source,bash,role=execute]
+----
+skupper listener create backend 8080
+----
+
+This creates a Kubernetes Service named `backend` on port 8080 that routes traffic to any connector with the matching routing key.
+
+=== skupper listener status
+
+Display the status of listeners in the current site.
+
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+=== skupper listener delete
+
+Delete a listener.
+
+[source,bash]
+----
+skupper listener delete <name>
+----
+
+== Local System Site Commands
+
+These commands manage the Service Interconnect runtime on local systems (Podman, Docker, or Linux with systemd).
+
+IMPORTANT: Local system site support is a Technology Preview feature.
+
+=== skupper system install
+
+Install the Service Interconnect controller on the local system.
+Required for Podman and Docker platforms; not needed for the `linux` (systemd) platform.
+
+[source,bash,role=execute]
+----
+skupper system install
+----
+
+=== skupper system start
+
+Start the Service Interconnect site on the local system.
+
+[source,bash,role=execute]
+----
+skupper system start
+----
+
+=== skupper system stop
+
+Stop the Service Interconnect site on the local system.
+
+[source,bash,role=execute]
+----
+skupper system stop
+----
+
+=== skupper system reload
+
+Reload the site configuration after changes (e.g., after creating a connector).
+
+[source,bash,role=execute]
+----
+skupper system reload
+----
+
+=== skupper system uninstall
+
+Remove the Service Interconnect controller from the local system.
+
+[source,bash,role=execute]
+----
+skupper system uninstall
+----
+
+=== skupper system generate-bundle
+
+Create a distributable site bundle (`.tar.gz`) that can be deployed on a remote system without requiring the CLI on that system.
+
+[source,bash]
+----
+skupper system generate-bundle <site-name>
+----
+
+.Example
+[source,bash,role=execute]
+----
+skupper system generate-bundle remote-site
+----
+
+The bundle contains all configuration files and an `install.sh` script to start the site.
+
+== Custom Resource Reference
+
+The `skupper` CLI generates standard Kubernetes custom resources.
+These can also be created and managed directly using `oc apply`.
+
+[cols="1,1,2",options="header"]
+|===
+|Resource |API Group |Description
+
+|Site
+|`skupper.io/v2alpha1`
+|Defines a Service Interconnect site in a namespace
+
+|AccessGrant
+|`skupper.io/v2alpha1`
+|Authorizes token generation for incoming links
+
+|AccessToken
+|`skupper.io/v2alpha1`
+|Redeems an AccessGrant to create a link
+
+|Link
+|`skupper.io/v2alpha1`
+|Represents a connection between two sites
+
+|Connector
+|`skupper.io/v2alpha1`
+|Exposes a local workload on the application network
+
+|Listener
+|`skupper.io/v2alpha1`
+|Creates a local service that routes to remote connectors
+
+|AttachedConnector
+|`skupper.io/v2alpha1`
+|Exposes a workload from a non-site namespace
+
+|AttachedConnectorBinding
+|`skupper.io/v2alpha1`
+|Binds an AttachedConnector to a site namespace
+
+|NetworkObserver
+|`observability.skupper.io/v2alpha1`
+|Deploys the Network Observer console
+|===
+
+To list all resources of a given type:
+
+[source,bash,role=execute]
+----
+oc get site,link,connector,listener -n <namespace>
+----

@@ -1,2 +1,294 @@
 = Troubleshooting
 :navtitle: Troubleshooting
+
+== General Diagnostic Commands
+
+These commands help you quickly assess the state of your Service Interconnect deployment.
+
+=== Check Site Status
+
+[source,bash,role=execute]
+----
+oc get site -n <namespace>
+----
+
+.Healthy output
+----
+NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    2                  OK
+----
+
+If STATUS is not `Ready`, check the operator logs (see below).
+
+=== Check All Service Interconnect Resources
+
+[source,bash,role=execute]
+----
+oc get site,link,connector,listener,accessgrant,accesstoken -n <namespace>
+----
+
+=== Check Operator Logs
+
+[source,bash,role=execute]
+----
+oc logs deployment/skupper-controller -n <namespace>
+----
+
+=== Check Router Logs
+
+[source,bash,role=execute]
+----
+oc logs deployment/skupper-router -n <namespace>
+----
+
+== Common Issues
+
+=== Site Not Becoming Ready
+
+**Symptom:** `oc get site` shows `Pending` or no status.
+
+**Possible causes:**
+
+. **Operator not installed** — Verify the Service Interconnect operator is installed and running:
++
+[source,bash,role=execute]
+----
+oc get csv -A | grep skupper
+----
++
+Look for `Succeeded` in the output.
+
+. **Operator not watching namespace** — If the operator is installed in a single namespace, ensure it matches the site's namespace. For AllNamespaces mode, the operator should be in `openshift-operators`.
+
+. **Resource limits** — The operator or router may be unable to schedule due to resource constraints:
++
+[source,bash,role=execute]
+----
+oc get events -n <namespace> --sort-by='.lastTimestamp'
+----
+
+=== Link Not Becoming Ready
+
+**Symptom:** `skupper link status` shows `Pending` or `Not Operational`.
+
+**Possible causes:**
+
+. **Token expired** — Tokens expire after 15 minutes by default. Issue a new token and redeem it.
+
+. **Token already used** — Tokens are single-use by default. Issue a new token.
+
+. **Network connectivity** — The linking site must be able to reach the token-issuing site on the link access endpoint (typically port 443 via an OpenShift route or LoadBalancer). Check:
++
+[source,bash,role=execute]
+----
+oc get route -n <namespace> | grep skupper
+----
+
+. **Link access not enabled** — The site that issued the token must have link access enabled:
++
+[source,bash,role=execute]
+----
+skupper site update --enable-link-access
+----
+
+. **DNS resolution** — The linking site must be able to resolve the hostname in the token. Verify from the linking site:
++
+[source,bash,role=execute]
+----
+nslookup <hostname-from-token>
+----
+
+**Diagnostic steps:**
+
+[source,bash,role=execute]
+----
+oc get link -n <namespace> -o yaml
+----
+
+Look at the `status.conditions` field for error messages.
+
+=== Listener Shows "No Matching Connector"
+
+**Symptom:** `skupper listener status` shows `MATCHING-CONNECTOR: false`.
+
+**Possible causes:**
+
+. **Routing key mismatch** — The listener and connector must use the same routing key. Check both:
++
+[source,bash,role=execute]
+----
+oc get listener -n <namespace> -o yaml | grep routingKey
+oc get connector -n <namespace> -o yaml | grep routingKey
+----
+
+. **Connector not ready** — The connector's target workload may not be running:
++
+[source,bash,role=execute]
+----
+skupper connector status
+----
+
+. **Sites not linked** — The listener and connector are on different sites, but the sites are not linked:
++
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+=== Service Not Reachable Through the Application Network
+
+**Symptom:** Requests to a listener service time out or return connection errors.
+
+**Diagnostic steps:**
+
+. Verify the listener exists and has a matching connector:
++
+[source,bash,role=execute]
+----
+skupper listener status
+----
+
+. Verify the Kubernetes service was created:
++
+[source,bash,role=execute]
+----
+oc get service <listener-name> -n <namespace>
+----
+
+. Verify the connector's target workload is running and listening on the correct port:
++
+[source,bash,role=execute]
+----
+oc get pods -n <connector-namespace> -l <workload-selector>
+----
+
+. Check the router logs for errors:
++
+[source,bash,role=execute]
+----
+oc logs deployment/skupper-router -n <namespace> | tail -50
+----
+
+. Test connectivity directly to the workload (bypassing Service Interconnect):
++
+[source,bash,role=execute]
+----
+oc exec -n <connector-namespace> deployment/<workload> -- curl -s http://localhost:<port>
+----
+
+=== Certificate-Related Errors
+
+**Symptom:** Links fail with TLS errors, or router logs show certificate verification failures.
+
+**Possible causes:**
+
+. **Corrupted or missing certificate Secrets** — Check that all certificate Secrets exist:
++
+[source,bash,role=execute]
+----
+oc get secrets -n <namespace> | grep skupper
+----
++
+You should see `skupper-local-ca`, `skupper-site-ca`, `skupper-service-ca`, and `skupper-site-server`.
+
+. **Clock skew** — Certificate validation is time-sensitive. Ensure system clocks are synchronized across all sites.
+
+. **Regenerate certificates** — Delete the server certificate and let the operator regenerate it:
++
+[source,bash,role=execute]
+----
+oc delete secret skupper-site-server -n <namespace>
+----
++
+IMPORTANT: Do not delete the CA Secrets unless you intend to re-establish all links.
+
+=== Network Observer Not Starting
+
+**Symptom:** The NetworkObserver pod is not running or is in CrashLoopBackOff.
+
+**Diagnostic steps:**
+
+. Check if the Network Observer operator is installed:
++
+[source,bash,role=execute]
+----
+oc get csv -A | grep network-observer
+----
+
+. Check the pod events:
++
+[source,bash,role=execute]
+----
+oc get events -n <namespace> --sort-by='.lastTimestamp' | grep network-observer
+----
+
+. Check pod logs:
++
+[source,bash,role=execute]
+----
+oc logs -n <namespace> -l app.kubernetes.io/component=network-observer
+----
+
+. Verify resource availability — the Network Observer may need more memory:
++
+[source,bash,role=execute]
+----
+oc describe pod -n <namespace> -l app.kubernetes.io/component=network-observer
+----
+
+=== Local System Site Issues
+
+**Symptom:** `skupper site status` fails or shows errors on a Linux system.
+
+**Diagnostic steps:**
+
+. Verify the platform is set correctly:
++
+[source,bash,role=execute]
+----
+echo $SKUPPER_PLATFORM
+----
+
+. For Podman platform, verify the Podman socket is active:
++
+[source,bash,role=execute]
+----
+systemctl --user status podman.socket
+----
+
+. For Linux (systemd) platform, verify the router service:
++
+[source,bash,role=execute]
+----
+systemctl --user status skupper-router
+----
+
+. Check for lingering enabled (required for Podman sites to persist across logouts):
++
+[source,bash,role=execute]
+----
+loginctl show-user $(whoami) | grep Linger
+----
+
+. Reload after configuration changes:
++
+[source,bash,role=execute]
+----
+skupper system reload
+----
+
+== Getting Support
+
+If you cannot resolve an issue using the steps above:
+
+. Collect diagnostic information:
++
+[source,bash,role=execute]
+----
+skupper version
+oc get site,link,connector,listener -n <namespace> -o yaml
+oc logs deployment/skupper-router -n <namespace> > router-logs.txt
+oc logs deployment/skupper-controller -n <namespace> > controller-logs.txt
+----
+
+. Open a support case with Red Hat, including the collected diagnostic data.
