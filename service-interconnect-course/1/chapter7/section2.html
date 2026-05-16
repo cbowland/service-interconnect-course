@@ -273,7 +273,252 @@
 </aside>
 <article class="doc">
 <h1 class="page">Progressive Migration Patterns</h1>
-
+<div class="sect1">
+<h2 id="_what_is_progressive_migration"><a class="anchor" href="#_what_is_progressive_migration"></a>What is Progressive Migration?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Progressive migration is the practice of moving application workloads from one environment to another incrementally, rather than in a single cutover.
+This approach reduces risk by allowing you to validate each step before proceeding to the next.</p>
+</div>
+<div class="paragraph">
+<p>Common migration scenarios include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>On-premises to cloud</strong> — Moving workloads from a data center to OpenShift on a cloud provider</p>
+</li>
+<li>
+<p><strong>Cloud to cloud</strong> — Moving from one cloud provider to another</p>
+</li>
+<li>
+<p><strong>Monolith to microservices</strong> — Decomposing a monolithic application and deploying individual services to new environments</p>
+</li>
+<li>
+<p><strong>Cluster upgrades</strong> — Migrating workloads from an older OpenShift cluster to a newer one</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Service Interconnect enables progressive migration by allowing services in both the old and new environments to communicate as if they were co-located.
+You can move services one at a time, validate each move, and roll back individual services if needed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_strangler_fig_pattern"><a class="anchor" href="#_the_strangler_fig_pattern"></a>The Strangler Fig Pattern</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The strangler fig pattern (named after the tropical plant that gradually envelops its host) is a progressive migration strategy where you incrementally replace components of an existing system with new implementations.</p>
+</div>
+<div class="paragraph">
+<p>With Service Interconnect, the pattern works as follows:</p>
+</div>
+<div class="sect2">
+<h3 id="_phase_1_establish_connectivity"><a class="anchor" href="#_phase_1_establish_connectivity"></a>Phase 1: Establish Connectivity</h3>
+<div class="paragraph">
+<p>Create Service Interconnect sites in both the old and new environments and link them.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>    +------------------+         +------------------+
+    |  Old Environment |         |  New Environment |
+    |                  +------&gt;  |                  |
+    | frontend         |  link   |                  |
+    | backend          |         |                  |
+    | database         |         |                  |
+    +------------------+         +------------------+</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>At this point, no services are exposed across the link.
+All traffic continues to flow within the old environment.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_2_deploy_in_parallel"><a class="anchor" href="#_phase_2_deploy_in_parallel"></a>Phase 2: Deploy in Parallel</h3>
+<div class="paragraph">
+<p>Deploy the first service to migrate (for example, <code>backend</code>) in the new environment.
+Create a connector in the new environment and a listener in the old environment so both copies are accessible.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>    +------------------+         +------------------+
+    |  Old Environment |         |  New Environment |
+    |                  +------&gt;  |                  |
+    | frontend         |  link   | backend (new)    |
+    | backend (old)    |         |   connector      |
+    | database         |         |                  |
+    +------------------+         +------------------+</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Both the old and new backends are running.
+Use link cost to control which one receives traffic:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Test the new backend</strong> — Set cost <code>9999</code> on the link to the new environment so all production traffic continues to go to the old backend. Test the new backend directly.</p>
+</li>
+<li>
+<p><strong>Shift traffic</strong> — When confident, update link costs or scale down the old backend to shift traffic to the new one.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_3_cut_over_and_decommission"><a class="anchor" href="#_phase_3_cut_over_and_decommission"></a>Phase 3: Cut Over and Decommission</h3>
+<div class="paragraph">
+<p>Once the new backend is validated, remove the old backend and the connector/listener that bridged them.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>    +------------------+         +------------------+
+    |  Old Environment |         |  New Environment |
+    |                  +------&gt;  |                  |
+    | frontend         |  link   | backend          |
+    | database         |         |                  |
+    +------------------+         +------------------+</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Repeat for the next service.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_4_complete"><a class="anchor" href="#_phase_4_complete"></a>Phase 4: Complete</h3>
+<div class="paragraph">
+<p>After all services are migrated, remove the link and decommission the old environment.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>                                 +------------------+
+                                 |  New Environment |
+                                 |                  |
+                                 | frontend         |
+                                 | backend          |
+                                 | database         |
+                                 +------------------+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_traffic_shifting_strategies"><a class="anchor" href="#_traffic_shifting_strategies"></a>Traffic Shifting Strategies</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_using_link_cost"><a class="anchor" href="#_using_link_cost"></a>Using Link Cost</h3>
+<div class="paragraph">
+<p>Link cost controls the routing preference between sites.
+By adjusting link cost, you can gradually shift traffic from the old to the new environment:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Phase</th>
+<th class="tableblock halign-left valign-top">Link Cost (old &#8594; new)</th>
+<th class="tableblock halign-left valign-top">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Testing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9999</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">All traffic goes to old environment. New environment accessible only for direct testing.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Canary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 (equal to old)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Traffic is balanced between old and new based on active connections and capacity.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 (new), 9999 (old)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">All traffic goes to new environment. Old environment serves as failover only.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Complete</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N/A (link removed)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Old environment decommissioned.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_using_parallel_connectors"><a class="anchor" href="#_using_parallel_connectors"></a>Using Parallel Connectors</h3>
+<div class="paragraph">
+<p>Deploy connectors for the same routing key in both environments.
+Service Interconnect automatically balances traffic across all connectors with the same routing key.</p>
+</div>
+<div class="paragraph">
+<p>This approach works well for stateless services where any instance can handle any request.
+For stateful services (like databases), use link cost to ensure all traffic goes to a single instance and only fails over when that instance is unavailable.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rollback_strategy"><a class="anchor" href="#_rollback_strategy"></a>Rollback Strategy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One of the key advantages of progressive migration with Service Interconnect is easy rollback.
+If a migrated service has issues in the new environment:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Scale up the old service in the old environment</p>
+</li>
+<li>
+<p>Adjust link cost to route traffic back to the old environment</p>
+</li>
+<li>
+<p>Investigate and fix the issue in the new environment</p>
+</li>
+<li>
+<p>Resume migration when ready</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Because both environments remain connected through the application network, rollback is a matter of adjusting routing — not re-deploying infrastructure.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_planning_a_migration"><a class="anchor" href="#_planning_a_migration"></a>Planning a Migration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before starting a progressive migration, consider:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Service dependencies</strong> — Map which services depend on which others. Migrate leaf services (those with no downstream dependencies) first.</p>
+</li>
+<li>
+<p><strong>Stateful services</strong> — Databases and other stateful services are typically migrated last. Use Service Interconnect to maintain connectivity while the database remains in the old environment.</p>
+</li>
+<li>
+<p><strong>Testing</strong> — Use the high-cost link approach to test each service in the new environment before shifting production traffic.</p>
+</li>
+<li>
+<p><strong>Monitoring</strong> — Deploy the Network Observer in both environments to monitor traffic patterns during migration. Watch for unexpected traffic flows that might indicate missed dependencies.</p>
+</li>
+<li>
+<p><strong>Timeline</strong> — Progressive migrations can run for days or weeks. Service Interconnect&#8217;s application network can run indefinitely, so there is no pressure to complete the migration quickly.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section1.html">Multi-cloud Connectivity</a></span>
   <span class="next"><a href="section3.html">Edge Computing and IoT</a></span>

@@ -273,7 +273,273 @@
 </aside>
 <article class="doc">
 <h1 class="page">Edge Computing and IoT</h1>
-
+<div class="sect1">
+<h2 id="_edge_computing_overview"><a class="anchor" href="#_edge_computing_overview"></a>Edge Computing Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Edge computing moves application workloads closer to where data is generated and consumed — retail stores, factory floors, hospitals, cell towers, or remote facilities.
+This reduces latency, conserves bandwidth, and enables applications to function even when connectivity to the central data center is intermittent.</p>
+</div>
+<div class="paragraph">
+<p>Red Hat Service Interconnect is well-suited for edge scenarios because:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>No inbound ports required</strong> — Edge sites initiate outbound connections to hub sites, which is compatible with the restrictive firewall policies common at edge locations</p>
+</li>
+<li>
+<p><strong>Lightweight footprint</strong> — Service Interconnect runs a single router container per site, making it feasible on resource-constrained edge hardware</p>
+</li>
+<li>
+<p><strong>Resilience to disconnection</strong> — Sites operate independently when links are down, and traffic resumes automatically when connectivity is restored</p>
+</li>
+<li>
+<p><strong>Local system sites</strong> — Non-Kubernetes workloads on Linux systems can participate in the application network, which is common at edge locations where full Kubernetes clusters may not be available</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_edge_topology_patterns"><a class="anchor" href="#_edge_topology_patterns"></a>Edge Topology Patterns</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_hub_to_edge"><a class="anchor" href="#_hub_to_edge"></a>Hub-to-Edge</h3>
+<div class="paragraph">
+<p>The most common edge pattern.
+A central hub cluster (in the cloud or data center) connects to many edge sites.
+Edge sites run local services and report data back to the hub.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>                +-------------------+
+                |    Hub Cluster    |
+                | (cloud/DC)       |
+                |  aggregation-svc |
+                |  dashboard       |
+                +--------+--------+
+                   / | | | \
+                  /  | | |  \
+    +------+ +------+ +------+ +------+ +------+
+    |Edge 1| |Edge 2| |Edge 3| |Edge 4| |Edge 5|
+    |sensor| |sensor| |sensor| |sensor| |sensor|
+    +------+ +------+ +------+ +------+ +------+</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each edge site:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Creates a local site (Kubernetes namespace or local system site on Linux)</p>
+</li>
+<li>
+<p>Links to the hub site using an access token</p>
+</li>
+<li>
+<p>Exposes local services (sensors, data collectors) via connectors</p>
+</li>
+<li>
+<p>Consumes central services (configuration, updates) via listeners</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_regional_aggregation"><a class="anchor" href="#_regional_aggregation"></a>Regional Aggregation</h3>
+<div class="paragraph">
+<p>For deployments with many edge sites, add regional aggregation layers to reduce the number of direct connections to the central hub.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>    +-------------------+
+    |   Central Hub     |
+    +--------+----------+
+            / \
+           /   \
+    +-----+--+ +--+-----+
+    |Region A| |Region B|
+    +---+----+ +----+---+
+       / \         / \
+      /   \       /   \
+    E1    E2    E3    E4</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Regional sites aggregate data from local edge sites and forward it to the central hub.
+This reduces the number of links the central hub must manage and keeps regional traffic local.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_considerations_for_edge_deployments"><a class="anchor" href="#_considerations_for_edge_deployments"></a>Considerations for Edge Deployments</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_bandwidth_constraints"><a class="anchor" href="#_bandwidth_constraints"></a>Bandwidth Constraints</h3>
+<div class="paragraph">
+<p>Edge locations often have limited network bandwidth.
+Service Interconnect operates at Layer 7 and only transmits application-level traffic — there is no overhead from VPN tunnels or network-level encapsulation.</p>
+</div>
+<div class="paragraph">
+<p>To further manage bandwidth:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Expose only needed services</strong> — Only create connectors and listeners for services that genuinely need cross-site access</p>
+</li>
+<li>
+<p><strong>Use link cost</strong> — Set higher costs on links to edge sites so that traffic prefers local services when available</p>
+</li>
+<li>
+<p><strong>Consider data aggregation</strong> — Process and aggregate data at the edge before sending summaries to the hub</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_intermittent_connectivity"><a class="anchor" href="#_intermittent_connectivity"></a>Intermittent Connectivity</h3>
+<div class="paragraph">
+<p>Edge sites may experience network interruptions.
+Service Interconnect handles this gracefully:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Links reconnect automatically when connectivity is restored</p>
+</li>
+<li>
+<p>Sites continue to operate independently during disconnection</p>
+</li>
+<li>
+<p>Local services remain available to local consumers</p>
+</li>
+<li>
+<p>No data loss in the application network itself (though application-level data buffering is the responsibility of the application)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_constraints"><a class="anchor" href="#_resource_constraints"></a>Resource Constraints</h3>
+<div class="paragraph">
+<p>Edge hardware may have limited CPU and memory.
+Service Interconnect&#8217;s resource requirements at the edge are modest:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The router container typically requires 128-256 MB of memory and minimal CPU</p>
+</li>
+<li>
+<p>On Linux systems, the <code>skupper-router</code> process runs as a systemd service with a similarly small footprint</p>
+</li>
+<li>
+<p>No additional control plane components are needed at the edge — the operator runs on the hub cluster</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_security_at_the_edge"><a class="anchor" href="#_security_at_the_edge"></a>Security at the Edge</h3>
+<div class="paragraph">
+<p>Edge locations present unique security challenges — physical access to hardware, untrusted networks, and limited security infrastructure.</p>
+</div>
+<div class="paragraph">
+<p>Service Interconnect mitigates these risks:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>mTLS on all links</strong> — Traffic between edge and hub is always encrypted and authenticated</p>
+</li>
+<li>
+<p><strong>No stored credentials</strong> — After token redemption, the token is invalidated. The certificate is the ongoing credential, and it is stored in the site&#8217;s namespace (or local filesystem for local system sites)</p>
+</li>
+<li>
+<p><strong>Outbound-only connections</strong> — Edge sites do not need to accept inbound connections, reducing the attack surface</p>
+</li>
+<li>
+<p><strong>Per-site isolation</strong> — Compromising one edge site does not grant access to other sites in the network</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scaling_to_many_edge_sites"><a class="anchor" href="#_scaling_to_many_edge_sites"></a>Scaling to Many Edge Sites</h3>
+<div class="paragraph">
+<p>When deploying to hundreds or thousands of edge sites, consider:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Multi-use access tokens</strong> — Issue tokens with <code>--uses</code> set to the number of edge sites that will link to a hub, reducing the number of token issue operations</p>
+</li>
+<li>
+<p><strong>Site bundles</strong> — Use <code>skupper system generate-bundle</code> to create distributable packages that can be deployed to edge sites without manual CLI interaction</p>
+</li>
+<li>
+<p><strong>Automation</strong> — Integrate site creation and linking into your edge provisioning pipeline (Ansible, RHEL Image Builder, MicroShift)</p>
+</li>
+<li>
+<p><strong>Regional hubs</strong> — Use the regional aggregation pattern to limit the number of links per hub site</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_edge_platforms"><a class="anchor" href="#_edge_platforms"></a>Edge Platforms</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service Interconnect supports several deployment models at the edge:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 50%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Platform</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>OpenShift (full)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Full OpenShift cluster at the edge</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Large edge sites with multiple applications</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>MicroShift</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lightweight OpenShift on edge devices</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Single-node edge devices with Kubernetes API</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Local system site (Podman)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper router in a Podman container on Linux</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Linux servers or VMs without Kubernetes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Local system site (systemd)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper router as a systemd service on Linux</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bare-metal Linux systems, appliances</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>All of these platforms participate in the same application network using the same linking and service exposure mechanisms.
+The choice of platform depends on the hardware capabilities and management requirements of the edge location.</p>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section2.html">Progressive Migration Patterns</a></span>
   <span class="next"><a href="section4.html">Hands-on: Multi-cloud Migration</a></span>

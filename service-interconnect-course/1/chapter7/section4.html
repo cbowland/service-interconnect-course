@@ -273,7 +273,593 @@
 </aside>
 <article class="doc">
 <h1 class="page">Hands-on: Multi-cloud Migration Scenario</h1>
+<div class="sect1">
+<h2 id="_lab_overview"><a class="anchor" href="#_lab_overview"></a>Lab Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you will simulate a progressive migration scenario using Service Interconnect.
+You will start with an application running entirely in one environment (simulating an on-premises data center), deploy a copy of one service in a second environment (simulating a cloud), and use link cost to control traffic routing as you progressively shift traffic to the new environment.</p>
+</div>
+<div class="paragraph">
+<p>This exercise uses your existing lab namespaces to simulate two separate clouds.
+The concepts and commands are identical to what you would use in a real multi-cloud migration.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Completed the Chapter 3 hands-on lab</p>
+</li>
+<li>
+<p>The <code>skupper</code> CLI is installed</p>
+</li>
+<li>
+<p>Two linked sites (<code>site-west</code> and <code>site-east</code>) from Chapter 3</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_scenario"><a class="anchor" href="#_scenario"></a>Scenario</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You have a two-tier application:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Frontend</strong> — Serves user requests, calls the backend</p>
+</li>
+<li>
+<p><strong>Backend</strong> — Processes requests, returns data</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Currently, both services run in <code>site-west</code> (simulating the on-premises data center).
+You will migrate the backend to <code>site-east</code> (simulating a cloud environment) using a progressive approach.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exercise_steps"><a class="anchor" href="#_exercise_steps"></a>Exercise Steps</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_step_1_deploy_the_full_application_in_site_west"><a class="anchor" href="#_step_1_deploy_the_full_application_in_site_west"></a>Step 1: Deploy the Full Application in site-west</h3>
+<div class="paragraph">
+<p>Deploy both the frontend and backend in <code>site-west</code>:</p>
+</div>
+<div id="_tabs_1" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_1_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_1_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_1_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_1_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+oc create deployment frontend --image=quay.io/skupper/hello-world-frontend --replicas=1
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+oc expose deployment frontend --port=8080</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_1_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_1_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+oc create deployment frontend --image=quay.io/skupper/hello-world-frontend --replicas=1
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2
+oc expose deployment frontend --port=8080</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Create a route to access the frontend:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc expose service frontend -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the application is working:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">FRONTEND_URL=$(oc get route frontend -n site-west -o jsonpath='{.spec.host}')
+curl -s http://$FRONTEND_URL/api/hello</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see a response from the backend running in <code>site-west</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_deploy_the_backend_in_site_east_cloud"><a class="anchor" href="#_step_2_deploy_the_backend_in_site_east_cloud"></a>Step 2: Deploy the Backend in site-east (Cloud)</h3>
+<div class="paragraph">
+<p>Deploy a copy of the backend in <code>site-east</code>:</p>
+</div>
+<div id="_tabs_2" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_2_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_2_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_2_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_2_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-b-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_2_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_2_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+oc create deployment backend --image=quay.io/skupper/hello-world-backend --replicas=2</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Now both <code>site-west</code> and <code>site-east</code> have backend deployments.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_expose_the_backend_in_both_sites"><a class="anchor" href="#_step_3_expose_the_backend_in_both_sites"></a>Step 3: Expose the Backend in Both Sites</h3>
+<div class="paragraph">
+<p>Create a connector for the backend in <code>site-west</code> (the original environment):</p>
+</div>
+<div id="_tabs_3" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_3_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_3_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_3_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_3_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+skupper connector create backend 8080 --workload deployment/backend</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_3_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_3_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper connector create backend 8080 --workload deployment/backend</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Create a connector for the backend in <code>site-east</code> (the cloud environment):</p>
+</div>
+<div id="_tabs_4" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_4_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_4_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_4_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_4_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-b-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-east
+skupper connector create backend 8080 --workload deployment/backend</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_4_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_4_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+skupper connector create backend 8080 --workload deployment/backend</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Both sites now have connectors with the routing key <code>backend</code>.</p>
+</div>
+<div class="paragraph">
+<p>Create a listener in <code>site-west</code> so the frontend can reach the backend through the application network:</p>
+</div>
+<div id="_tabs_5" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_5_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_5_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_5_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_5_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+skupper listener create backend 8080</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_5_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_5_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper listener create backend 8080</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify the listener:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener status</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>NAME      STATUS   ROUTING-KEY   HOST      PORT   MATCHING-CONNECTOR   MESSAGE
+backend   Ready    backend       backend   8080   true                 OK</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_observe_load_balancing"><a class="anchor" href="#_step_4_observe_load_balancing"></a>Step 4: Observe Load Balancing</h3>
+<div class="paragraph">
+<p>With both connectors active, traffic from the frontend is balanced across backends in both sites.
+Send multiple requests and observe:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 10); do
+  curl -s http://$FRONTEND_URL/api/hello
+  echo ""
+done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see responses from backend pods in both <code>site-west</code> and <code>site-east</code>.
+The traffic distribution depends on the number of active TCP connections and link cost.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_simulate_testing_phase_route_all_traffic_to_on_premises"><a class="anchor" href="#_step_5_simulate_testing_phase_route_all_traffic_to_on_premises"></a>Step 5: Simulate Testing Phase — Route All Traffic to On-premises</h3>
+<div class="paragraph">
+<p>In a real migration, you would first want to test the cloud backend without affecting production traffic.
+To do this, set a high link cost on the link from <code>site-west</code> to <code>site-east</code>:</p>
+</div>
+<div class="paragraph">
+<p>Check the current link:</p>
+</div>
+<div id="_tabs_6" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_6_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_6_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_6_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_6_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+oc get link -n site-west</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_6_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_6_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+oc get link -n site-west</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Note the link name, then patch the link cost:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":9999}}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now send requests again:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 10); do
+  curl -s http://$FRONTEND_URL/api/hello
+  echo ""
+done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All responses should now come from the backend in <code>site-west</code>, because the high link cost makes the <code>site-east</code> backend a failover-only option.</p>
+</div>
+<div class="paragraph">
+<p>You can still test the <code>site-east</code> backend directly by sending requests from within that namespace:</p>
+</div>
+<div id="_tabs_7" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_7_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_7_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_7_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_7_option_a_two_clusters">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-b-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-east
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_7_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_7_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+skupper listener create backend-test 8080 --routing-key backend
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  --rm -it --restart=Never -- \
+  curl -s http://backend-test:8080/api/hello
+skupper listener delete backend-test</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_6_simulate_cutover_route_all_traffic_to_cloud"><a class="anchor" href="#_step_6_simulate_cutover_route_all_traffic_to_cloud"></a>Step 6: Simulate Cutover — Route All Traffic to Cloud</h3>
+<div class="paragraph">
+<p>When you are confident the cloud backend is working correctly, shift all traffic to it.</p>
+</div>
+<div class="paragraph">
+<p>First, restore the link cost to normal:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":1}}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then scale down the on-premises backend to force all traffic to the cloud:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc scale deployment backend -n site-west --replicas=0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Verify that the frontend still works, now served entirely by the cloud backend:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 5); do
+  curl -s http://$FRONTEND_URL/api/hello
+  echo ""
+done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All responses should come from the backend pods in <code>site-east</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_7_simulate_rollback"><a class="anchor" href="#_step_7_simulate_rollback"></a>Step 7: Simulate Rollback</h3>
+<div class="paragraph">
+<p>If issues are detected, roll back by scaling the on-premises backend back up:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc scale deployment backend -n site-west --replicas=2</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Traffic automatically distributes across both sites again.
+If you want all traffic to go back to on-premises, set the link cost to 9999 again.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_8_complete_the_migration"><a class="anchor" href="#_step_8_complete_the_migration"></a>Step 8: Complete the Migration</h3>
+<div class="paragraph">
+<p>Once the migration is validated, clean up the old backend:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper connector delete backend
+oc delete deployment backend -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The frontend in <code>site-west</code> now permanently uses the backend in <code>site-east</code> through the Service Interconnect application network.</p>
+</div>
+<div class="paragraph">
+<p>Verify the final state:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -s http://$FRONTEND_URL/api/hello</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The frontend continues to work seamlessly, even though the backend is now in a different site (simulating a different cloud).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_9_clean_up"><a class="anchor" href="#_step_9_clean_up"></a>Step 9: Clean Up</h3>
+<div class="paragraph">
+<p>Remove the lab resources:</p>
+</div>
+<div id="_tabs_8" class="openblock tabs is-loading">
+<div class="content">
+<div class="ulist tablist">
+<ul>
+<li id="_tabs_8_option_a_two_clusters" class="tab">
+<p>Option A: Two Clusters</p>
+</li>
+<li id="_tabs_8_option_b_single_cluster" class="tab">
+<p>Option B: Single Cluster</p>
+</li>
+</ul>
+</div>
+<div id="_tabs_8_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_8_option_a_two_clusters">
+<div class="paragraph">
+<p>On Cluster A:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-west
+skupper listener delete backend
+oc delete route frontend
+oc delete service frontend
+oc delete deployment frontend</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On Cluster B:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-b-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
+oc project site-east
+skupper connector delete backend
+oc delete deployment backend</code></pre>
+</div>
+</div>
+</div>
+<div id="_tabs_8_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_8_option_b_single_cluster">
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper listener delete backend
+oc delete route frontend
+oc delete service frontend
+oc delete deployment frontend
 
+oc project site-east
+skupper connector delete backend
+oc delete deployment backend</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The sites and links remain intact for use in other exercises.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this exercise, you:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Deployed a two-tier application in a single site (simulating on-premises)</p>
+</li>
+<li>
+<p>Deployed a copy of the backend in a second site (simulating cloud)</p>
+</li>
+<li>
+<p>Created connectors in both sites to enable load balancing across environments</p>
+</li>
+<li>
+<p>Used link cost to control traffic routing between environments</p>
+</li>
+<li>
+<p>Simulated a testing phase where all production traffic stayed on-premises</p>
+</li>
+<li>
+<p>Performed a cutover by scaling down the on-premises backend</p>
+</li>
+<li>
+<p>Verified rollback capability by scaling the on-premises backend back up</p>
+</li>
+<li>
+<p>Completed the migration by removing the on-premises backend</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These techniques apply directly to real multi-cloud migrations.
+The same link cost and connector/listener mechanics work identically whether the sites are namespaces on one cluster, separate clusters, or clusters in different cloud providers.</p>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="section3.html">Edge Computing and IoT</a></span>
   <span class="next"><a href="../appendix/appendix.html">Appendix</a></span>

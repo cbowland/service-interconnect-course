@@ -273,7 +273,412 @@
 </aside>
 <article class="doc">
 <h1 class="page">Troubleshooting</h1>
-
+<div class="sect1">
+<h2 id="_general_diagnostic_commands"><a class="anchor" href="#_general_diagnostic_commands"></a>General Diagnostic Commands</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>These commands help you quickly assess the state of your Service Interconnect deployment.</p>
+</div>
+<div class="sect2">
+<h3 id="_check_site_status"><a class="anchor" href="#_check_site_status"></a>Check Site Status</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get site -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Healthy output</div>
+<div class="content">
+<pre>NAME        STATUS   SITES IN NETWORK   MESSAGE
+site-west   Ready    2                  OK</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If STATUS is not <code>Ready</code>, check the operator logs (see below).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_all_service_interconnect_resources"><a class="anchor" href="#_check_all_service_interconnect_resources"></a>Check All Service Interconnect Resources</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get site,link,connector,listener,accessgrant,accesstoken -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_operator_logs"><a class="anchor" href="#_check_operator_logs"></a>Check Operator Logs</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs deployment/skupper-controller -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_check_router_logs"><a class="anchor" href="#_check_router_logs"></a>Check Router Logs</h3>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs deployment/skupper-router -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_common_issues"><a class="anchor" href="#_common_issues"></a>Common Issues</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_site_not_becoming_ready"><a class="anchor" href="#_site_not_becoming_ready"></a>Site Not Becoming Ready</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> <code>oc get site</code> shows <code>Pending</code> or no status.</p>
+</div>
+<div class="paragraph">
+<p><strong>Possible causes:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Operator not installed</strong> — Verify the Service Interconnect operator is installed and running:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get csv -A | grep skupper</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Look for <code>Succeeded</code> in the output.</p>
+</div>
+</li>
+<li>
+<p><strong>Operator not watching namespace</strong> — If the operator is installed in a single namespace, ensure it matches the site&#8217;s namespace. For AllNamespaces mode, the operator should be in <code>openshift-operators</code>.</p>
+</li>
+<li>
+<p><strong>Resource limits</strong> — The operator or router may be unable to schedule due to resource constraints:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get events -n &lt;namespace&gt; --sort-by='.lastTimestamp'</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_link_not_becoming_ready"><a class="anchor" href="#_link_not_becoming_ready"></a>Link Not Becoming Ready</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> <code>skupper link status</code> shows <code>Pending</code> or <code>Not Operational</code>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Possible causes:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Token expired</strong> — Tokens expire after 15 minutes by default. Issue a new token and redeem it.</p>
+</li>
+<li>
+<p><strong>Token already used</strong> — Tokens are single-use by default. Issue a new token.</p>
+</li>
+<li>
+<p><strong>Network connectivity</strong> — The linking site must be able to reach the token-issuing site on the link access endpoint (typically port 443 via an OpenShift route or LoadBalancer). Check:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route -n &lt;namespace&gt; | grep skupper</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Link access not enabled</strong> — The site that issued the token must have link access enabled:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper site update --enable-link-access</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>DNS resolution</strong> — The linking site must be able to resolve the hostname in the token. Verify from the linking site:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">nslookup &lt;hostname-from-token&gt;</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Diagnostic steps:</strong></p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get link -n &lt;namespace&gt; -o yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Look at the <code>status.conditions</code> field for error messages.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_listener_shows_no_matching_connector"><a class="anchor" href="#_listener_shows_no_matching_connector"></a>Listener Shows "No Matching Connector"</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> <code>skupper listener status</code> shows <code>MATCHING-CONNECTOR: false</code>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Possible causes:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Routing key mismatch</strong> — The listener and connector must use the same routing key. Check both:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get listener -n &lt;namespace&gt; -o yaml | grep routingKey
+oc get connector -n &lt;namespace&gt; -o yaml | grep routingKey</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Connector not ready</strong> — The connector&#8217;s target workload may not be running:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector status</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Sites not linked</strong> — The listener and connector are on different sites, but the sites are not linked:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link status</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_service_not_reachable_through_the_application_network"><a class="anchor" href="#_service_not_reachable_through_the_application_network"></a>Service Not Reachable Through the Application Network</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> Requests to a listener service time out or return connection errors.</p>
+</div>
+<div class="paragraph">
+<p><strong>Diagnostic steps:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Verify the listener exists and has a matching connector:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper listener status</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify the Kubernetes service was created:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get service &lt;listener-name&gt; -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify the connector&#8217;s target workload is running and listening on the correct port:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n &lt;connector-namespace&gt; -l &lt;workload-selector&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Check the router logs for errors:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs deployment/skupper-router -n &lt;namespace&gt; | tail -50</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Test connectivity directly to the workload (bypassing Service Interconnect):</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc exec -n &lt;connector-namespace&gt; deployment/&lt;workload&gt; -- curl -s http://localhost:&lt;port&gt;</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_certificate_related_errors"><a class="anchor" href="#_certificate_related_errors"></a>Certificate-Related Errors</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> Links fail with TLS errors, or router logs show certificate verification failures.</p>
+</div>
+<div class="paragraph">
+<p><strong>Possible causes:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Corrupted or missing certificate Secrets</strong> — Check that all certificate Secrets exist:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get secrets -n &lt;namespace&gt; | grep skupper</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see <code>skupper-local-ca</code>, <code>skupper-site-ca</code>, <code>skupper-service-ca</code>, and <code>skupper-site-server</code>.</p>
+</div>
+</li>
+<li>
+<p><strong>Clock skew</strong> — Certificate validation is time-sensitive. Ensure system clocks are synchronized across all sites.</p>
+</li>
+<li>
+<p><strong>Regenerate certificates</strong> — Delete the server certificate and let the operator regenerate it:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete secret skupper-site-server -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Do not delete the CA Secrets unless you intend to re-establish all links.
+</td>
+</tr>
+</table>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_network_observer_not_starting"><a class="anchor" href="#_network_observer_not_starting"></a>Network Observer Not Starting</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> The NetworkObserver pod is not running or is in CrashLoopBackOff.</p>
+</div>
+<div class="paragraph">
+<p><strong>Diagnostic steps:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Check if the Network Observer operator is installed:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get csv -A | grep network-observer</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Check the pod events:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get events -n &lt;namespace&gt; --sort-by='.lastTimestamp' | grep network-observer</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Check pod logs:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc logs -n &lt;namespace&gt; -l app.kubernetes.io/component=network-observer</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Verify resource availability — the Network Observer may need more memory:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc describe pod -n &lt;namespace&gt; -l app.kubernetes.io/component=network-observer</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_local_system_site_issues"><a class="anchor" href="#_local_system_site_issues"></a>Local System Site Issues</h3>
+<div class="paragraph">
+<p><strong>Symptom:</strong> <code>skupper site status</code> fails or shows errors on a Linux system.</p>
+</div>
+<div class="paragraph">
+<p><strong>Diagnostic steps:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Verify the platform is set correctly:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">echo $SKUPPER_PLATFORM</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>For Podman platform, verify the Podman socket is active:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">systemctl --user status podman.socket</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>For Linux (systemd) platform, verify the router service:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">systemctl --user status skupper-router</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Check for lingering enabled (required for Podman sites to persist across logouts):</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">loginctl show-user $(whoami) | grep Linger</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Reload after configuration changes:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system reload</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_getting_support"><a class="anchor" href="#_getting_support"></a>Getting Support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you cannot resolve an issue using the steps above:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Collect diagnostic information:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper version
+oc get site,link,connector,listener -n &lt;namespace&gt; -o yaml
+oc logs deployment/skupper-router -n &lt;namespace&gt; &gt; router-logs.txt
+oc logs deployment/skupper-controller -n &lt;namespace&gt; &gt; controller-logs.txt</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Open a support case with Red Hat, including the collected diagnostic data.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
 <nav class="pagination">
   <span class="prev"><a href="cli-reference.html">CLI Reference</a></span>
   <span class="next"><a href="resources.html">Additional Resources</a></span>
