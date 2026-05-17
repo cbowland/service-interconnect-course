@@ -479,6 +479,33 @@ You can also install the <code>skupper-router</code> package, which is only nece
 <div class="paragraph">
 <p>If <code>SKUPPER_PLATFORM</code> is unset, the CLI defaults to <code>kubernetes</code>.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+When using a local system platform (<code>podman</code>, <code>docker</code>, or <code>linux</code>), you must first install the local controller by running <code>skupper system install</code>. This installs the Skupper controller as a container on the local system.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Local system site features (<code>podman</code>, <code>docker</code>, and <code>linux</code> platforms) are a <strong>Technology Preview</strong> in Red Hat Service Interconnect 2.1.
+Technology Preview features are not supported with Red Hat production service level agreements (SLAs) and might not be functionally complete.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export SKUPPER_PLATFORM=kubernetes</code></pre>
