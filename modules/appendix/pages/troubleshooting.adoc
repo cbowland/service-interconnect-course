@@ -277,6 +277,33 @@ loginctl show-user $(whoami) | grep Linger
 skupper system reload
 ----
 
+== Known Issues in Version 2.1
+
+The following are known issues documented in the Red Hat Service Interconnect 2.1 Release Notes.
+
+=== Link cost is not updatable (SKUPPER-2569)
+
+Patching a Link resource to change its `spec.cost` value appears to succeed, and `oc get link` shows the updated cost, but the change does not affect traffic routing.
+
+*Workaround:* Delete the link and recreate it with the desired cost value.
+
+=== Multiple links between the same two sites do not perform as expected
+
+Creating more than one link from one site to another can result in unexpected routing behavior.
+
+*Workaround:* Before creating a link, verify that a link to the target site does not already exist:
+
+[source,bash,role=execute]
+----
+oc get link -n <namespace>
+----
+
+=== Docker not supported on IBM Power (ppc64le)
+
+Docker is not supported as a local system site platform on IBM Power (ppc64le) architecture.
+
+*Workaround:* Use Podman instead of Docker on ppc64le systems.
+
 == Getting Support
 
 If you cannot resolve an issue using the steps above:
