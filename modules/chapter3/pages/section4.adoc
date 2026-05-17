@@ -49,6 +49,41 @@ backend   Pending   backend       app=backend          8080   false             
 
 The status shows `No matching listeners` because we have not yet created a listener on the consuming site.
 
+== Creating a Connector via the OpenShift Console
+
+. Navigate to *Home -> Projects* and select the project where the workload runs (e.g., `site-east`).
+
+. Click the *Service Interconnect* tab.
+
+. Click *Create connector*.
+
+. Fill in the connector fields:
++
+[cols="1,2",options="header"]
+|===
+|Field |Description
+
+|*Name*
+|A name for the connector (e.g., `backend`)
+
+|*Port*
+|The port the workload listens on (e.g., `8080`)
+
+|*Routing key*
+|The routing key that matches this connector to listeners on remote sites. Defaults to the connector name if left blank.
+
+|*Selector*
+|A label selector that identifies the target pods (e.g., `app=backend`)
+
+|*Host*
+|Leave blank for Kubernetes workloads. Used for non-Kubernetes platforms.
+
+|*TLS secret*
+|Optional TLS secret for encrypting traffic between the router and the workload.
+|===
+
+. Click *Submit*.
+
 == Creating a Connector with YAML
 
 [source,yaml]
@@ -110,6 +145,41 @@ backend   Ready    backend       backend   8080   true                 OK
 ----
 
 NOTE: There must be a MATCHING-CONNECTOR for the service to operate. The `true` value confirms that a connector with the matching routing key exists on the network.
+
+== Creating a Listener via the OpenShift Console
+
+. Navigate to *Home -> Projects* and select the project where you want to consume the remote service (e.g., `site-west`).
+
+. Click the *Service Interconnect* tab.
+
+. Click *Create listener*.
+
+. Fill in the listener fields:
++
+[cols="1,2",options="header"]
+|===
+|Field |Description
+
+|*Name*
+|A name for the listener (e.g., `backend`)
+
+|*Port*
+|The port to expose locally (e.g., `8080`)
+
+|*Routing key*
+|Must match the routing key of the connector on the remote site. Defaults to the listener name if left blank.
+
+|*Host*
+|The hostname for the Kubernetes service created by the listener. Defaults to the listener name.
+
+|*TLS secret*
+|Optional TLS secret for encrypting traffic between applications and the router.
+|===
+
+. Click *Submit*.
+
+On Kubernetes, the listener creates a standard Kubernetes service in the namespace.
+Applications connect to it using `<host>:<port>` as they would any local service.
 
 == Creating a Listener with YAML
 

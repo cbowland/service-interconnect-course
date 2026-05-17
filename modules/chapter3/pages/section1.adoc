@@ -64,6 +64,32 @@ skupper site update --enable-link-access
 
 When link access is enabled, the site deploys a grant server that can issue access tokens for remote sites.
 
+== Creating a Site via the OpenShift Console
+
+The Service Interconnect Operator installs a console plugin that adds a *Service Interconnect* tab to each project in the OpenShift web console.
+
+. In the OpenShift web console, navigate to *Home -> Projects* and select the target project (e.g., `site-west`).
+
+. Click the *Service Interconnect* tab.
+
+. Click *Create site*.
+
+. In the *Create site* wizard, review the default values:
++
+* *Name* -- defaults to the project name
+* *Enable link access* -- check this box if other sites need to link to this site
++
+Leave other fields at their defaults unless you need to customize them.
+
+. Click *Submit*.
+
+. The *Details* tab shows the site status. Wait until the status shows *Ready*.
+
+[NOTE]
+====
+The Service Interconnect tab is available at the direct URL: `<console_url>/k8s/cluster/projects/<namespace>/openshift-site-plugin`
+====
+
 == Creating a Site with YAML
 
 You can also create a site by applying a `Site` custom resource:

@@ -66,6 +66,45 @@ skupper token issue ~/west-token.yaml --expiration-window 60m
 skupper token issue ~/west-token.yaml --redemptions-allowed 3
 ----
 
+== Creating an Access Grant via the OpenShift Console
+
+You can create an access grant directly from the OpenShift web console.
+
+. Navigate to *Home -> Projects* and select the project where the listening site is deployed (e.g., `site-west`).
+
+. Click the *Service Interconnect* tab.
+
+. Click *Create access grant*.
+
+. Fill in the access grant fields:
++
+[cols="1,2",options="header"]
+|===
+|Field |Description
+
+|*FileName*
+|A name for the grant (e.g., `my-grant`)
+
+|*Redemptions*
+|Number of times the token can be redeemed (default: `1`)
+
+|*Code*
+|Optional secret code. If left blank, one is generated automatically.
+
+|*Valid for*
+|Expiration window in minutes (default: `15`)
+|===
+
+. Click *Submit*.
+
+. The console displays the grant status. You can download or copy the generated token credentials from the grant details.
+
+[NOTE]
+====
+The token generated from the console contains the same GrantServer URL, secret code, and CA certificate as tokens issued via the CLI.
+Transfer the token to the connecting site through a secure channel.
+====
+
 == Creating Tokens with YAML (AccessGrant and AccessToken)
 
 The CLI `skupper token issue` command is a convenience wrapper around two underlying custom resources: `AccessGrant` and `AccessToken`.
