@@ -115,7 +115,7 @@ There are many options to consider when creating sites:
 The timeout does not prevent the site from being created.
 
 |`--enable-ha`
-|Enable high availability for the site.
+|Enable high availability for the site. Runs multiple router replicas so the site remains operational if a router instance fails.
 
 |`--namespace <namespace>`
 |Create the site in a specific namespace (CLI).
