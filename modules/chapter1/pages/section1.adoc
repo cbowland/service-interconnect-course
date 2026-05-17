@@ -22,7 +22,7 @@ These approaches are complex, slow to provision, and often require elevated priv
 
 == The Solution
 
-Service Interconnect creates an *application network* -- a Layer 7 overlay that routes traffic between application endpoints across distributed sites.
+Service Interconnect creates an *application network* (also known as a *Virtual Application Network* or *VAN*) -- a Layer 7 overlay that routes traffic between application endpoints across distributed sites.
 Rather than modifying the underlying network infrastructure, Service Interconnect deploys lightweight routers that establish secure, outbound-only connections between sites.
 
 Key characteristics of this approach:
