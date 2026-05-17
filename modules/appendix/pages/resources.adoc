@@ -6,6 +6,7 @@
 * https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1[Red Hat Service Interconnect 2.1 Documentation^] — Complete product documentation including installation, usage, and release notes
 * https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1/html/installing_service_interconnect/index[Installing Service Interconnect^] — Operator and CLI installation guide
 * https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1/html/using_service_interconnect/index[Using Service Interconnect^] — Complete usage guide covering sites, links, services, and the Network Observer
+* https://docs.redhat.com/en/documentation/red_hat_service_interconnect/2.1/html/release_notes/index[Red Hat Service Interconnect 2.1 Release Notes^] — New features, supported configurations, Technology Preview features, and known issues
 
 == Red Hat Training and Certification
 
@@ -20,7 +21,7 @@
 
 == Related Technologies
 
-* https://docs.redhat.com/en/documentation/openshift_container_platform/4.20[OpenShift Container Platform 4.20 Documentation^] — Platform documentation for the clusters used in this course
+* https://docs.redhat.com/en/documentation/openshift_container_platform/[OpenShift Container Platform Documentation^] — Platform documentation for the clusters used in this course (select the version matching your cluster)
 * https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9[Red Hat Enterprise Linux 9 Documentation^] — Reference for the Linux systems used in Chapter 5
 * https://www.redhat.com/en/technologies/cloud-computing/openshift/microshift[MicroShift^] — Lightweight OpenShift for edge devices, compatible with Service Interconnect
 

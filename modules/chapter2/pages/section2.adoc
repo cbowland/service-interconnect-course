@@ -114,6 +114,14 @@ The CLI behavior depends on the target platform, which is controlled by the `SKU
 
 If `SKUPPER_PLATFORM` is unset, the CLI defaults to `kubernetes`.
 
+NOTE: When using a local system platform (`podman`, `docker`, or `linux`), you must first install the local controller by running `skupper system install`. This installs the Skupper controller as a container on the local system.
+
+[IMPORTANT]
+====
+Local system site features (`podman`, `docker`, and `linux` platforms) are a *Technology Preview* in Red Hat Service Interconnect 2.1.
+Technology Preview features are not supported with Red Hat production service level agreements (SLAs) and might not be functionally complete.
+====
+
 [source,bash,role=execute]
 ----
 export SKUPPER_PLATFORM=kubernetes

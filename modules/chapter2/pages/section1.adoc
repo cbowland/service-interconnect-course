@@ -77,6 +77,7 @@ spec:
 +
 [NOTE]
 ====
+* The `startingCSV` value above reflects a specific release. Check the https://access.redhat.com/downloads[Red Hat Software Downloads,window=_blank] page for the latest version number.
 * If you want to keep updates confined to 2.1.x releases, set the value of `channel` to `stable-2.1`.
 * If you do not specify `startingCSV`, the subscription defaults to the latest operator version.
 * If you specify `installPlanApproval` as `Manual`, sites are not automatically upgraded to the latest version of Service Interconnect.
@@ -117,6 +118,8 @@ As an alternative to the Operator, you can use YAML to install the CRDs and cont
 +
 * *Cluster scope* -- you can create a site in any namespace (`skupper-cluster-scope-2.1.0-rh.yaml`)
 * *Namespace scope* -- you can only create a site in the namespace where the YAML is deployed (`skupper-namespace-scope-2.1.0-rh.yaml`)
++
+NOTE: The YAML filenames above include a version number that may change with newer releases. Check the https://access.redhat.com/downloads[Red Hat Software Downloads,window=_blank] page for the latest files.
 
 . To install cluster-wide, apply the YAML:
 +
