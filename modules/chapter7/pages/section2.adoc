@@ -117,6 +117,14 @@ By adjusting link cost, you can gradually shift traffic from the old to the new 
 |Old environment decommissioned.
 |===
 
+[WARNING]
+====
+In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+Running `oc patch link` to change the cost appears to succeed, and `oc get link` shows the updated value, but the change does not affect traffic routing.
+
+*Workaround:* To change a link's cost, delete the existing link and recreate it with the desired cost value.
+====
+
 === Using Parallel Connectors
 
 Deploy connectors for the same routing key in both environments.

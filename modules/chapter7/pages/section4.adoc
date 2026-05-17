@@ -226,6 +226,21 @@ oc get link -n site-west
 
 Note the link name, then patch the link cost:
 
+[WARNING]
+====
+In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+The `oc patch link` command below appears to succeed, but the cost change does not affect traffic routing.
+
+*Workaround:* Delete the existing link and recreate it with the desired cost:
+
+[source,bash]
+----
+oc delete link <link-name> -n site-west
+# Re-issue a token from the target site, then redeem it with the new cost:
+skupper token redeem <token-file> --cost 9999
+----
+====
+
 [source,bash,role=execute]
 ----
 oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":9999}}'
@@ -276,6 +291,19 @@ skupper listener delete backend-test
 When you are confident the cloud backend is working correctly, shift all traffic to it.
 
 First, restore the link cost to normal:
+
+[WARNING]
+====
+Due to known issue SKUPPER-2569, patching the link cost does not take effect.
+To restore the cost to 1, delete the link and recreate it:
+
+[source,bash]
+----
+oc delete link <link-name> -n site-west
+# Re-issue a token from the target site, then redeem it with cost 1 (the default)
+skupper token redeem <token-file>
+----
+====
 
 [source,bash,role=execute]
 ----

@@ -105,6 +105,12 @@ For example, if you want traffic to prefer the on-premises database over a cloud
 
 This ensures the on-premises database handles all traffic under normal conditions, with automatic failover to the cloud replica if the on-premises site becomes unavailable.
 
+[WARNING]
+====
+In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+Set the desired cost when creating the link. If you need to change a link's cost, delete the link and recreate it with the new cost value.
+====
+
 === Namespace Isolation
 
 Each Service Interconnect site is scoped to a single Kubernetes namespace.
