@@ -264,13 +264,15 @@ You can still test the `site-east` backend directly by sending requests from wit
 ====
 Option A: Two Clusters::
 +
+NOTE: This tests the backend workload directly via its Kubernetes service in `site-east`, not through a Service Interconnect listener.
++
 [source,bash,role=execute]
 ----
 oc login --server=<cluster-b-api-url> -u <username> -p <password>
 oc project site-east
 oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
   --rm -it --restart=Never -- \
-  curl -s http://backend:8080/api/hello
+  curl -s http://backend.<site-east-namespace>.svc.cluster.local:8080/api/hello
 ----
 
 Option B: Single Cluster::
