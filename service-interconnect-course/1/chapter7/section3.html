@@ -541,19 +541,32 @@ Service Interconnect&#8217;s resource requirements at the edge are modest:</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Local system site (Podman)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper router in a Podman container on Linux</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Linux servers or VMs without Kubernetes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper router in a Podman container on Red Hat Enterprise Linux 8 or 9 (requires Podman 4+)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RHEL servers or VMs without Kubernetes</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Local system site (systemd)</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper router as a systemd service on Linux</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Bare-metal Linux systems, appliances</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Skupper router as a systemd service on Red Hat Enterprise Linux 8 or 9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bare-metal RHEL systems, appliances</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
 <p>All of these platforms participate in the same application network using the same linking and service exposure mechanisms.
 The choice of platform depends on the hardware capabilities and management requirements of the edge location.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Local system sites are fully supported on Red Hat Enterprise Linux 8 and 9.
+Other Linux distributions with Podman 4+ or systemd (such as Fedora, CentOS Stream, or Ubuntu) may also work, but Red Hat support for these is provided on a commercially reasonable basis only.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>

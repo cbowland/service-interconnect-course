@@ -675,13 +675,25 @@ done</code></pre>
 </ul>
 </div>
 <div id="_tabs_7_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_7_option_a_two_clusters">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This tests the backend workload directly via its Kubernetes service in <code>site-east</code>, not through a Service Interconnect listener.
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-b-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
 oc project site-east
 oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
   --rm -it --restart=Never -- \
-  curl -s http://backend:8080/api/hello</code></pre>
+  curl -s http://backend.&lt;site-east-namespace&gt;.svc.cluster.local:8080/api/hello</code></pre>
 </div>
 </div>
 </div>

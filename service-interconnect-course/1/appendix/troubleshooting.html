@@ -599,6 +599,47 @@ Do not delete the CA Secrets unless you intend to re-establish all links.
 </div>
 </div>
 <div class="sect2">
+<h3 id="_accessing_the_network_observer_console"><a class="anchor" href="#_accessing_the_network_observer_console"></a>Accessing the Network Observer Console</h3>
+<div class="paragraph">
+<p>The Network Observer provides a web console for visualizing the application network topology, traffic flow, and site status.</p>
+</div>
+<div class="paragraph">
+<p><strong>On OpenShift:</strong></p>
+</div>
+<div class="paragraph">
+<p>The operator automatically creates a route for the Network Observer console.
+The route name follows the convention <code>skupper-network-observer-&lt;site-namespace&gt;</code>.</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get routes -n &lt;namespace&gt; | grep network-observer</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Open the route URL in a browser and log in with your OpenShift credentials.</p>
+</div>
+<div class="paragraph">
+<p><strong>On other Kubernetes distributions:</strong></p>
+</div>
+<div class="paragraph">
+<p>The Network Observer service is not automatically exposed.
+Create an ingress or port-forward to access the console:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl port-forward -n &lt;namespace&gt; service/skupper-network-observer 8443:8443</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Retrieve the login password from the <code>skupper-network-observer-auth</code> secret:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl get secret skupper-network-observer-auth -n &lt;namespace&gt; -o jsonpath='{.data.password}' | base64 -d</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_local_system_site_issues"><a class="anchor" href="#_local_system_site_issues"></a>Local System Site Issues</h3>
 <div class="paragraph">
 <p><strong>Symptom:</strong> <code>skupper site status</code> fails or shows errors on a Linux system.</p>
@@ -649,6 +690,46 @@ Do not delete the CA Secrets unless you intend to re-establish all links.
 </div>
 </li>
 </ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_known_issues_in_version_2_1"><a class="anchor" href="#_known_issues_in_version_2_1"></a>Known Issues in Version 2.1</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following are known issues documented in the Red Hat Service Interconnect 2.1 Release Notes.</p>
+</div>
+<div class="sect2">
+<h3 id="_link_cost_is_not_updatable_skupper_2569"><a class="anchor" href="#_link_cost_is_not_updatable_skupper_2569"></a>Link cost is not updatable (SKUPPER-2569)</h3>
+<div class="paragraph">
+<p>Patching a Link resource to change its <code>spec.cost</code> value appears to succeed, and <code>oc get link</code> shows the updated cost, but the change does not affect traffic routing.</p>
+</div>
+<div class="paragraph">
+<p><strong>Workaround:</strong> Delete the link and recreate it with the desired cost value.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_multiple_links_between_the_same_two_sites_do_not_perform_as_expected"><a class="anchor" href="#_multiple_links_between_the_same_two_sites_do_not_perform_as_expected"></a>Multiple links between the same two sites do not perform as expected</h3>
+<div class="paragraph">
+<p>Creating more than one link from one site to another can result in unexpected routing behavior.</p>
+</div>
+<div class="paragraph">
+<p><strong>Workaround:</strong> Before creating a link, verify that a link to the target site does not already exist:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get link -n &lt;namespace&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_docker_not_supported_on_ibm_power_ppc64le"><a class="anchor" href="#_docker_not_supported_on_ibm_power_ppc64le"></a>Docker not supported on IBM Power (ppc64le)</h3>
+<div class="paragraph">
+<p>Docker is not supported as a local system site platform on IBM Power (ppc64le) architecture.</p>
+</div>
+<div class="paragraph">
+<p><strong>Workaround:</strong> Use Podman instead of Docker on ppc64le systems.</p>
 </div>
 </div>
 </div>
