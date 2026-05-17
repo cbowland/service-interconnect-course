@@ -113,20 +113,20 @@ skupper token issue <filename> [options]
 |===
 |Option |Description
 
-|`--expiry <duration>`
+|`--expiration-window <duration>`
 |Time until the token expires (default: `15m`)
 
-|`--uses <count>`
+|`--redemptions-allowed <count>`
 |Number of times the token can be redeemed (default: `1`)
 |===
 
 .Example
 [source,bash,role=execute]
 ----
-skupper token issue ~/my-token.yaml --expiry 1h --uses 3
+skupper token issue ~/my-token.yaml --expiration-window 1h --redemptions-allowed 3
 ----
 
-NOTE: The official docs use `--expiration-window` and `--redemptions-allowed` for the YAML-based AccessGrant approach. The CLI flags `--expiry` and `--uses` are the CLI equivalents.
+NOTE: The `--expiration-window` and `--redemptions-allowed` CLI flags correspond to the `spec.expirationWindow` and `spec.redemptionsAllowed` fields in the AccessGrant YAML resource.
 
 === skupper token redeem
 

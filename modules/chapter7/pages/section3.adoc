@@ -111,7 +111,7 @@ Service Interconnect mitigates these risks:
 
 When deploying to hundreds or thousands of edge sites, consider:
 
-* **Multi-use access tokens** — Issue tokens with `--uses` set to the number of edge sites that will link to a hub, reducing the number of token issue operations
+* **Multi-use access tokens** — Issue tokens with `--redemptions-allowed` set to the number of edge sites that will link to a hub, reducing the number of token issue operations
 * **Site bundles** — Use `skupper system generate-bundle` to create distributable packages that can be deployed to edge sites without manual CLI interaction
 * **Automation** — Integrate site creation and linking into your edge provisioning pipeline (Ansible, RHEL Image Builder, MicroShift)
 * **Regional hubs** — Use the regional aggregation pattern to limit the number of links per hub site

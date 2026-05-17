@@ -81,14 +81,14 @@ You can customize token properties when issuing:
 
 [source,bash,role=execute]
 ----
-skupper token issue ~/my-token.yaml --uses 5 --expiry 1h
+skupper token issue ~/my-token.yaml --redemptions-allowed 5 --expiration-window 1h
 ----
 
 This creates a token that can be redeemed up to 5 times within 1 hour of issuance.
 
 Use multiple-use tokens when you need to link several sites to the same hub site, or when you want to prepare tokens in advance for sites that will be set up later.
 
-IMPORTANT: Multiple-use tokens and longer expiry windows increase the risk if a token is intercepted. Use the shortest expiry and fewest uses that meet your requirements.
+IMPORTANT: Multiple-use tokens and longer expiration windows increase the risk if a token is intercepted. Use the shortest expiration window and fewest redemptions that meet your requirements.
 
 === Token Lifecycle Using YAML Resources
 
