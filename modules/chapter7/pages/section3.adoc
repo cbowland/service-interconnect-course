@@ -141,13 +141,16 @@ Service Interconnect supports several deployment models at the edge:
 |Single-node edge devices with Kubernetes API
 
 |**Local system site (Podman)**
-|Skupper router in a Podman container on Linux
-|Linux servers or VMs without Kubernetes
+|Skupper router in a Podman container on Red Hat Enterprise Linux 8 or 9 (requires Podman 4+)
+|RHEL servers or VMs without Kubernetes
 
 |**Local system site (systemd)**
-|Skupper router as a systemd service on Linux
-|Bare-metal Linux systems, appliances
+|Skupper router as a systemd service on Red Hat Enterprise Linux 8 or 9
+|Bare-metal RHEL systems, appliances
 |===
 
 All of these platforms participate in the same application network using the same linking and service exposure mechanisms.
 The choice of platform depends on the hardware capabilities and management requirements of the edge location.
+
+NOTE: Local system sites are fully supported on Red Hat Enterprise Linux 8 and 9.
+Other Linux distributions with Podman 4+ or systemd (such as Fedora, CentOS Stream, or Ubuntu) may also work, but Red Hat support for these is provided on a commercially reasonable basis only.
