@@ -378,12 +378,12 @@ Typically the operator is installed in the <code>openshift-operators</code> name
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: skupper-operator
+  name: skupper-network-observer-operator
   namespace: openshift-operators
 spec:
   channel: stable-2
   installPlanApproval: Automatic
-  name: skupper-operator
+  name: skupper-network-observer-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
   startingCSV: skupper-network-observer-operator.v2.1.1-rh-8</code></pre>

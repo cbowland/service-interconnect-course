@@ -396,7 +396,7 @@ A token contains the information needed for one site to create a link to another
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/my-token.yaml --uses 5 --expiry 1h</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/my-token.yaml --redemptions-allowed 5 --expiration-window 1h</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -412,7 +412,7 @@ A token contains the information needed for one site to create a link to another
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-Multiple-use tokens and longer expiry windows increase the risk if a token is intercepted. Use the shortest expiry and fewest uses that meet your requirements.
+Multiple-use tokens and longer expiration windows increase the risk if a token is intercepted. Use the shortest expiration window and fewest redemptions that meet your requirements.
 </td>
 </tr>
 </table>
