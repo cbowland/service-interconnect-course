@@ -236,6 +236,39 @@ oc logs -n <namespace> -l app.kubernetes.io/component=network-observer
 oc describe pod -n <namespace> -l app.kubernetes.io/component=network-observer
 ----
 
+=== Accessing the Network Observer Console
+
+The Network Observer provides a web console for visualizing the application network topology, traffic flow, and site status.
+
+**On OpenShift:**
+
+The operator automatically creates a route for the Network Observer console.
+The route name follows the convention `skupper-network-observer-<site-namespace>`.
+
+[source,bash,role=execute]
+----
+oc get routes -n <namespace> | grep network-observer
+----
+
+Open the route URL in a browser and log in with your OpenShift credentials.
+
+**On other Kubernetes distributions:**
+
+The Network Observer service is not automatically exposed.
+Create an ingress or port-forward to access the console:
+
+[source,bash,role=execute]
+----
+kubectl port-forward -n <namespace> service/skupper-network-observer 8443:8443
+----
+
+Retrieve the login password from the `skupper-network-observer-auth` secret:
+
+[source,bash,role=execute]
+----
+kubectl get secret skupper-network-observer-auth -n <namespace> -o jsonpath='{.data.password}' | base64 -d
+----
+
 === Local System Site Issues
 
 **Symptom:** `skupper site status` fails or shows errors on a Linux system.
