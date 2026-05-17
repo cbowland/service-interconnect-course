@@ -121,6 +121,46 @@ The timeout does not prevent the site from being created.
 |Create the site in a specific namespace (CLI).
 |===
 
+=== Site Sizing
+
+By default, the Skupper router runs with BestEffort CPU allocation.
+For production or high-throughput deployments, you can configure the router's CPU allocation using the `spec.settings.size` field in the Site resource or by creating a ConfigMap with the `skupper.io/site-sizing` label.
+
+Available sizing options:
+
+[cols="1,1,2",options="header"]
+|===
+|Size |CPU Allocation |Use Case
+
+|_(default)_
+|BestEffort
+|Development and testing
+
+|`small`
+|1 CPU
+|Low-resource clusters or edge sites
+
+|`medium`
+|2 CPU
+|Production workloads
+
+|`large`
+|5 CPU
+|High-throughput or latency-sensitive deployments
+|===
+
+.Example: Setting site size in YAML
+[source,yaml]
+----
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: site-west
+spec:
+  settings:
+    size: medium
+----
+
 == Deleting a Site
 
 To remove a site using the CLI:
