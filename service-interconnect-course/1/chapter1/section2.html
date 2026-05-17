@@ -501,6 +501,107 @@ When a listener and a connector share the same routing key, traffic sent to the 
 <p>Multiple connectors can share the same routing key, enabling load balancing across sites.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_routing_patterns"><a class="anchor" href="#_routing_patterns"></a>Routing Patterns</h3>
+<div class="paragraph">
+<p>Service Interconnect supports two routing patterns that control how traffic is distributed when multiple connectors share the same routing key:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Anycast (default)</dt>
+<dd>
+<p>Routes each connection or request to <strong>one</strong> destination.
+Two algorithms are available:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>balanced</strong> — distributes active TCP connections evenly across all connectors with the same routing key, regardless of site location.</p>
+</li>
+<li>
+<p><strong>closest</strong> — routes to the connector with the lowest total link cost. Local workloads (same site) have a cost of 0; remote workloads are reached via links whose costs are summed along the path. This is useful when you want to prefer local processing and only fail over to remote sites.</p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1">Multicast</dt>
+<dd>
+<p>Routes each connection or request to <strong>all</strong> destinations that share the same routing key.
+Every connector receives a copy of the traffic.
+This is useful for scenarios like fan-out notifications or parallel processing.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>You configure the routing pattern using the <code>routingMode</code> field on a Listener or Connector resource:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: backend
+spec:
+  routingKey: backend
+  port: 8080
+  routingMode: anycast  <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Valid values: <code>anycast</code> (default) or <code>multicast</code>.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_link_cost"><a class="anchor" href="#_link_cost"></a>Link Cost</h3>
+<div class="paragraph">
+<p>Every link between sites has a <strong>cost</strong> value (default <code>1</code>).
+The router uses cost to determine the preferred path when multiple routes exist to the same routing key.
+Local workloads (connectors in the same site as the listener) have an implicit cost of <code>0</code>.</p>
+</div>
+<div class="paragraph">
+<p>Lower total path cost is preferred.
+For example, if site-west has a link to site-east with cost 1 and a link to site-central with cost 5, traffic from site-west prefers site-east when using the <code>closest</code> anycast algorithm.</p>
+</div>
+<div class="paragraph">
+<p>Set the cost when creating a link by specifying it during token redemption or in the Link resource YAML:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: skupper.io/v2alpha1
+kind: Link
+metadata:
+  name: link-to-east
+spec:
+  cost: 1  <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Higher values make a link less preferred. Use high values like <code>9999</code> to create failover-only paths.</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Load balancing in Service Interconnect balances <strong>active TCP connections</strong>, not individual HTTP requests.
+A new TCP connection is assigned to a destination based on the current distribution of active connections.
+This is different from round-robin or request-level load balancing.
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">

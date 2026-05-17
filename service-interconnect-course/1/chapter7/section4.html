@@ -615,6 +615,31 @@ oc get link -n site-west</code></pre>
 <div class="paragraph">
 <p>Note the link name, then patch the link cost:</p>
 </div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+The <code>oc patch link</code> command below appears to succeed, but the cost change does not affect traffic routing.</p>
+</div>
+<div class="paragraph">
+<p><strong>Workaround:</strong> Delete the existing link and recreate it with the desired cost:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west
+# Re-issue a token from the target site, then redeem it with the new cost:
+skupper token redeem &lt;token-file&gt; --cost 9999</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":9999}}'</code></pre>
@@ -682,6 +707,28 @@ skupper listener delete backend-test</code></pre>
 </div>
 <div class="paragraph">
 <p>First, restore the link cost to normal:</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Due to known issue SKUPPER-2569, patching the link cost does not take effect.
+To restore the cost to 1, delete the link and recreate it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west
+# Re-issue a token from the target site, then redeem it with cost 1 (the default)
+skupper token redeem &lt;token-file&gt;</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock execute">
 <div class="content">
