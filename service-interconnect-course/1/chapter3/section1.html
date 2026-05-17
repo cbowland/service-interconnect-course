@@ -364,6 +364,63 @@ To allow other sites to link to this site, enable link access:</p>
 </div>
 </div>
 <div class="sect1">
+<h2 id="_creating_a_site_via_the_openshift_console"><a class="anchor" href="#_creating_a_site_via_the_openshift_console"></a>Creating a Site via the OpenShift Console</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Service Interconnect Operator installs a console plugin that adds a <strong>Service Interconnect</strong> tab to each project in the OpenShift web console.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>In the OpenShift web console, navigate to <strong>Home &#8594; Projects</strong> and select the target project (e.g., <code>site-west</code>).</p>
+</li>
+<li>
+<p>Click the <strong>Service Interconnect</strong> tab.</p>
+</li>
+<li>
+<p>Click <strong>Create site</strong>.</p>
+</li>
+<li>
+<p>In the <strong>Create site</strong> wizard, review the default values:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Name</strong>&#8201;&#8212;&#8201;defaults to the project name</p>
+</li>
+<li>
+<p><strong>Enable link access</strong>&#8201;&#8212;&#8201;check this box if other sites need to link to this site</p>
+<div class="paragraph">
+<p>Leave other fields at their defaults unless you need to customize them.</p>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Click <strong>Submit</strong>.</p>
+</li>
+<li>
+<p>The <strong>Details</strong> tab shows the site status. Wait until the status shows <strong>Ready</strong>.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The Service Interconnect tab is available at the direct URL: <code>&lt;console_url&gt;/k8s/cluster/projects/&lt;namespace&gt;/openshift-site-plugin</code></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_creating_a_site_with_yaml"><a class="anchor" href="#_creating_a_site_with_yaml"></a>Creating a Site with YAML</h2>
 <div class="sectionbody">
 <div class="paragraph">

@@ -344,6 +344,68 @@ backend   Pending   backend       app=backend          8080   false             
 </div>
 </div>
 <div class="sect1">
+<h2 id="_creating_a_connector_via_the_openshift_console"><a class="anchor" href="#_creating_a_connector_via_the_openshift_console"></a>Creating a Connector via the OpenShift Console</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to <strong>Home &#8594; Projects</strong> and select the project where the workload runs (e.g., <code>site-east</code>).</p>
+</li>
+<li>
+<p>Click the <strong>Service Interconnect</strong> tab.</p>
+</li>
+<li>
+<p>Click <strong>Create connector</strong>.</p>
+</li>
+<li>
+<p>Fill in the connector fields:</p>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Name</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A name for the connector (e.g., <code>backend</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Port</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The port the workload listens on (e.g., <code>8080</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Routing key</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The routing key that matches this connector to listeners on remote sites. Defaults to the connector name if left blank.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Selector</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A label selector that identifies the target pods (e.g., <code>app=backend</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Host</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Leave blank for Kubernetes workloads. Used for non-Kubernetes platforms.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TLS secret</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional TLS secret for encrypting traffic between the router and the workload.</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Click <strong>Submit</strong>.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_creating_a_connector_with_yaml"><a class="anchor" href="#_creating_a_connector_with_yaml"></a>Creating a Connector with YAML</h2>
 <div class="sectionbody">
 <div class="listingblock">
@@ -425,6 +487,68 @@ There must be a MATCHING-CONNECTOR for the service to operate. The <code>true</c
 </tr>
 </table>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_creating_a_listener_via_the_openshift_console"><a class="anchor" href="#_creating_a_listener_via_the_openshift_console"></a>Creating a Listener via the OpenShift Console</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to <strong>Home &#8594; Projects</strong> and select the project where you want to consume the remote service (e.g., <code>site-west</code>).</p>
+</li>
+<li>
+<p>Click the <strong>Service Interconnect</strong> tab.</p>
+</li>
+<li>
+<p>Click <strong>Create listener</strong>.</p>
+</li>
+<li>
+<p>Fill in the listener fields:</p>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Name</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A name for the listener (e.g., <code>backend</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Port</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The port to expose locally (e.g., <code>8080</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Routing key</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Must match the routing key of the connector on the remote site. Defaults to the listener name if left blank.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Host</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The hostname for the Kubernetes service created by the listener. Defaults to the listener name.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TLS secret</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional TLS secret for encrypting traffic between applications and the router.</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Click <strong>Submit</strong>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>On Kubernetes, the listener creates a standard Kubernetes service in the namespace.
+Applications connect to it using <code>&lt;host&gt;:&lt;port&gt;</code> as they would any local service.</p>
 </div>
 </div>
 </div>

@@ -400,6 +400,81 @@ skupper token issue ~/west-token.yaml --redemptions-allowed 3</code></pre>
 </div>
 </div>
 <div class="sect1">
+<h2 id="_creating_an_access_grant_via_the_openshift_console"><a class="anchor" href="#_creating_an_access_grant_via_the_openshift_console"></a>Creating an Access Grant via the OpenShift Console</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can create an access grant directly from the OpenShift web console.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to <strong>Home &#8594; Projects</strong> and select the project where the listening site is deployed (e.g., <code>site-west</code>).</p>
+</li>
+<li>
+<p>Click the <strong>Service Interconnect</strong> tab.</p>
+</li>
+<li>
+<p>Click <strong>Create access grant</strong>.</p>
+</li>
+<li>
+<p>Fill in the access grant fields:</p>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FileName</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A name for the grant (e.g., <code>my-grant</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Redemptions</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of times the token can be redeemed (default: <code>1</code>)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Code</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional secret code. If left blank, one is generated automatically.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Valid for</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Expiration window in minutes (default: <code>15</code>)</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Click <strong>Submit</strong>.</p>
+</li>
+<li>
+<p>The console displays the grant status. You can download or copy the generated token credentials from the grant details.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The token generated from the console contains the same GrantServer URL, secret code, and CA certificate as tokens issued via the CLI.
+Transfer the token to the connecting site through a secure channel.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_creating_tokens_with_yaml_accessgrant_and_accesstoken"><a class="anchor" href="#_creating_tokens_with_yaml_accessgrant_and_accesstoken"></a>Creating Tokens with YAML (AccessGrant and AccessToken)</h2>
 <div class="sectionbody">
 <div class="paragraph">
