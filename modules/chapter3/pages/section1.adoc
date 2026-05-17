@@ -9,6 +9,12 @@ Before you can link sites, expose services, or route traffic, you must create a 
 In the previous chapter, you created sites as part of the installation exercise.
 This section covers site creation in more detail, including important options and the YAML alternative.
 
+[NOTE]
+====
+Before creating a site, the Skupper controller and Custom Resource Definitions (CRDs) must be installed on the target Kubernetes cluster.
+If you have not yet installed the controller, refer to xref:chapter2:section1.adoc[Installing Service Interconnect] for instructions.
+====
+
 == Creating a Site with the CLI
 
 The basic command to create a site is:

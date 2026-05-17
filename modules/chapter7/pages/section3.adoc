@@ -13,6 +13,14 @@ Red Hat Service Interconnect is well-suited for edge scenarios because:
 * **Resilience to disconnection** — Sites operate independently when links are down, and traffic resumes automatically when connectivity is restored
 * **Local system sites** — Non-Kubernetes workloads on Linux systems can participate in the application network, which is common at edge locations where full Kubernetes clusters may not be available
 
+[IMPORTANT]
+====
+Local system site features (Podman, Docker, and Linux/systemd platforms) are a *Technology Preview* in Red Hat Service Interconnect 2.1.
+Technology Preview features are not supported with Red Hat production service level agreements (SLAs) and might not be functionally complete.
+Red Hat does not recommend using them in production.
+These features provide early access to upcoming product features, enabling customers to test functionality and provide feedback during the development process.
+====
+
 == Edge Topology Patterns
 
 === Hub-to-Edge
