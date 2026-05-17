@@ -26,7 +26,7 @@ These applications need to participate in modern, cloud-native architectures.
 
 *Example:* A financial services company has a mainframe-connected transaction processing system running on RHEL VMs.
 New microservices on OpenShift need to query this system.
-Service Interconnect creates a gateway on the RHEL host, exposing the legacy service to the OpenShift application network.
+Service Interconnect creates a local system site on the RHEL host, exposing the legacy service to the OpenShift application network.
 
 *Benefits:*
 
@@ -101,7 +101,7 @@ If the primary site fails, the standby services are already connected to the app
 |Cloud-agnostic, no peering required
 
 |Legacy application integration
-|RHEL gateways bridge VMs and containers
+|Local system sites bridge VMs and containers
 
 |Progressive migration
 |Service-by-service migration with zero downtime

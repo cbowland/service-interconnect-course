@@ -61,7 +61,7 @@ Red Hat Service Interconnect adds:
 
 * Enterprise support and SLA coverage
 * Certified operator for OpenShift
-* Integration with the Red Hat ecosystem (RHEL gateways, OpenShift monitoring)
+* Integration with the Red Hat ecosystem (local system sites, OpenShift monitoring)
 * Long-term support releases with backported security fixes
 
 == Platform Support

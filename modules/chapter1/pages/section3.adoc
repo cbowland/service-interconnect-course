@@ -55,7 +55,7 @@ This section compares Service Interconnect with the most common alternatives to 
 |Provider-specific
 
 |*VM/bare-metal support*
-|Yes (RHEL gateways)
+|Yes (local system sites)
 |Yes
 |Limited
 |Yes
@@ -99,7 +99,7 @@ Service Interconnect deploys a small number of routers per namespace.
 Service Interconnect requires only namespace-level access.
 
 * Service meshes have limited support for non-Kubernetes workloads.
-Service Interconnect natively supports RHEL gateways for VM-based services.
+Service Interconnect natively supports local system sites for VM-based services.
 
 == Service Interconnect vs Direct Network Peering
 
