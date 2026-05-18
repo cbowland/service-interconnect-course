@@ -15,15 +15,15 @@ A single central site (the hub) links to every other site (the spokes).
 Spokes communicate with each other through the hub.
 
 ----
-        ┌──────────┐
-        │   hub    │
-        └─┬──┬──┬──┘
-          │  │  │
-   ┌──────┘  │  └──────┐
+          ┌──────┐
+          │ hub  │
+          └─┬┬┬──┘
+            │││
+   ┌────────┘│└────────┐
    │         │         │
-┌──┴──┐  ┌───┴──┐  ┌──┴──┐
-│west │  │east  │  │south│
-└─────┘  └──────┘  └─────┘
+┌──┴───┐  ┌──┴───┐  ┌──┴───┐
+│ west │  │ east │  │south │
+└──────┘  └──────┘  └──────┘
 ----
 
 **When to use:**
