@@ -418,6 +418,22 @@ spec:
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f subscription-all.yaml</code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Installing the operator alone does not deploy the console.
+You must also create a <code>NetworkObserver</code> custom resource in a namespace that has a Service Interconnect site.
+Since sites are not created until later in this course, deploying a <code>NetworkObserver</code> instance is covered in <a href="../chapter6/section3.html" class="xref page">Network Observer and the Console</a>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
