@@ -138,6 +138,13 @@ oc new-project west
 oc apply -f skupper-namespace-scope-2.1.0-rh.yaml
 ----
 
+== Ansible Automation
+
+The `skupper.v2` Ansible collection provides modules for automating Service Interconnect deployment across multiple clusters and environments.
+It supports managing sites, issuing tokens, linking sites, and creating connectors and listeners on Kubernetes, Podman, Docker, and Linux platforms.
+
+For details, see the https://github.com/skupperproject/skupper-ansible[skupper.v2 collection on GitHub,window=_blank] and the https://developers.redhat.com/articles/2025/06/02/automate-skupper-networks-seamlessly-ansible[Red Hat Developer guide,window=_blank].
+
 == Repeat for Additional Clusters
 
 If you are using Option A (two OpenShift clusters) from the Lab Environment setup, repeat the operator installation on your second cluster.
