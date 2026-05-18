@@ -149,7 +149,34 @@ oc get route -n site-west | grep network-observer
 Open the route URL in a browser.
 On OpenShift, you can log in using your OpenShift credentials.
 
-As you build out your application network in the following sections, the console will update in real time to show sites, links, and services.
+As you build out your application network, look for *Console Checkpoint* callouts throughout the course -- they tell you when to check the console and what has changed.
+
+[TIP]
+.Console Checkpoint
+====
+Open the Network Observer console URL in your browser.
+In the *Topology* view, you should see a single site node (`site-west`).
+There are no links or services yet -- that will change as you progress through the next sections.
+====
+
+The console shows the same information you can get from the CLI, but as a live visual:
+
+[cols="1,1",options="header"]
+|===
+|CLI Command |Console View
+
+|`skupper site status` / `oc get site`
+|Topology view (site nodes)
+
+|`skupper link status`
+|Topology view (link edges)
+
+|`skupper connector status` / `skupper listener status`
+|Services view
+
+|`curl` / traffic tests
+|Traffic flow (throughput on links and services)
+|===
 
 NOTE: For detailed configuration options including resource tuning and authentication strategies, see xref:chapter6:section3.adoc[Network Observer and the Console].
 

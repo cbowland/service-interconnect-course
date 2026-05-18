@@ -31,7 +31,42 @@ Confirm the CRDs are available:
 oc get crd | grep skupper
 ----
 
-=== Step 2: Install the CLI
+=== Step 2: Install the Network Observer Operator
+
+Install the Network Observer operator so you can use the web console later in the course.
+
+[source,bash,role=execute]
+----
+oc apply -f - <<EOF
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: skupper-network-observer-operator
+  namespace: openshift-operators
+spec:
+  channel: stable-2
+  installPlanApproval: Automatic
+  name: skupper-network-observer-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+----
+
+Wait for the operator to install, then verify:
+
+[source,bash,role=execute]
+----
+oc get csv -A | grep network-observer
+----
+
+.Expected output
+----
+openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded
+----
+
+NOTE: The operator alone does not deploy the console. You will create a `NetworkObserver` instance in the next chapter after your first site is ready.
+
+=== Step 3: Install the CLI
 
 Download and install the `skupper` CLI for your operating system as described in the previous section.
 
@@ -62,7 +97,7 @@ If this returns a value other than `kubernetes` (or is empty, which defaults to 
 export SKUPPER_PLATFORM=kubernetes
 ----
 
-=== Step 3: Create the Namespaces
+=== Step 4: Create the Namespaces
 
 [tabs]
 ====
@@ -94,7 +129,7 @@ oc new-project site-east
 ----
 ====
 
-=== Step 4: Create the Sites
+=== Step 5: Create the Sites
 
 Create a site in the `site-west` namespace with link access enabled (this site will accept incoming links):
 
@@ -162,7 +197,7 @@ NAME        STATUS
 site-east   Ready
 ----
 
-=== Step 5: Verify Both Sites
+=== Step 6: Verify Both Sites
 
 Confirm that both sites are running by checking the site pods in each namespace:
 
@@ -183,6 +218,7 @@ You should see the Service Interconnect router pods running in each namespace.
 In this exercise, you:
 
 * Installed the Red Hat Service Interconnect Operator on your OpenShift cluster(s)
+* Installed the Red Hat Service Interconnect Network Observer Operator
 * Installed the `skupper` CLI and verified the version
 * Confirmed the `SKUPPER_PLATFORM` environment variable
 * Created two namespaces (`site-west` and `site-east`)

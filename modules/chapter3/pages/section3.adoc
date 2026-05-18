@@ -184,6 +184,14 @@ NAME        STATUS   SITES IN NETWORK   MESSAGE
 site-west   Ready    2                  OK
 ----
 
+[TIP]
+.Console Checkpoint
+====
+Switch to the Network Observer console.
+The *Topology* view now shows two site nodes (`site-west` and `site-east`) connected by a link line.
+This is the visual equivalent of the `SITES IN NETWORK: 2` you just verified via CLI.
+====
+
 == Troubleshooting Links
 
 If the link status shows `Pending` or `Not Operational` for an extended period:

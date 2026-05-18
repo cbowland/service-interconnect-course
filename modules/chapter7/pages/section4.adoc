@@ -197,6 +197,13 @@ done
 You should see responses from backend pods in both `site-west` and `site-east`.
 The traffic distribution depends on the number of active TCP connections and link cost.
 
+[TIP]
+.Console Checkpoint
+====
+In the Network Observer *Services* view, you should see the `backend` service with connectors on both `site-west` and `site-east`.
+Traffic is flowing to both sites -- the console shows active connections distributed across both environments.
+====
+
 === Step 5: Simulate Testing Phase — Route All Traffic to On-premises
 
 In a real migration, you would first want to test the cloud backend without affecting production traffic.
@@ -350,6 +357,14 @@ done
 ----
 
 All responses should come from the backend pods in `site-east`.
+
+[TIP]
+.Console Checkpoint
+====
+Check the Network Observer *Services* view again.
+The `backend` service now shows traffic flowing only to `site-east` -- the `site-west` connector has zero active connections.
+This is the visual confirmation that your migration cutover is complete.
+====
 
 === Step 7: Simulate Rollback
 

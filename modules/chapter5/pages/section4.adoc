@@ -306,6 +306,13 @@ site-west   Ready    2                  OK
 
 The network now includes both the OpenShift site and the local system site.
 
+[TIP]
+.Console Checkpoint
+====
+In the Network Observer console, the *Topology* view now shows a hybrid network: the OpenShift site and the local system site connected by a link.
+Switch to the *Services* view to see the `postgresql` service with a connector on the RHEL host and a listener on OpenShift -- a legacy database exposed to the cloud without a VPN.
+====
+
 === Step 9: Clean Up (Optional)
 
 On the Linux host, remove the connector and site:

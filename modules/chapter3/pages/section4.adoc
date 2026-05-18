@@ -228,6 +228,14 @@ site-west (namespace)              site-east (namespace)
 . The SI router routes the traffic over the link to `site-east`.
 . The *connector* in `site-east` forwards the connection to one of the backend pods.
 
+[TIP]
+.Console Checkpoint
+====
+In the Network Observer console, switch to the *Services* view.
+You should see the `backend` service with a connector on `site-east` and a listener on `site-west`.
+The diagram above is exactly what the console now shows in real time.
+====
+
 == Exposing Services from Other Namespaces
 
 To expose a service from a different namespace than the connector's site, you must use YAML.

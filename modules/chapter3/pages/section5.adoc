@@ -78,7 +78,52 @@ oc project site-east
 skupper site create site-east
 ----
 
-=== Step 2: Link the Sites
+=== Step 2: Deploy the Network Observer Console
+
+Now that `site-west` is running, deploy a `NetworkObserver` instance to get the web console up.
+You will use this console throughout the rest of the course to visualize your network as it grows.
+
+[source,bash,role=execute]
+----
+oc project site-west
+----
+
+[source,bash,role=execute]
+----
+oc apply -f - <<EOF
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: network-observer
+  namespace: site-west
+spec: {}
+EOF
+----
+
+Wait for the deployment to become ready:
+
+[source,bash,role=execute]
+----
+oc rollout status deployment/skupper-network-observer -n site-west
+----
+
+Find the console route and open it in your browser:
+
+[source,bash,role=execute]
+----
+oc get route -n site-west | grep network-observer
+----
+
+On OpenShift, log in using your OpenShift credentials.
+
+[TIP]
+.Console Checkpoint
+====
+The *Topology* view shows a single site (`site-west`).
+Keep this browser tab open -- you will check back after each major step to see the network evolve.
+====
+
+=== Step 3: Link the Sites
 
 Ensure link access is enabled on `site-west`:
 
@@ -142,7 +187,7 @@ skupper link status
 
 Wait until the STATUS column shows `Ready` and the MESSAGE column shows `OK`.
 
-=== Step 3: Deploy the Backend Application
+=== Step 4: Deploy the Backend Application
 
 Deploy the sample backend application in `site-east`:
 
@@ -181,7 +226,7 @@ backend-5b8c5b5b4f-def34   1/1     Running   0          30s
 backend-5b8c5b5b4f-ghi56   1/1     Running   0          30s
 ----
 
-=== Step 4: Create a Connector
+=== Step 5: Create a Connector
 
 Expose the backend on the application network by creating a connector in `site-east`:
 
@@ -203,7 +248,7 @@ NAME      STATUS    ROUTING-KEY   SELECTOR      HOST   PORT   HAS MATCHING LISTE
 backend   Pending   backend       app=backend          8080   false                    No matching listeners
 ----
 
-=== Step 5: Create a Listener
+=== Step 6: Create a Listener
 
 On `site-west`, create a listener to consume the backend service:
 
@@ -253,7 +298,7 @@ NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 backend   ClusterIP   172.30.x.x      <none>        8080/TCP   10s
 ----
 
-=== Step 6: Deploy the Frontend and Test
+=== Step 7: Deploy the Frontend and Test
 
 Deploy the frontend application in `site-west`:
 
@@ -281,7 +326,7 @@ oc get route frontend -o jsonpath='{.spec.host}'
 Open the URL in a browser.
 You should see the hello-world frontend page displaying messages from the backend pods running in `site-east`.
 
-=== Step 7: Verify from the Command Line
+=== Step 8: Verify from the Command Line
 
 You can also test connectivity from the command line using a temporary pod in `site-west`:
 
@@ -302,7 +347,16 @@ The response confirms that:
 * Service Interconnect routed the request over the link to `site-east`
 * The backend pod in `site-east` processed the request and returned the response
 
-=== Step 8: Inspect the Application Network
+[TIP]
+.Console Checkpoint
+====
+Switch to the Network Observer console and check the *Topology* view.
+You should now see traffic flowing between `site-west` and `site-east` -- the link line shows active throughput.
+Click the `backend` service in the *Services* view to see connection counts and which site is serving requests.
+This is the first time the console shows live traffic, not just topology.
+====
+
+=== Step 9: Inspect the Application Network
 
 Check the overall network status:
 
@@ -319,6 +373,7 @@ skupper listener status
 In this exercise, you:
 
 * Verified two existing Service Interconnect sites
+* Deployed the Network Observer console for visual monitoring
 * Linked the sites together using `skupper token issue` and `skupper token redeem`
 * Deployed a backend application in `site-east`
 * Created a connector to expose the backend on the application network

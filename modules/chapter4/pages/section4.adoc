@@ -109,6 +109,13 @@ The network now has three sites: `site-west`, `site-east`, and `site-south`.
 
 Note that `site-south` can reach `site-east` even though they are not directly linked -- traffic routes through `site-west`.
 
+[TIP]
+.Console Checkpoint
+====
+In the Network Observer console *Topology* view, you now see three site nodes.
+Notice that `site-south` connects to `site-west` but not directly to `site-east` -- the console shows the actual link topology, making transitive routing patterns visible at a glance.
+====
+
 === Step 4: Deploy Backend on Two Sites
 
 You already have a backend deployment in `site-east` from Chapter 3.
@@ -183,6 +190,14 @@ done
 You should see responses from backend pods in both `site-west` and `site-east`.
 
 Because `site-south` has a direct link to `site-west` (cost 1) and reaches `site-east` through `site-west` (cost 2), you will likely see more traffic directed to `site-west` backends.
+
+[TIP]
+.Console Checkpoint
+====
+In the *Services* view, click the `backend` service.
+You should see connectors on both `site-west` and `site-east`, with traffic flowing to both.
+Notice the traffic distribution -- more connections route to `site-west` (cost 1) than through the two-hop path to `site-east` (cost 2).
+====
 
 === Step 7: Simulate Failover
 
