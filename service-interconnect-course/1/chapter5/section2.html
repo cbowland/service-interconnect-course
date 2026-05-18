@@ -325,6 +325,21 @@ Site "my-local-site" is ready.</pre>
 <div class="paragraph">
 <p>This launches the router (as a Podman container, Docker container, or systemd service depending on the platform).</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>As an alternative to the multi-step workflow above, you can use <code>skupper system setup</code> to install the controller, process all resource files, and start the site in a single command.
+See <a href="#declarative-resource-management">Declarative Resource Management</a> below for details.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
@@ -504,6 +519,144 @@ You can verify with <code>skupper site status</code> if the CLI is installed on 
 <td class="content">
 The bundle includes all configuration files needed to run the site.
 The CLI is not required on the remote host&#8201;&#8212;&#8201;only the container runtime (Podman or Docker) or the <code>skupper-router</code> RPM (Linux platform).
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="declarative-resource-management"><a class="anchor" href="#declarative-resource-management"></a>Declarative Resource Management</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>On local system sites, the CLI writes resource files to a directory on the local filesystem instead of submitting them to a Kubernetes API server.
+You can also place resource files in this directory yourself, bypassing the CLI entirely.</p>
+</div>
+<div class="sect2">
+<h3 id="_input_resources_directory"><a class="anchor" href="#_input_resources_directory"></a>Input Resources Directory</h3>
+<div class="paragraph">
+<p>All resources for a given namespace are stored under:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>~/.local/share/skupper/namespaces/&lt;namespace&gt;/input/resources/</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The directory structure organizes resources by type:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>~/.local/share/skupper/namespaces/default/input/resources/
+├── sites/
+│   └── my-site.yaml
+├── connectors/
+│   └── backend.yaml
+├── listeners/
+│   └── frontend.yaml
+└── token.yaml              &lt;-- access tokens are placed at the top level</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When you run <code>skupper site create</code> or <code>skupper connector create</code>, the CLI writes YAML files into the appropriate subdirectories.
+You can achieve the same result by writing the files directly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_skupper_system_setup"><a class="anchor" href="#_using_skupper_system_setup"></a>Using <code>skupper system setup</code></h3>
+<div class="paragraph">
+<p>The <code>skupper system setup</code> command installs the controller (if needed), reads all resource files from the input directory, and starts the site in a single step:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system setup</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>Sources will be consumed from the namespace "default"
+Site "my-site" has been created on namespace "default"
+Platform: podman
+Definition is available at: /home/user/.local/share/skupper/namespaces/default/input/resources</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is equivalent to running <code>skupper system install</code>, <code>skupper site create</code>, and <code>skupper system start</code> separately.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_example_declarative_workflow"><a class="anchor" href="#_example_declarative_workflow"></a>Example: Declarative Workflow</h3>
+<div class="paragraph">
+<p>This example creates a site, connector, and link entirely through file placement:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Write a site definition:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mkdir -p ~/.local/share/skupper/namespaces/default/input/resources/sites
+cat &gt; ~/.local/share/skupper/namespaces/default/input/resources/sites/my-site.yaml &lt;&lt;EOF
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: my-site
+spec: {}
+EOF</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Write a connector definition:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mkdir -p ~/.local/share/skupper/namespaces/default/input/resources/connectors
+cat &gt; ~/.local/share/skupper/namespaces/default/input/resources/connectors/backend.yaml &lt;&lt;EOF
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: backend
+spec:
+  routingKey: backend
+  port: 8080
+  host: localhost
+EOF</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Copy a token file into the resources directory:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cp ~/my-token.yaml ~/.local/share/skupper/namespaces/default/input/resources/</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Start everything with a single command:</p>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper system setup</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This approach is useful for automation, scripting, and scenarios where you want to pre-stage all configuration before starting the site.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>To apply changes after the site is already running, use <code>skupper system reload</code> instead of <code>skupper system setup</code>.</p>
+</div>
 </td>
 </tr>
 </table>

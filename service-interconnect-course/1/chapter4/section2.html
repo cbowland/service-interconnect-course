@@ -447,6 +447,31 @@ They do not need to know about Service Interconnect, routing keys, or the remote
 backend   ClusterIP   172.30.45.123   &lt;none&gt;        8080/TCP   5m</pre>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_consuming_a_listener_from_another_namespace"><a class="anchor" href="#_consuming_a_listener_from_another_namespace"></a>Consuming a Listener from Another Namespace</h3>
+<div class="paragraph">
+<p>Because a listener creates a standard Kubernetes <code>Service</code>, workloads in other namespaces on the same cluster can access it using the fully qualified domain name (FQDN):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;service-name&gt;.&lt;listener-namespace&gt;.svc.cluster.local:&lt;port&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example, if a listener named <code>mysqldb</code> is created on port 3306 in the <code>travel-db</code> namespace, an application in the <code>travel-agency</code> namespace can connect to it at:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mysqldb.travel-db.svc.cluster.local:3306</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The application does not need its own listener or any Service Interconnect resources&#8201;&#8212;&#8201;it connects to the Kubernetes service using standard DNS resolution.</p>
+</div>
+<div class="paragraph">
+<p>This pattern is useful when the Service Interconnect site and the consuming application are managed by different teams or deployed in separate namespaces on the same cluster.</p>
+</div>
+</div>
 </div>
 </div>
 <nav class="pagination">
