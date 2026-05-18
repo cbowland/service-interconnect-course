@@ -97,3 +97,22 @@ oc get service backend -n site-west
 NAME      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 backend   ClusterIP   172.30.45.123   <none>        8080/TCP   5m
 ----
+
+=== Consuming a Listener from Another Namespace
+
+Because a listener creates a standard Kubernetes `Service`, workloads in other namespaces on the same cluster can access it using the fully qualified domain name (FQDN):
+
+----
+<service-name>.<listener-namespace>.svc.cluster.local:<port>
+----
+
+For example, if a listener named `mysqldb` is created on port 3306 in the `travel-db` namespace, an application in the `travel-agency` namespace can connect to it at:
+
+[source,bash]
+----
+mysqldb.travel-db.svc.cluster.local:3306
+----
+
+The application does not need its own listener or any Service Interconnect resources -- it connects to the Kubernetes service using standard DNS resolution.
+
+This pattern is useful when the Service Interconnect site and the consuming application are managed by different teams or deployed in separate namespaces on the same cluster.
