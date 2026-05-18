@@ -76,10 +76,10 @@ Every site links directly to every other site.
 Sites are linked sequentially.
 
 ----
-┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐
-│west  │────│central│───│east  │────│far-  │
-│      │    │       │   │      │    │east  │
-└──────┘    └──────┘    └──────┘    └──────┘
+┌──────┐    ┌────────┐    ┌──────┐    ┌──────┐
+│ west │────│central │────│ east │────│ far- │
+│      │    │        │    │      │    │ east │
+└──────┘    └────────┘    └──────┘    └──────┘
 ----
 
 **When to use:**
