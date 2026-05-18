@@ -403,32 +403,60 @@ site-south (consumer)
 <div class="paragraph">
 <p>When issuing a token for the backup link, set the cost:</p>
 </div>
+<div class="paragraph">
+<p>On the primary site (site-west), issue a token with default cost:</p>
+</div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># On the primary site (site-west), issue a token with default cost
-skupper token issue ~/primary-token.yaml
-
-# On the backup site (site-east), issue a token with high cost
-skupper token issue ~/backup-token.yaml</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/primary-token.yaml</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When redeeming the tokens on the consumer site:</p>
+<p>On the backup site (site-east), issue a token:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Link to primary with default cost (1)
-skupper token redeem ~/primary-token.yaml
-
-# Link to backup with high cost (9999)
-skupper token redeem ~/backup-token.yaml --cost 9999</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/backup-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On the consumer site, redeem the primary token normally (default cost of 1):</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem ~/primary-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the backup link, redeem the token and then set the cost via YAML.
+The <code>skupper token redeem</code> command does not support a <code>--cost</code> flag, so you must set the cost on the resulting Link resource:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem ~/backup-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Find the link name created by the token redemption:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get links</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then patch the backup link to set a high cost, replacing <code>&lt;backup-link-name&gt;</code> with the name from the output above:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;backup-link-name&gt; --type merge -p '{"spec":{"cost":9999}}'</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_using_yaml"><a class="anchor" href="#_using_yaml"></a>Using YAML</h3>
 <div class="paragraph">
-<p>Set the cost in the Link resource:</p>
+<p>Alternatively, set the cost directly in the Link resource:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -508,13 +536,20 @@ Link cost is configured for all services between two sites. It is currently not 
 <div class="paragraph">
 <p>You can observe load distribution by checking connector status across sites:</p>
 </div>
+<div class="paragraph">
+<p>On site-west:</p>
+</div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># On site-west
-skupper connector status
-
-# On site-east
-skupper connector status</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector status</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On site-east:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper connector status</code></pre>
 </div>
 </div>
 <div class="paragraph">

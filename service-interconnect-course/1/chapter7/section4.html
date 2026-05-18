@@ -627,23 +627,37 @@ oc get link -n site-west</code></pre>
 The <code>oc patch link</code> command below appears to succeed, but the cost change does not affect traffic routing.</p>
 </div>
 <div class="paragraph">
-<p><strong>Workaround:</strong> Delete the existing link and recreate it with the desired cost:</p>
+<p><strong>Workaround:</strong> Delete the existing link and recreate it with the desired cost using YAML:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west
-# Re-issue a token from the target site, then redeem it with the new cost:
-skupper token redeem &lt;token-file&gt; --cost 9999</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Re-issue a token from the target site, redeem it, then patch the link:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem &lt;token-file&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":9999}}'</code></pre>
 </div>
 </div>
 </td>
 </tr>
 </table>
 </div>
-<div class="listingblock execute">
+<div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":9999}}'</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Replace <code>&lt;link-name&gt;</code> with the link name from the <code>oc get link</code> output above.</p>
 </div>
 <div class="paragraph">
 <p>Now send requests again:</p>
@@ -733,20 +747,29 @@ To restore the cost to 1, delete the link and recreate it:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west
-# Re-issue a token from the target site, then redeem it with cost 1 (the default)
-skupper token redeem &lt;token-file&gt;</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Re-issue a token from the target site, then redeem it with cost 1 (the default):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem &lt;token-file&gt;</code></pre>
 </div>
 </div>
 </td>
 </tr>
 </table>
 </div>
-<div class="listingblock execute">
+<div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
 oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":1}}'</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Replace <code>&lt;link-name&gt;</code> with the link name from the <code>oc get link</code> output.</p>
 </div>
 <div class="paragraph">
 <p>Then scale down the on-premises backend to force all traffic to the cloud:</p>

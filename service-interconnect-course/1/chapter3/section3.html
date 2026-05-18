@@ -471,10 +471,36 @@ Set the cost from the client to the backup site high (e.g., 9999):</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/backup-token.yaml
-# On the backup site:
-skupper token redeem ~/backup-token.yaml --cost 9999</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/backup-token.yaml</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>On the backup site, redeem the token:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem ~/backup-token.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Find the link name created by the token redemption:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get links</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then patch the link to set a high cost, replacing <code>&lt;link-name&gt;</code> with the name from the output above:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; --type merge -p '{"spec":{"cost":9999}}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, delete the link created by the token and create it via YAML with the cost set directly.
+See <a href="../chapter4/section3.html" class="xref page">Redundant Links and Failover</a> for a YAML example.</p>
 </div>
 <div class="paragraph">
 <p>Under normal conditions, all traffic goes to the primary (cost 1).

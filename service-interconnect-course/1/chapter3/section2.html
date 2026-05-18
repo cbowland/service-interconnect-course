@@ -387,13 +387,20 @@ You can customize these restrictions:</p>
 <div class="paragraph">
 <p>Examples:</p>
 </div>
+<div class="paragraph">
+<p>Allow 1 hour to redeem the token:</p>
+</div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Allow 1 hour to redeem the token
-skupper token issue ~/west-token.yaml --expiration-window 60m
-
-# Allow the token to be used 3 times
-skupper token issue ~/west-token.yaml --redemptions-allowed 3</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/west-token.yaml --expiration-window 60m</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Allow the token to be used 3 times:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token issue ~/west-token.yaml --redemptions-allowed 3</code></pre>
 </div>
 </div>
 </div>
