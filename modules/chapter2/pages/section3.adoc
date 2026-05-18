@@ -29,7 +29,7 @@ Typically the operator is installed in the `openshift-operators` namespace.
 
 === Via the OpenShift Console
 
-. In the OpenShift web console, navigate to *Operators -> OperatorHub*.
+. In the OpenShift web console, navigate to *Ecosystem -> Software Catalog*.
 . Search for *Red Hat Service Interconnect Network Observer Operator*.
 . Click *Install*.
 . On the *Operator Installation* page, two *Installation mode* options are available:

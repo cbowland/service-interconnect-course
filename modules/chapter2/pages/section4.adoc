@@ -10,7 +10,7 @@ By the end of this exercise, you will have Service Interconnect ready to use in 
 
 === Step 1: Install the Operator
 
-If you have not already done so, install the Red Hat Service Interconnect Operator on your cluster(s) using the OperatorHub as described in the previous section.
+If you have not already done so, install the Red Hat Service Interconnect Operator on your cluster(s) using the Software Catalog as described in the previous section.
 
 Verify the operator is running:
 

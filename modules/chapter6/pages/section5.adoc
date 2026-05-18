@@ -152,7 +152,7 @@ This is a key security property — compromising one site's CA does not compromi
 
 === Step 5: Install the Network Observer Operator
 
-. In the OpenShift web console, navigate to **Operators -> OperatorHub**
+. In the OpenShift web console, navigate to **Ecosystem -> Software Catalog**
 . Search for **Red Hat Service Interconnect Network Observer**
 . Click **Install**, accept the defaults, and click **Install** again
 . Wait for the operator to reach the `Succeeded` phase

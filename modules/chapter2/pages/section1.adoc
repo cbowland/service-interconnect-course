@@ -20,9 +20,9 @@ If you use an automatic approval strategy for the Red Hat Service Interconnect O
 Typically the operator is installed in the `openshift-operators` namespace.
 ====
 
-== Installing via OperatorHub (Web Console)
+== Installing via the Software Catalog (Web Console)
 
-. In the OpenShift web console, navigate to *Operators -> OperatorHub*.
+. In the OpenShift web console, navigate to *Ecosystem -> Software Catalog*.
 
 . Search for *Red Hat Service Interconnect Operator* and click *Install*.
 
@@ -174,7 +174,7 @@ sites.skupper.io               ...
 
 If the operator installation does not succeed:
 
-. Navigate to *Operators -> Installed Operators* in the web console.
+. Navigate to *Ecosystem -> Installed Operators* in the web console.
 . Click *Red Hat Service Interconnect*.
 . Select the *Subscription* tab to view any errors or failures.
 . Check the operator pod logs:

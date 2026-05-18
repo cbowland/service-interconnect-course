@@ -16,9 +16,9 @@ It runs in the same namespace as the site it monitors and collects data from the
 
 == Installing the Network Observer Operator
 
-The Network Observer operator is available from OperatorHub on OpenShift Container Platform.
+The Network Observer operator is available from the Software Catalog on OpenShift Container Platform.
 
-. In the OpenShift web console, navigate to **Operators -> OperatorHub**
+. In the OpenShift web console, navigate to **Ecosystem -> Software Catalog**
 . Search for **Red Hat Service Interconnect Network Observer**
 . Click the operator tile and then click **Install**
 . Accept the default settings:
@@ -45,7 +45,7 @@ After installing the operator, create a NetworkObserver custom resource in a nam
 
 === Using the OpenShift Console
 
-. Navigate to **Operators -> Installed Operators**
+. Navigate to **Ecosystem -> Installed Operators**
 . Select the **Red Hat Service Interconnect Network Observer Operator**
 . Click **Create Instance**
 . Accept the defaults and click **Create**

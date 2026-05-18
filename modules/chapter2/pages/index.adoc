@@ -9,7 +9,7 @@ In this chapter, you will install Red Hat Service Interconnect on your OpenShift
 
 After completing this chapter, you should be able to:
 
-* Install the Red Hat Service Interconnect Operator from OperatorHub
+* Install the Red Hat Service Interconnect Operator from the Software Catalog
 * Install the `skupper` CLI on your workstation
 * Create a Service Interconnect site in an OpenShift namespace
 * Access the Service Interconnect console to view network status
