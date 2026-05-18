@@ -213,6 +213,13 @@ skupper connector create postgresql 5432 --host localhost
 skupper system reload
 ----
 
+[NOTE]
+====
+The `-r` flag is a shorthand for `--routing-key`.
+When no routing key is specified, it defaults to the connector name (`postgresql` in this case).
+To use a custom routing key: `skupper connector create postgresql 5432 --host localhost -r my-db-key`
+====
+
 Verify the connector:
 
 [source,bash,role=execute]

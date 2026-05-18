@@ -184,13 +184,13 @@ skupper connector create <name> <port> [options]
 |===
 |Option |Description
 
-|`--workload <type/name>`
+|`-w`, `--workload <type/name>`
 |The workload to expose (e.g., `deployment/backend`)
 
 |`--host <hostname>`
 |Host to connect to (for local system sites, e.g., `localhost`)
 
-|`--routing-key <key>`
+|`-r`, `--routing-key <key>`
 |Custom routing key (defaults to the connector name)
 |===
 
@@ -237,7 +237,7 @@ skupper listener create <name> <port> [options]
 |===
 |Option |Description
 
-|`--routing-key <key>`
+|`-r`, `--routing-key <key>`
 |Custom routing key to match (defaults to the listener name)
 |===
 
