@@ -104,7 +104,7 @@ Wait for the deployment to become ready:
 
 [source,bash,role=execute]
 ----
-oc rollout status deployment/skupper-network-observer -n site-west
+oc rollout status deployment -n site-west -l app.kubernetes.io/component=network-observer --timeout=120s
 ----
 
 Find the console route and open it in your browser:
