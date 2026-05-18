@@ -489,8 +489,58 @@ spec: {}</code></pre>
 On OpenShift, you can log in using your OpenShift credentials.</p>
 </div>
 <div class="paragraph">
-<p>As you build out your application network in the following sections, the console will update in real time to show sites, links, and services.</p>
+<p>As you build out your application network, look for <strong>Console Checkpoint</strong> callouts throughout the course&#8201;&#8212;&#8201;they tell you when to check the console and what has changed.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>Open the Network Observer console URL in your browser.
+In the <strong>Topology</strong> view, you should see a single site node (<code>site-west</code>).
+There are no links or services yet&#8201;&#8212;&#8201;that will change as you progress through the next sections.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The console shows the same information you can get from the CLI, but as a live visual:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">CLI Command</th>
+<th class="tableblock halign-left valign-top">Console View</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>skupper site status</code> / <code>oc get site</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Topology view (site nodes)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>skupper link status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Topology view (link edges)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>skupper connector status</code> / <code>skupper listener status</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Services view</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>curl</code> / traffic tests</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Traffic flow (throughput on links and services)</p></td>
+</tr>
+</tbody>
+</table>
 <div class="admonitionblock note">
 <table>
 <tr>

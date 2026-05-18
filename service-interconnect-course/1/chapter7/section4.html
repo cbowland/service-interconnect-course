@@ -571,6 +571,22 @@ done</code></pre>
 <p>You should see responses from backend pods in both <code>site-west</code> and <code>site-east</code>.
 The traffic distribution depends on the number of active TCP connections and link cost.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>In the Network Observer <strong>Services</strong> view, you should see the <code>backend</code> service with connectors on both <code>site-west</code> and <code>site-east</code>.
+Traffic is flowing to both sites&#8201;&#8212;&#8201;the console shows active connections distributed across both environments.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_step_5_simulate_testing_phase_route_all_traffic_to_on_premises"><a class="anchor" href="#_step_5_simulate_testing_phase_route_all_traffic_to_on_premises"></a>Step 5: Simulate Testing Phase — Route All Traffic to On-premises</h3>
@@ -792,6 +808,23 @@ done</code></pre>
 </div>
 <div class="paragraph">
 <p>All responses should come from the backend pods in <code>site-east</code>.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>Check the Network Observer <strong>Services</strong> view again.
+The <code>backend</code> service now shows traffic flowing only to <code>site-east</code>&#8201;&#8212;&#8201;the <code>site-west</code> connector has zero active connections.
+This is the visual confirmation that your migration cutover is complete.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">

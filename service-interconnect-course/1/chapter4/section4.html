@@ -433,6 +433,22 @@ site-west   Ready    3                  OK</pre>
 <div class="paragraph">
 <p>Note that <code>site-south</code> can reach <code>site-east</code> even though they are not directly linked&#8201;&#8212;&#8201;traffic routes through <code>site-west</code>.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>In the Network Observer console <strong>Topology</strong> view, you now see three site nodes.
+Notice that <code>site-south</code> connects to <code>site-west</code> but not directly to <code>site-east</code>&#8201;&#8212;&#8201;the console shows the actual link topology, making transitive routing patterns visible at a glance.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_step_4_deploy_backend_on_two_sites"><a class="anchor" href="#_step_4_deploy_backend_on_two_sites"></a>Step 4: Deploy Backend on Two Sites</h3>
@@ -530,6 +546,23 @@ done</code></pre>
 </div>
 <div class="paragraph">
 <p>Because <code>site-south</code> has a direct link to <code>site-west</code> (cost 1) and reaches <code>site-east</code> through <code>site-west</code> (cost 2), you will likely see more traffic directed to <code>site-west</code> backends.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>In the <strong>Services</strong> view, click the <code>backend</code> service.
+You should see connectors on both <code>site-west</code> and <code>site-east</code>, with traffic flowing to both.
+Notice the traffic distribution&#8201;&#8212;&#8201;more connections route to <code>site-west</code> (cost 1) than through the two-hop path to <code>site-east</code> (cost 2).</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">

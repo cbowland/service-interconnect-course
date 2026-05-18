@@ -314,7 +314,56 @@ By the end of this exercise, you will have Service Interconnect ready to use in 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_2_install_the_cli"><a class="anchor" href="#_step_2_install_the_cli"></a>Step 2: Install the CLI</h3>
+<h3 id="_step_2_install_the_network_observer_operator"><a class="anchor" href="#_step_2_install_the_network_observer_operator"></a>Step 2: Install the Network Observer Operator</h3>
+<div class="paragraph">
+<p>Install the Network Observer operator so you can use the web console later in the course.</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: skupper-network-observer-operator
+  namespace: openshift-operators
+spec:
+  channel: stable-2
+  installPlanApproval: Automatic
+  name: skupper-network-observer-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the operator to install, then verify:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get csv -A | grep network-observer</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Expected output</div>
+<div class="content">
+<pre>openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The operator alone does not deploy the console. You will create a <code>NetworkObserver</code> instance in the next chapter after your first site is ready.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_install_the_cli"><a class="anchor" href="#_step_3_install_the_cli"></a>Step 3: Install the CLI</h3>
 <div class="paragraph">
 <p>Download and install the <code>skupper</code> CLI for your operating system as described in the previous section.</p>
 </div>
@@ -351,7 +400,7 @@ cli                2.1.3-rh-1</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_3_create_the_namespaces"><a class="anchor" href="#_step_3_create_the_namespaces"></a>Step 3: Create the Namespaces</h3>
+<h3 id="_step_4_create_the_namespaces"><a class="anchor" href="#_step_4_create_the_namespaces"></a>Step 4: Create the Namespaces</h3>
 <div id="_tabs_1" class="openblock tabs is-loading">
 <div class="content">
 <div class="ulist tablist">
@@ -397,7 +446,7 @@ oc new-project site-east</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_4_create_the_sites"><a class="anchor" href="#_step_4_create_the_sites"></a>Step 4: Create the Sites</h3>
+<h3 id="_step_5_create_the_sites"><a class="anchor" href="#_step_5_create_the_sites"></a>Step 5: Create the Sites</h3>
 <div class="paragraph">
 <p>Create a site in the <code>site-west</code> namespace with link access enabled (this site will accept incoming links):</p>
 </div>
@@ -486,7 +535,7 @@ site-east   Ready</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_5_verify_both_sites"><a class="anchor" href="#_step_5_verify_both_sites"></a>Step 5: Verify Both Sites</h3>
+<h3 id="_step_6_verify_both_sites"><a class="anchor" href="#_step_6_verify_both_sites"></a>Step 6: Verify Both Sites</h3>
 <div class="paragraph">
 <p>Confirm that both sites are running by checking the site pods in each namespace:</p>
 </div>
@@ -516,6 +565,9 @@ site-east   Ready</pre>
 <ul>
 <li>
 <p>Installed the Red Hat Service Interconnect Operator on your OpenShift cluster(s)</p>
+</li>
+<li>
+<p>Installed the Red Hat Service Interconnect Network Observer Operator</p>
 </li>
 <li>
 <p>Installed the <code>skupper</code> CLI and verified the version</p>

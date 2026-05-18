@@ -399,7 +399,66 @@ skupper site create site-east</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_2_link_the_sites"><a class="anchor" href="#_step_2_link_the_sites"></a>Step 2: Link the Sites</h3>
+<h3 id="_step_2_deploy_the_network_observer_console"><a class="anchor" href="#_step_2_deploy_the_network_observer_console"></a>Step 2: Deploy the Network Observer Console</h3>
+<div class="paragraph">
+<p>Now that <code>site-west</code> is running, deploy a <code>NetworkObserver</code> instance to get the web console up.
+You will use this console throughout the rest of the course to visualize your network as it grows.</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west</code></pre>
+</div>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: network-observer
+  namespace: site-west
+spec: {}
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the deployment to become ready:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc rollout status deployment/skupper-network-observer -n site-west</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Find the console route and open it in your browser:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route -n site-west | grep network-observer</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On OpenShift, log in using your OpenShift credentials.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>The <strong>Topology</strong> view shows a single site (<code>site-west</code>).
+Keep this browser tab open&#8201;&#8212;&#8201;you will check back after each major step to see the network evolve.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_link_the_sites"><a class="anchor" href="#_step_3_link_the_sites"></a>Step 3: Link the Sites</h3>
 <div class="paragraph">
 <p>Ensure link access is enabled on <code>site-west</code>:</p>
 </div>
@@ -492,7 +551,7 @@ skupper token redeem ~/west-token.yaml</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_3_deploy_the_backend_application"><a class="anchor" href="#_step_3_deploy_the_backend_application"></a>Step 3: Deploy the Backend Application</h3>
+<h3 id="_step_4_deploy_the_backend_application"><a class="anchor" href="#_step_4_deploy_the_backend_application"></a>Step 4: Deploy the Backend Application</h3>
 <div class="paragraph">
 <p>Deploy the sample backend application in <code>site-east</code>:</p>
 </div>
@@ -546,7 +605,7 @@ backend-5b8c5b5b4f-ghi56   1/1     Running   0          30s</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_4_create_a_connector"><a class="anchor" href="#_step_4_create_a_connector"></a>Step 4: Create a Connector</h3>
+<h3 id="_step_5_create_a_connector"><a class="anchor" href="#_step_5_create_a_connector"></a>Step 5: Create a Connector</h3>
 <div class="paragraph">
 <p>Expose the backend on the application network by creating a connector in <code>site-east</code>:</p>
 </div>
@@ -572,7 +631,7 @@ backend   Pending   backend       app=backend          8080   false             
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_5_create_a_listener"><a class="anchor" href="#_step_5_create_a_listener"></a>Step 5: Create a Listener</h3>
+<h3 id="_step_6_create_a_listener"><a class="anchor" href="#_step_6_create_a_listener"></a>Step 6: Create a Listener</h3>
 <div class="paragraph">
 <p>On <code>site-west</code>, create a listener to consume the backend service:</p>
 </div>
@@ -639,7 +698,7 @@ backend   ClusterIP   172.30.x.x      &lt;none&gt;        8080/TCP   10s</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_6_deploy_the_frontend_and_test"><a class="anchor" href="#_step_6_deploy_the_frontend_and_test"></a>Step 6: Deploy the Frontend and Test</h3>
+<h3 id="_step_7_deploy_the_frontend_and_test"><a class="anchor" href="#_step_7_deploy_the_frontend_and_test"></a>Step 7: Deploy the Frontend and Test</h3>
 <div class="paragraph">
 <p>Deploy the frontend application in <code>site-west</code>:</p>
 </div>
@@ -672,7 +731,7 @@ You should see the hello-world frontend page displaying messages from the backen
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_7_verify_from_the_command_line"><a class="anchor" href="#_step_7_verify_from_the_command_line"></a>Step 7: Verify from the Command Line</h3>
+<h3 id="_step_8_verify_from_the_command_line"><a class="anchor" href="#_step_8_verify_from_the_command_line"></a>Step 8: Verify from the Command Line</h3>
 <div class="paragraph">
 <p>You can also test connectivity from the command line using a temporary pod in <code>site-west</code>:</p>
 </div>
@@ -704,9 +763,27 @@ You should see the hello-world frontend page displaying messages from the backen
 </li>
 </ul>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Console Checkpoint</div>
+<div class="paragraph">
+<p>Switch to the Network Observer console and check the <strong>Topology</strong> view.
+You should now see traffic flowing between <code>site-west</code> and <code>site-east</code>&#8201;&#8212;&#8201;the link line shows active throughput.
+Click the <code>backend</code> service in the <strong>Services</strong> view to see connection counts and which site is serving requests.
+This is the first time the console shows live traffic, not just topology.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_step_8_inspect_the_application_network"><a class="anchor" href="#_step_8_inspect_the_application_network"></a>Step 8: Inspect the Application Network</h3>
+<h3 id="_step_9_inspect_the_application_network"><a class="anchor" href="#_step_9_inspect_the_application_network"></a>Step 9: Inspect the Application Network</h3>
 <div class="paragraph">
 <p>Check the overall network status:</p>
 </div>
@@ -731,6 +808,9 @@ skupper listener status</code></pre>
 <ul>
 <li>
 <p>Verified two existing Service Interconnect sites</p>
+</li>
+<li>
+<p>Deployed the Network Observer console for visual monitoring</p>
 </li>
 <li>
 <p>Linked the sites together using <code>skupper token issue</code> and <code>skupper token redeem</code></p>
