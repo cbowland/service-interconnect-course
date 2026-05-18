@@ -578,6 +578,22 @@ west-&lt;uuid&gt;                                   Ready    1      OK</pre>
 skupper system reload</code></pre>
 </div>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>-r</code> flag is a shorthand for <code>--routing-key</code>.
+When no routing key is specified, it defaults to the connector name (<code>postgresql</code> in this case).
+To use a custom routing key: <code>skupper connector create postgresql 5432 --host localhost -r my-db-key</code></p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Verify the connector:</p>
 </div>
