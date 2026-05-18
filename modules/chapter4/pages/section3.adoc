@@ -153,18 +153,18 @@ NOTE: Link cost is configured for all services between two sites. It is currentl
 
 == Verifying Load Distribution
 
-You can observe load distribution by checking connector status across sites:
+Once you have connectors deployed across multiple sites, you can observe load distribution by checking connector status on each site:
 
 On site-west:
 
-[source,bash,role=execute]
+[source,bash]
 ----
 skupper connector status
 ----
 
 On site-east:
 
-[source,bash,role=execute]
+[source,bash]
 ----
 skupper connector status
 ----
