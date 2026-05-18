@@ -283,6 +283,19 @@ Required for Podman and Docker platforms; not needed for the `linux` (systemd) p
 skupper system install
 ----
 
+=== skupper system setup
+
+Install the controller (if needed), process all resource files in the input directory, and start the site in a single step.
+This is a convenience alternative to running `skupper system install`, `skupper site create`, and `skupper system start` separately.
+
+[source,bash,role=execute]
+----
+skupper system setup
+----
+
+Resource files are read from `~/.local/share/skupper/namespaces/<namespace>/input/resources/`.
+This includes site definitions, connectors, listeners, and access tokens placed in that directory.
+
 === skupper system start
 
 Start the Service Interconnect site on the local system.

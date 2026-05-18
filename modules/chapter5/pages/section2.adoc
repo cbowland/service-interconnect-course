@@ -42,6 +42,12 @@ skupper system start
 
 This launches the router (as a Podman container, Docker container, or systemd service depending on the platform).
 
+[NOTE]
+====
+As an alternative to the multi-step workflow above, you can use `skupper system setup` to install the controller, process all resource files, and start the site in a single command.
+See <<declarative-resource-management>> below for details.
+====
+
 == Linking to an OpenShift Site
 
 To join the application network, you create a link between the local system site and an OpenShift or Kubernetes site.
@@ -164,6 +170,111 @@ You can verify with `skupper site status` if the CLI is installed on the remote 
 
 NOTE: The bundle includes all configuration files needed to run the site.
 The CLI is not required on the remote host -- only the container runtime (Podman or Docker) or the `skupper-router` RPM (Linux platform).
+
+[#declarative-resource-management]
+== Declarative Resource Management
+
+On local system sites, the CLI writes resource files to a directory on the local filesystem instead of submitting them to a Kubernetes API server.
+You can also place resource files in this directory yourself, bypassing the CLI entirely.
+
+=== Input Resources Directory
+
+All resources for a given namespace are stored under:
+
+----
+~/.local/share/skupper/namespaces/<namespace>/input/resources/
+----
+
+The directory structure organizes resources by type:
+
+----
+~/.local/share/skupper/namespaces/default/input/resources/
+├── sites/
+│   └── my-site.yaml
+├── connectors/
+│   └── backend.yaml
+├── listeners/
+│   └── frontend.yaml
+└── token.yaml              <-- access tokens are placed at the top level
+----
+
+When you run `skupper site create` or `skupper connector create`, the CLI writes YAML files into the appropriate subdirectories.
+You can achieve the same result by writing the files directly.
+
+=== Using `skupper system setup`
+
+The `skupper system setup` command installs the controller (if needed), reads all resource files from the input directory, and starts the site in a single step:
+
+[source,bash,role=execute]
+----
+skupper system setup
+----
+
+.Expected output
+----
+Sources will be consumed from the namespace "default"
+Site "my-site" has been created on namespace "default"
+Platform: podman
+Definition is available at: /home/user/.local/share/skupper/namespaces/default/input/resources
+----
+
+This is equivalent to running `skupper system install`, `skupper site create`, and `skupper system start` separately.
+
+=== Example: Declarative Workflow
+
+This example creates a site, connector, and link entirely through file placement:
+
+. Write a site definition:
++
+[source,bash,role=execute]
+----
+mkdir -p ~/.local/share/skupper/namespaces/default/input/resources/sites
+cat > ~/.local/share/skupper/namespaces/default/input/resources/sites/my-site.yaml <<EOF
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: my-site
+spec: {}
+EOF
+----
+
+. Write a connector definition:
++
+[source,bash,role=execute]
+----
+mkdir -p ~/.local/share/skupper/namespaces/default/input/resources/connectors
+cat > ~/.local/share/skupper/namespaces/default/input/resources/connectors/backend.yaml <<EOF
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: backend
+spec:
+  routingKey: backend
+  port: 8080
+  host: localhost
+EOF
+----
+
+. Copy a token file into the resources directory:
++
+[source,bash,role=execute]
+----
+cp ~/my-token.yaml ~/.local/share/skupper/namespaces/default/input/resources/
+----
+
+. Start everything with a single command:
++
+[source,bash,role=execute]
+----
+skupper system setup
+----
+
+This approach is useful for automation, scripting, and scenarios where you want to pre-stage all configuration before starting the site.
+
+[NOTE]
+====
+To apply changes after the site is already running, use `skupper system reload` instead of `skupper system setup`.
+====
 
 == Lifecycle Management
 
