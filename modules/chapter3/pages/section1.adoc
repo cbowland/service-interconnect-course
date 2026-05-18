@@ -66,29 +66,21 @@ When link access is enabled, the site deploys a grant server that can issue acce
 
 == Creating a Site via the OpenShift Console
 
-The Service Interconnect Operator installs a console plugin that adds a *Service Interconnect* tab to each project in the OpenShift web console.
+You can create a site through the Installed Operators interface in the OpenShift web console.
 
-. In the OpenShift web console, navigate to *Home -> Projects* and select the target project (e.g., `site-west`).
-
-. Click the *Service Interconnect* tab.
-
-. Click *Create site*.
-
-. In the *Create site* wizard, review the default values:
+. Navigate to *Ecosystem -> Installed Operators*.
+. Select the *Red Hat Service Interconnect Operator*.
+. Click the *Site* tab.
+. Click *Create Site*.
+. Switch to the *YAML view* to review and edit the Site resource:
 +
-* *Name* -- defaults to the project name
-* *Enable link access* -- check this box if other sites need to link to this site
+* Set the `metadata.name` to the desired site name (e.g., `site-west`)
+* Set `spec.linkAccess` to `default` if other sites need to link to this site
 +
 Leave other fields at their defaults unless you need to customize them.
 
-. Click *Submit*.
-
-. The *Details* tab shows the site status. Wait until the status shows *Ready*.
-
-[NOTE]
-====
-The Service Interconnect tab is available at the direct URL: `<console_url>/k8s/cluster/projects/<namespace>/openshift-site-plugin`
-====
+. Click *Create*.
+. The site details page shows the site status. Wait until the status shows *Ready*.
 
 == Creating a Site with YAML
 
@@ -124,6 +116,42 @@ oc get site
 NAME        STATUS   SITES IN NETWORK   MESSAGE
 site-west   Ready    1                  OK
 ----
+
+== Deploying the Network Observer Console
+
+Now that you have a site, you can deploy the Network Observer to get a web-based console for visualizing your application network.
+The Network Observer operator should already be installed from xref:chapter2:section3.adoc[the previous chapter].
+
+Create a `NetworkObserver` custom resource in the same namespace as your site:
+
+[source,yaml]
+----
+apiVersion: observability.skupper.io/v2alpha1
+kind: NetworkObserver
+metadata:
+  name: network-observer
+  namespace: site-west
+spec: {}
+----
+
+[source,bash,role=execute]
+----
+oc apply -f network-observer.yaml
+----
+
+After the deployment is ready, find the console route:
+
+[source,bash,role=execute]
+----
+oc get route -n site-west | grep network-observer
+----
+
+Open the route URL in a browser.
+On OpenShift, you can log in using your OpenShift credentials.
+
+As you build out your application network in the following sections, the console will update in real time to show sites, links, and services.
+
+NOTE: For detailed configuration options including resource tuning and authentication strategies, see xref:chapter6:section3.adoc[Network Observer and the Console].
 
 == Site Options
 
