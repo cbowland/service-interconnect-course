@@ -151,9 +151,16 @@ This creates a Link resource automatically, connecting `site-east` to `site-west
 
 === Revoking Access
 
-To revoke access for a linked site, delete the corresponding Link resource:
+To revoke access for a linked site, first find the link name:
 
 [source,bash,role=execute]
+----
+oc get links -n site-west
+----
+
+Then delete the corresponding Link resource, replacing `<link-name>` with the name from the output above:
+
+[source,bash]
 ----
 oc delete link <link-name> -n site-west
 ----

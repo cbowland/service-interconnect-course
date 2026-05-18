@@ -133,9 +133,31 @@ Set the cost from the client to the backup site high (e.g., 9999):
 [source,bash,role=execute]
 ----
 skupper token issue ~/backup-token.yaml
-# On the backup site:
-skupper token redeem ~/backup-token.yaml --cost 9999
 ----
+
+On the backup site, redeem the token:
+
+[source,bash,role=execute]
+----
+skupper token redeem ~/backup-token.yaml
+----
+
+Find the link name created by the token redemption:
+
+[source,bash,role=execute]
+----
+oc get links
+----
+
+Then patch the link to set a high cost, replacing `<link-name>` with the name from the output above:
+
+[source,bash]
+----
+oc patch link <link-name> --type merge -p '{"spec":{"cost":9999}}'
+----
+
+Alternatively, delete the link created by the token and create it via YAML with the cost set directly.
+See xref:chapter4:section3.adoc[Redundant Links and Failover] for a YAML example.
 
 Under normal conditions, all traffic goes to the primary (cost 1).
 If the primary fails, traffic automatically fails over to the backup (cost 9999).

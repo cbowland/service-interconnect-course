@@ -57,12 +57,17 @@ You can customize these restrictions:
 
 Examples:
 
+Allow 1 hour to redeem the token:
+
 [source,bash,role=execute]
 ----
-# Allow 1 hour to redeem the token
 skupper token issue ~/west-token.yaml --expiration-window 60m
+----
 
-# Allow the token to be used 3 times
+Allow the token to be used 3 times:
+
+[source,bash,role=execute]
+----
 skupper token issue ~/west-token.yaml --redemptions-allowed 3
 ----
 

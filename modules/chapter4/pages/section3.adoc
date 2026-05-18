@@ -72,29 +72,52 @@ To achieve this, set the link cost from the client to the backup site to a high 
 
 When issuing a token for the backup link, set the cost:
 
+On the primary site (site-west), issue a token with default cost:
+
 [source,bash,role=execute]
 ----
-# On the primary site (site-west), issue a token with default cost
 skupper token issue ~/primary-token.yaml
+----
 
-# On the backup site (site-east), issue a token with high cost
+On the backup site (site-east), issue a token:
+
+[source,bash,role=execute]
+----
 skupper token issue ~/backup-token.yaml
 ----
 
-When redeeming the tokens on the consumer site:
+On the consumer site, redeem the primary token normally (default cost of 1):
 
 [source,bash,role=execute]
 ----
-# Link to primary with default cost (1)
 skupper token redeem ~/primary-token.yaml
+----
 
-# Link to backup with high cost (9999)
-skupper token redeem ~/backup-token.yaml --cost 9999
+For the backup link, redeem the token and then set the cost via YAML.
+The `skupper token redeem` command does not support a `--cost` flag, so you must set the cost on the resulting Link resource:
+
+[source,bash,role=execute]
+----
+skupper token redeem ~/backup-token.yaml
+----
+
+Find the link name created by the token redemption:
+
+[source,bash,role=execute]
+----
+oc get links
+----
+
+Then patch the backup link to set a high cost, replacing `<backup-link-name>` with the name from the output above:
+
+[source,bash]
+----
+oc patch link <backup-link-name> --type merge -p '{"spec":{"cost":9999}}'
 ----
 
 === Using YAML
 
-Set the cost in the Link resource:
+Alternatively, set the cost directly in the Link resource:
 
 [source,yaml]
 ----
@@ -132,12 +155,17 @@ NOTE: Link cost is configured for all services between two sites. It is currentl
 
 You can observe load distribution by checking connector status across sites:
 
+On site-west:
+
 [source,bash,role=execute]
 ----
-# On site-west
 skupper connector status
+----
 
-# On site-east
+On site-east:
+
+[source,bash,role=execute]
+----
 skupper connector status
 ----
 

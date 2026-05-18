@@ -231,20 +231,32 @@ Note the link name, then patch the link cost:
 In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
 The `oc patch link` command below appears to succeed, but the cost change does not affect traffic routing.
 
-*Workaround:* Delete the existing link and recreate it with the desired cost:
+*Workaround:* Delete the existing link and recreate it with the desired cost using YAML:
 
 [source,bash]
 ----
 oc delete link <link-name> -n site-west
-# Re-issue a token from the target site, then redeem it with the new cost:
-skupper token redeem <token-file> --cost 9999
 ----
-====
 
-[source,bash,role=execute]
+Re-issue a token from the target site, redeem it, then patch the link:
+
+[source,bash]
+----
+skupper token redeem <token-file>
+----
+
+[source,bash]
 ----
 oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":9999}}'
 ----
+====
+
+[source,bash]
+----
+oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":9999}}'
+----
+
+Replace `<link-name>` with the link name from the `oc get link` output above.
 
 Now send requests again:
 
@@ -302,16 +314,23 @@ To restore the cost to 1, delete the link and recreate it:
 [source,bash]
 ----
 oc delete link <link-name> -n site-west
-# Re-issue a token from the target site, then redeem it with cost 1 (the default)
+----
+
+Re-issue a token from the target site, then redeem it with cost 1 (the default):
+
+[source,bash]
+----
 skupper token redeem <token-file>
 ----
 ====
 
-[source,bash,role=execute]
+[source,bash]
 ----
 oc project site-west
 oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":1}}'
 ----
+
+Replace `<link-name>` with the link name from the `oc get link` output.
 
 Then scale down the on-premises backend to force all traffic to the cloud:
 
