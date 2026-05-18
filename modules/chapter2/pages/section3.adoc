@@ -74,6 +74,13 @@ Apply the subscription:
 oc apply -f subscription-all.yaml
 ----
 
+[NOTE]
+====
+Installing the operator alone does not deploy the console.
+You must also create a `NetworkObserver` custom resource in a namespace that has a Service Interconnect site.
+Since sites are not created until later in this course, deploying a `NetworkObserver` instance is covered in xref:chapter6:section3.adoc[Network Observer and the Console].
+====
+
 == Installing the Network Observer via YAML
 
 As an alternative to the operator, you can install the Network Observer using YAML files.
