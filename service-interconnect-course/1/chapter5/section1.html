@@ -364,21 +364,26 @@ The router runs directly as a system service, which can be preferable in environ
 <p>For Podman/Docker platforms: the container runtime installed and running</p>
 </li>
 <li>
-<p>For the Linux/systemd platform: the <code>skupper-router</code> package</p>
+<p>For the Linux/systemd platform: the <code>skupper-router</code> RPM package</p>
 </li>
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_installing_the_cli_via_rpm_rhel"><a class="anchor" href="#_installing_the_cli_via_rpm_rhel"></a>Installing the CLI via RPM (RHEL)</h3>
+<h3 id="_installing_the_cli"><a class="anchor" href="#_installing_the_cli"></a>Installing the CLI</h3>
 <div class="paragraph">
-<p>If you have not installed the CLI as described in Chapter 2, RHEL users can use the RPM method:</p>
+<p>Install the Skupper CLI using the upstream install script:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo subscription-manager repos \
-  --enable=service-interconnect-2-for-rhel-9-x86_64-rpms
-sudo dnf install skupper-cli</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl https://skupper.io/v2/install.sh | sh</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The script downloads the latest v2 release and installs the <code>skupper</code> command under your home directory.
+It prompts you to add the command to your path if necessary.</p>
+</div>
+<div class="paragraph">
+<p>To install a specific version, download it from the <a href="https://github.com/skupperproject/skupper/releases">Skupper GitHub releases</a> page.</p>
 </div>
 </div>
 <div class="sect2">
@@ -398,8 +403,8 @@ sudo dnf install skupper-cli</code></pre>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The <code>skupper-router</code> package is only required for Linux local system sites (systemd).
-Podman and Docker sites use container images for the router.
+The <code>skupper-router</code> package is only required for Linux local system sites (systemd) and requires the RPM repository.
+Podman and Docker sites use container images for the router and do not need this package.
 </td>
 </tr>
 </table>
@@ -408,11 +413,12 @@ Podman and Docker sites use container images for the router.
 <div class="sect2">
 <h3 id="_preparing_podman"><a class="anchor" href="#_preparing_podman"></a>Preparing Podman</h3>
 <div class="paragraph">
-<p>For Podman-based sites, enable the Podman socket so that Service Interconnect can manage containers:</p>
+<p>For Podman-based sites, install Podman (if not already present) and enable the Podman socket so that Service Interconnect can manage containers:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">systemctl --user enable --now podman.socket</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo dnf install -y podman
+systemctl --user enable --now podman.socket</code></pre>
 </div>
 </div>
 <div class="paragraph">
