@@ -151,76 +151,29 @@ oc get secret skupper-site-ca -n site-east \
 The fingerprints should be *different*, confirming that each site has its own independent CA.
 This is a key security property — compromising one site's CA does not compromise the other.
 
-=== Step 5: Install the Network Observer Operator
+=== Step 5: Verify the Network Observer Console
 
-. In the OpenShift web console, navigate to **Ecosystem -> Software Catalog**
-. Search for **Red Hat Service Interconnect Network Observer**
-. Click **Install**, accept the defaults, and click **Install** again
-. Wait for the operator to reach the `Succeeded` phase
-
-Verify from the CLI:
+The Network Observer operator and console were deployed in previous chapters.
+Verify that the console is still running:
 
 [source,bash,role=execute]
 ----
-oc get csv -A | grep skupper-netobs
-----
-
-.Expected output
-----
-openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded
-----
-
-=== Step 6: Deploy the Network Observer
-
-Create a NetworkObserver instance in the `site-west` namespace:
-
-[source,bash,role=execute]
-----
-cat <<EOF | oc apply -f -
-apiVersion: observability.skupper.io/v2alpha1
-kind: NetworkObserver
-metadata:
-  name: networkobserver-sample
-  namespace: site-west
-spec: {}
-EOF
-----
-
-Wait for the deployment to become available:
-
-[source,bash,role=execute]
-----
-oc rollout status deployment -n site-west -l app.kubernetes.io/component=network-observer --timeout=120s
-----
-
-Verify the NetworkObserver resource:
-
-[source,bash,role=execute]
-----
+oc project site-west
 oc get networkobserver -n site-west
+oc get route -n site-west | grep network-observer
 ----
 
-=== Step 7: Access the Console
-
-Get the console route URL:
-
-[source,bash,role=execute]
-----
-oc get route -n site-west -o jsonpath='{.items[?(@.metadata.name=="skupper-network-observer-site-west")].spec.host}'
-----
-
-Open the URL in a browser.
-If using the default `openshift` authentication strategy, log in with your OpenShift credentials.
+Open the route URL in a browser and log in with your OpenShift credentials.
 
 In the console, you should see:
 
-* Both sites (`site-west` and `site-east`) in the topology view
-* The link connecting the two sites
-* Any exposed services (from Chapter 3) showing as connectors and listeners
+* All linked sites in the topology view
+* The links connecting the sites
+* Any exposed services (from previous chapters) showing as connectors and listeners
 
 Take a moment to explore the different views and understand the information available.
 
-=== Step 8: Create a Memory Alert
+=== Step 6: Create a Memory Alert
 
 Ensure user workload monitoring is enabled:
 
@@ -275,7 +228,7 @@ network-observer-memory-alert     10s
 
 You can view this alert in the OpenShift console under **Observe -> Alerting -> User** tab.
 
-=== Step 9: Clean Up (Optional)
+=== Step 7: Clean Up (Optional)
 
 Remove the alerting rule:
 
@@ -284,15 +237,7 @@ Remove the alerting rule:
 oc delete prometheusrule network-observer-memory-alert -n site-west
 ----
 
-Remove the Network Observer instance:
-
-[source,bash,role=execute]
-----
-oc delete networkobserver networkobserver-sample -n site-west
-----
-
-NOTE: Leave the Network Observer operator installed — you can use it in later chapters.
-Do not remove the site certificates or links, as they are needed for subsequent exercises.
+Do not remove the site certificates, links, or Network Observer, as they are needed for subsequent exercises.
 
 == Summary
 
@@ -302,8 +247,7 @@ In this exercise, you:
 * Examined certificate details using `openssl` and verified the CA trust chain
 * Confirmed that each site has an independent certificate authority
 * Verified that links between sites use mutual TLS authentication
-* Installed the Network Observer operator and deployed a NetworkObserver instance
-* Accessed the Network Observer console to visualize the network topology
+* Verified the Network Observer console is running and explored the network topology
 * Created a Prometheus alerting rule to monitor Network Observer memory usage
 
 In the next chapter, you will explore advanced scenarios including multi-cloud connectivity, progressive migration, and edge computing patterns.
