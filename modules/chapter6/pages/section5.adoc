@@ -161,7 +161,7 @@ Verify from the CLI:
 
 [source,bash,role=execute]
 ----
-oc get csv -A | grep network-observer
+oc get csv -A | grep skupper-netobs
 ----
 
 .Expected output

@@ -358,14 +358,24 @@ This is the first time the console shows live traffic, not just topology.
 
 === Step 9: Inspect the Application Network
 
-Check the overall network status:
+Check the network status from each site.
+
+On `site-west` (where the site, listener, and Network Observer are deployed):
 
 [source,bash,role=execute]
 ----
+oc project site-west
 skupper site status
+skupper listener status
+----
+
+On `site-east` (where the link and connector are deployed):
+
+[source,bash,role=execute]
+----
+oc project site-east
 skupper link status
 skupper connector status
-skupper listener status
 ----
 
 == Summary

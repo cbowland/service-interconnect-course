@@ -212,7 +212,7 @@ IMPORTANT: Do not delete the CA Secrets unless you intend to re-establish all li
 +
 [source,bash,role=execute]
 ----
-oc get csv -A | grep network-observer
+oc get csv -A | grep skupper-netobs
 ----
 
 . Check the pod events:
