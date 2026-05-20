@@ -329,6 +329,7 @@ On Cluster A:</p>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
 oc new-project site-south
+oc label namespace site-south pod-security.kubernetes.io/warn=baseline --overwrite
 skupper site create site-south</code></pre>
 </div>
 </div>
@@ -337,6 +338,7 @@ skupper site create site-south</code></pre>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc new-project site-south
+oc label namespace site-south pod-security.kubernetes.io/warn=baseline --overwrite
 skupper site create site-south</code></pre>
 </div>
 </div>

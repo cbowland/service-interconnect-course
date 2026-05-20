@@ -420,7 +420,8 @@ cli                2.1.3-rh-1</pre>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
-oc new-project site-west</code></pre>
+oc new-project site-west
+oc label namespace site-west pod-security.kubernetes.io/warn=baseline --overwrite</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -429,7 +430,8 @@ oc new-project site-west</code></pre>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-b-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
-oc new-project site-east</code></pre>
+oc new-project site-east
+oc label namespace site-east pod-security.kubernetes.io/warn=baseline --overwrite</code></pre>
 </div>
 </div>
 </div>
@@ -438,11 +440,29 @@ oc new-project site-east</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
 oc new-project site-west
-oc new-project site-east</code></pre>
+oc new-project site-east
+oc label namespace site-west pod-security.kubernetes.io/warn=baseline --overwrite
+oc label namespace site-east pod-security.kubernetes.io/warn=baseline --overwrite</code></pre>
 </div>
 </div>
 </div>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>By default, OpenShift namespaces use the <code>restricted</code> Pod Security profile for warnings.
+This causes harmless warning messages when running ad-hoc pods with <code>oc run</code> (e.g., for testing connectivity), because the default container security context does not explicitly set <code>allowPrivilegeEscalation: false</code>.
+Setting the warning level to <code>baseline</code> suppresses these warnings without changing the enforcement policy — pods that would actually violate security constraints are still rejected.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
