@@ -62,12 +62,20 @@ Create a route to access the frontend:
 oc expose service frontend -n site-west
 ----
 
-Verify the application is working:
+Verify the application is working by opening the frontend route in a browser:
 
 [source,bash,role=execute]
 ----
-FRONTEND_URL=$(oc get route frontend -n site-west -o jsonpath='{.spec.host}')
-curl -s http://$FRONTEND_URL/api/hello
+oc get route frontend -n site-west -o jsonpath='{.spec.host}'
+----
+
+You can also test from the command line by curling the backend service directly:
+
+[source,bash,role=execute]
+----
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  -n site-west --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello
 ----
 
 You should see a response from the backend running in `site-west`.
@@ -184,12 +192,14 @@ backend   Ready    backend       backend   8080   true                 OK
 === Step 4: Observe Load Balancing
 
 With both connectors active, traffic from the frontend is balanced across backends in both sites.
-Send multiple requests and observe:
+Send multiple requests and observe which backend responds:
 
 [source,bash,role=execute]
 ----
 for i in $(seq 1 10); do
-  curl -s http://$FRONTEND_URL/api/hello
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n site-west --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
   echo ""
 done
 ----
@@ -207,70 +217,60 @@ Traffic is flowing to both sites -- the console shows active connections distrib
 === Step 5: Simulate Testing Phase — Route All Traffic to On-premises
 
 In a real migration, you would first want to test the cloud backend without affecting production traffic.
-To do this, set a high link cost on the link from `site-west` to `site-east`:
-
-Check the current link:
-
-[tabs]
-====
-Option A: Two Clusters::
-+
-[source,bash,role=execute]
-----
-oc login --server=<cluster-a-api-url> -u <username> -p <password>
-oc project site-west
-oc get link -n site-west
-----
-
-Option B: Single Cluster::
-+
-[source,bash,role=execute]
-----
-oc project site-west
-oc get link -n site-west
-----
-====
-
-Note the link name, then patch the link cost:
+To do this, delete the existing link and recreate it with a high cost so that the `site-east` backend is only used as a failover.
 
 [WARNING]
 ====
 In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
-The `oc patch link` command below appears to succeed, but the cost change does not affect traffic routing.
-
-*Workaround:* Delete the existing link and recreate it with the desired cost using YAML:
-
-[source,bash]
-----
-oc delete link <link-name> -n site-west
-----
-
-Re-issue a token from the target site, redeem it, then patch the link:
-
-[source,bash]
-----
-skupper token redeem <token-file>
-----
-
-[source,bash]
-----
-oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":9999}}'
-----
+The workaround is to delete the link and recreate it with the desired cost.
 ====
 
-[source,bash]
+Delete the existing link in `site-east`:
+
+[source,bash,role=execute]
 ----
-oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":9999}}'
+oc delete link -n site-east --all
 ----
 
-Replace `<link-name>` with the link name from the `oc get link` output above.
+Issue a new token from `site-west`:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper token issue ~/west-token-highcost.yaml
+----
+
+Redeem the token in `site-east`:
+
+[source,bash,role=execute]
+----
+oc project site-east
+skupper token redeem ~/west-token-highcost.yaml
+----
+
+Wait for the link to become ready:
+
+[source,bash,role=execute]
+----
+skupper link status
+----
+
+Once the link shows `Ready`, patch it with a high cost:
+
+[source,bash,role=execute]
+----
+LINK_NAME=$(oc get link -n site-east -o jsonpath='{.items[0].metadata.name}')
+oc patch link $LINK_NAME -n site-east --type merge -p '{"spec":{"cost":9999}}'
+----
 
 Now send requests again:
 
 [source,bash,role=execute]
 ----
 for i in $(seq 1 10); do
-  curl -s http://$FRONTEND_URL/api/hello
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n site-west --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
   echo ""
 done
 ----
@@ -311,33 +311,43 @@ skupper listener delete backend-test
 
 When you are confident the cloud backend is working correctly, shift all traffic to it.
 
-First, restore the link cost to normal:
+First, restore the link cost to normal by deleting the high-cost link and recreating it.
 
 [WARNING]
 ====
-Due to known issue SKUPPER-2569, patching the link cost does not take effect.
-To restore the cost to 1, delete the link and recreate it:
-
-[source,bash]
-----
-oc delete link <link-name> -n site-west
-----
-
-Re-issue a token from the target site, then redeem it with cost 1 (the default):
-
-[source,bash]
-----
-skupper token redeem <token-file>
-----
+In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+The workaround is to delete the link and recreate it with the desired cost.
 ====
 
-[source,bash]
+Delete the existing high-cost link in `site-east`:
+
+[source,bash,role=execute]
 ----
-oc project site-west
-oc patch link <link-name> -n site-west --type merge -p '{"spec":{"cost":1}}'
+oc delete link -n site-east --all
 ----
 
-Replace `<link-name>` with the link name from the `oc get link` output.
+Issue a new token from `site-west`:
+
+[source,bash,role=execute]
+----
+oc project site-west
+skupper token issue ~/west-token-default.yaml
+----
+
+Redeem the token in `site-east` (cost defaults to 1):
+
+[source,bash,role=execute]
+----
+oc project site-east
+skupper token redeem ~/west-token-default.yaml
+----
+
+Wait for the link to become ready:
+
+[source,bash,role=execute]
+----
+skupper link status
+----
 
 Then scale down the on-premises backend to force all traffic to the cloud:
 
@@ -346,12 +356,14 @@ Then scale down the on-premises backend to force all traffic to the cloud:
 oc scale deployment backend -n site-west --replicas=0
 ----
 
-Verify that the frontend still works, now served entirely by the cloud backend:
+Verify that traffic is now served entirely by the cloud backend:
 
 [source,bash,role=execute]
 ----
 for i in $(seq 1 5); do
-  curl -s http://$FRONTEND_URL/api/hello
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n site-west --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
   echo ""
 done
 ----
@@ -395,10 +407,12 @@ Verify the final state:
 
 [source,bash,role=execute]
 ----
-curl -s http://$FRONTEND_URL/api/hello
+oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  -n site-west --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello
 ----
 
-The frontend continues to work seamlessly, even though the backend is now in a different site (simulating a different cloud).
+The backend service continues to work seamlessly through the listener, even though the backend is now in a different site (simulating a different cloud).
 
 === Step 9: Clean Up
 
