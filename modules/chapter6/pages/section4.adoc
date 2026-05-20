@@ -178,9 +178,9 @@ spec:
 
 == Viewing Alerts in the OpenShift Console
 
-. Navigate to **Observe -> Alerting** in the OpenShift web console
-. Switch to the **User** tab to see alerts from user workload monitoring
-. Look for alerts with names matching `NetworkObserver*`
+. Navigate to **Observe -> Alerting -> Alerting rules** in the OpenShift web console
+. Search for `NetworkObserver` to find your alerting rules
+. Active alerts appear under the **Alerts** tab when the rule conditions are met
 
 You can also view the alert status using the CLI:
 

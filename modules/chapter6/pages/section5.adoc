@@ -182,8 +182,32 @@ Ensure user workload monitoring is enabled:
 oc get pods -n openshift-user-workload-monitoring
 ----
 
-If the namespace exists and pods are running, proceed.
-If not, ask your cluster administrator to enable user workload monitoring.
+If you see `prometheus-user-workload` and `thanos-ruler-user-workload` pods in a `Running` state, skip to creating the PrometheusRule below.
+
+If the namespace is empty or does not exist, enable user workload monitoring:
+
+[source,bash,role=execute]
+----
+oc apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+EOF
+----
+
+Wait for the pods to start:
+
+[source,bash,role=execute]
+----
+oc get pods -n openshift-user-workload-monitoring -w
+----
+
+Press `Ctrl+C` once you see the `prometheus-user-workload` and `thanos-ruler-user-workload` pods running.
 
 Create the PrometheusRule:
 
@@ -226,7 +250,10 @@ NAME                              AGE
 network-observer-memory-alert     10s
 ----
 
-You can view this alert in the OpenShift console under **Observe -> Alerting -> User** tab.
+To view the rule in the OpenShift console, navigate to **Observe -> Alerting -> Alerting rules** and search for `NetworkObserverHighMemory`.
+The rule will only appear in the **Firing** or **Pending** state under the **Alerts** tab if the memory threshold is actually exceeded.
+
+NOTE: It may take a minute after the user workload monitoring pods start for Prometheus to load the rule.
 
 === Step 7: Clean Up (Optional)
 
