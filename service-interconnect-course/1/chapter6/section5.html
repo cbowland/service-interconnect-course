@@ -494,85 +494,20 @@ This is a key security property — compromising one site&#8217;s CA does not co
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_5_install_the_network_observer_operator"><a class="anchor" href="#_step_5_install_the_network_observer_operator"></a>Step 5: Install the Network Observer Operator</h3>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>In the OpenShift web console, navigate to <strong>Ecosystem &#8594; Software Catalog</strong></p>
-</li>
-<li>
-<p>Search for <strong>Red Hat Service Interconnect Network Observer</strong></p>
-</li>
-<li>
-<p>Click <strong>Install</strong>, accept the defaults, and click <strong>Install</strong> again</p>
-</li>
-<li>
-<p>Wait for the operator to reach the <code>Succeeded</code> phase</p>
-</li>
-</ol>
-</div>
+<h3 id="_step_5_verify_the_network_observer_console"><a class="anchor" href="#_step_5_verify_the_network_observer_console"></a>Step 5: Verify the Network Observer Console</h3>
 <div class="paragraph">
-<p>Verify from the CLI:</p>
+<p>The Network Observer operator and console were deployed in previous chapters.
+Verify that the console is still running:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get csv -A | grep skupper-netobs</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">Expected output</div>
-<div class="content">
-<pre>openshift-operators   skupper-network-observer-operator.v2.1.1-rh-8   ...   Succeeded</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_step_6_deploy_the_network_observer"><a class="anchor" href="#_step_6_deploy_the_network_observer"></a>Step 6: Deploy the Network Observer</h3>
-<div class="paragraph">
-<p>Create a NetworkObserver instance in the <code>site-west</code> namespace:</p>
-</div>
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cat &lt;&lt;EOF | oc apply -f -
-apiVersion: observability.skupper.io/v2alpha1
-kind: NetworkObserver
-metadata:
-  name: networkobserver-sample
-  namespace: site-west
-spec: {}
-EOF</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+oc get networkobserver -n site-west
+oc get route -n site-west | grep network-observer</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Wait for the deployment to become available:</p>
-</div>
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc rollout status deployment -n site-west -l app.kubernetes.io/component=network-observer --timeout=120s</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Verify the NetworkObserver resource:</p>
-</div>
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get networkobserver -n site-west</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_step_7_access_the_console"><a class="anchor" href="#_step_7_access_the_console"></a>Step 7: Access the Console</h3>
-<div class="paragraph">
-<p>Get the console route URL:</p>
-</div>
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route -n site-west -o jsonpath='{.items[?(@.metadata.name=="skupper-network-observer-site-west")].spec.host}'</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Open the URL in a browser.
-If using the default <code>openshift</code> authentication strategy, log in with your OpenShift credentials.</p>
+<p>Open the route URL in a browser and log in with your OpenShift credentials.</p>
 </div>
 <div class="paragraph">
 <p>In the console, you should see:</p>
@@ -580,13 +515,13 @@ If using the default <code>openshift</code> authentication strategy, log in with
 <div class="ulist">
 <ul>
 <li>
-<p>Both sites (<code>site-west</code> and <code>site-east</code>) in the topology view</p>
+<p>All linked sites in the topology view</p>
 </li>
 <li>
-<p>The link connecting the two sites</p>
+<p>The links connecting the sites</p>
 </li>
 <li>
-<p>Any exposed services (from Chapter 3) showing as connectors and listeners</p>
+<p>Any exposed services (from previous chapters) showing as connectors and listeners</p>
 </li>
 </ul>
 </div>
@@ -595,7 +530,7 @@ If using the default <code>openshift</code> authentication strategy, log in with
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_8_create_a_memory_alert"><a class="anchor" href="#_step_8_create_a_memory_alert"></a>Step 8: Create a Memory Alert</h3>
+<h3 id="_step_6_create_a_memory_alert"><a class="anchor" href="#_step_6_create_a_memory_alert"></a>Step 6: Create a Memory Alert</h3>
 <div class="paragraph">
 <p>Ensure user workload monitoring is enabled:</p>
 </div>
@@ -605,8 +540,35 @@ If using the default <code>openshift</code> authentication strategy, log in with
 </div>
 </div>
 <div class="paragraph">
-<p>If the namespace exists and pods are running, proceed.
-If not, ask your cluster administrator to enable user workload monitoring.</p>
+<p>If you see <code>prometheus-user-workload</code> and <code>thanos-ruler-user-workload</code> pods in a <code>Running</code> state, skip to creating the PrometheusRule below.</p>
+</div>
+<div class="paragraph">
+<p>If the namespace is empty or does not exist, enable user workload monitoring:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+EOF</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the pods to start:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods -n openshift-user-workload-monitoring -w</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Press <code>Ctrl+C</code> once you see the <code>prometheus-user-workload</code> and <code>thanos-ruler-user-workload</code> pods running.</p>
 </div>
 <div class="paragraph">
 <p>Create the PrometheusRule:</p>
@@ -653,11 +615,24 @@ network-observer-memory-alert     10s</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You can view this alert in the OpenShift console under <strong>Observe &#8594; Alerting &#8594; User</strong> tab.</p>
+<p>To view the rule in the OpenShift console, navigate to <strong>Observe &#8594; Alerting &#8594; Alerting rules</strong> and search for <code>NetworkObserverHighMemory</code>.
+The rule will only appear in the <strong>Firing</strong> or <strong>Pending</strong> state under the <strong>Alerts</strong> tab if the memory threshold is actually exceeded.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+It may take a minute after the user workload monitoring pods start for Prometheus to load the rule.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_step_9_clean_up_optional"><a class="anchor" href="#_step_9_clean_up_optional"></a>Step 9: Clean Up (Optional)</h3>
+<h3 id="_step_7_clean_up_optional"><a class="anchor" href="#_step_7_clean_up_optional"></a>Step 7: Clean Up (Optional)</h3>
 <div class="paragraph">
 <p>Remove the alerting rule:</p>
 </div>
@@ -667,25 +642,7 @@ network-observer-memory-alert     10s</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Remove the Network Observer instance:</p>
-</div>
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete networkobserver networkobserver-sample -n site-west</code></pre>
-</div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-Leave the Network Observer operator installed — you can use it in later chapters.
-Do not remove the site certificates or links, as they are needed for subsequent exercises.
-</td>
-</tr>
-</table>
+<p>Do not remove the site certificates, links, or Network Observer, as they are needed for subsequent exercises.</p>
 </div>
 </div>
 </div>
@@ -711,10 +668,7 @@ Do not remove the site certificates or links, as they are needed for subsequent 
 <p>Verified that links between sites use mutual TLS authentication</p>
 </li>
 <li>
-<p>Installed the Network Observer operator and deployed a NetworkObserver instance</p>
-</li>
-<li>
-<p>Accessed the Network Observer console to visualize the network topology</p>
+<p>Verified the Network Observer console is running and explored the network topology</p>
 </li>
 <li>
 <p>Created a Prometheus alerting rule to monitor Network Observer memory usage</p>
