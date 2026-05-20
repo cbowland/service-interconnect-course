@@ -378,12 +378,21 @@ oc expose deployment frontend --port=8080</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Verify the application is working:</p>
+<p>Verify the application is working by opening the frontend route in a browser:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">FRONTEND_URL=$(oc get route frontend -n site-west -o jsonpath='{.spec.host}')
-curl -s http://$FRONTEND_URL/api/hello</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route frontend -n site-west -o jsonpath='{.spec.host}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also test from the command line by curling the backend service directly:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  -n site-west --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -557,12 +566,14 @@ backend   Ready    backend       backend   8080   true                 OK</pre>
 <h3 id="_step_4_observe_load_balancing"><a class="anchor" href="#_step_4_observe_load_balancing"></a>Step 4: Observe Load Balancing</h3>
 <div class="paragraph">
 <p>With both connectors active, traffic from the frontend is balanced across backends in both sites.
-Send multiple requests and observe:</p>
+Send multiple requests and observe which backend responds:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 10); do
-  curl -s http://$FRONTEND_URL/api/hello
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n site-west --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
   echo ""
 done</code></pre>
 </div>
@@ -592,10 +603,84 @@ Traffic is flowing to both sites&#8201;&#8212;&#8201;the console shows active co
 <h3 id="_step_5_simulate_testing_phase_route_all_traffic_to_on_premises"><a class="anchor" href="#_step_5_simulate_testing_phase_route_all_traffic_to_on_premises"></a>Step 5: Simulate Testing Phase — Route All Traffic to On-premises</h3>
 <div class="paragraph">
 <p>In a real migration, you would first want to test the cloud backend without affecting production traffic.
-To do this, set a high link cost on the link from <code>site-west</code> to <code>site-east</code>:</p>
+To do this, delete the existing link and recreate it with a high cost so that the <code>site-east</code> backend is only used as a failover.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+The workaround is to delete the link and recreate it with the desired cost.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>Check the current link:</p>
+<p>Delete the existing link in <code>site-east</code>:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link -n site-east --all</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Issue a new token from <code>site-west</code>:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper token issue ~/west-token-highcost.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Redeem the token in <code>site-east</code>:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+skupper token redeem ~/west-token-highcost.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the link to become ready:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link status</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once the link shows <code>Ready</code>, patch it with a high cost:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">LINK_NAME=$(oc get link -n site-east -o jsonpath='{.items[0].metadata.name}')
+oc patch link $LINK_NAME -n site-east --type merge -p '{"spec":{"cost":9999}}'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now send requests again:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 10); do
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n site-west --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
+  echo ""
+done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All responses should now come from the backend in <code>site-west</code>, because the high link cost makes the <code>site-east</code> backend a failover-only option.</p>
+</div>
+<div class="paragraph">
+<p>You can still test the <code>site-east</code> backend directly by sending requests from within that namespace:</p>
 </div>
 <div id="_tabs_6" class="openblock tabs is-loading">
 <div class="content">
@@ -610,101 +695,6 @@ To do this, set a high link cost on the link from <code>site-west</code> to <cod
 </ul>
 </div>
 <div id="_tabs_6_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_6_option_a_two_clusters">
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc login --server=&lt;cluster-a-api-url&gt; -u &lt;username&gt; -p &lt;password&gt;
-oc project site-west
-oc get link -n site-west</code></pre>
-</div>
-</div>
-</div>
-<div id="_tabs_6_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_6_option_b_single_cluster">
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
-oc get link -n site-west</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p>Note the link name, then patch the link cost:</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
-The <code>oc patch link</code> command below appears to succeed, but the cost change does not affect traffic routing.</p>
-</div>
-<div class="paragraph">
-<p><strong>Workaround:</strong> Delete the existing link and recreate it with the desired cost using YAML:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Re-issue a token from the target site, redeem it, then patch the link:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem &lt;token-file&gt;</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":9999}}'</code></pre>
-</div>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":9999}}'</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Replace <code>&lt;link-name&gt;</code> with the link name from the <code>oc get link</code> output above.</p>
-</div>
-<div class="paragraph">
-<p>Now send requests again:</p>
-</div>
-<div class="listingblock execute">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 10); do
-  curl -s http://$FRONTEND_URL/api/hello
-  echo ""
-done</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>All responses should now come from the backend in <code>site-west</code>, because the high link cost makes the <code>site-east</code> backend a failover-only option.</p>
-</div>
-<div class="paragraph">
-<p>You can still test the <code>site-east</code> backend directly by sending requests from within that namespace:</p>
-</div>
-<div id="_tabs_7" class="openblock tabs is-loading">
-<div class="content">
-<div class="ulist tablist">
-<ul>
-<li id="_tabs_7_option_a_two_clusters" class="tab">
-<p>Option A: Two Clusters</p>
-</li>
-<li id="_tabs_7_option_b_single_cluster" class="tab">
-<p>Option B: Single Cluster</p>
-</li>
-</ul>
-</div>
-<div id="_tabs_7_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_7_option_a_two_clusters">
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -727,7 +717,7 @@ oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
 </div>
 </div>
 </div>
-<div id="_tabs_7_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_7_option_b_single_cluster">
+<div id="_tabs_6_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_6_option_b_single_cluster">
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
@@ -748,7 +738,7 @@ skupper listener delete backend-test</code></pre>
 <p>When you are confident the cloud backend is working correctly, shift all traffic to it.</p>
 </div>
 <div class="paragraph">
-<p>First, restore the link cost to normal:</p>
+<p>First, restore the link cost to normal by deleting the high-cost link and recreating it.</p>
 </div>
 <div class="admonitionblock warning">
 <table>
@@ -758,34 +748,46 @@ skupper listener delete backend-test</code></pre>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Due to known issue SKUPPER-2569, patching the link cost does not take effect.
-To restore the cost to 1, delete the link and recreate it:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link &lt;link-name&gt; -n site-west</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Re-issue a token from the target site, then redeem it with cost 1 (the default):</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper token redeem &lt;token-file&gt;</code></pre>
-</div>
+<p>In Red Hat Service Interconnect 2.1, link cost is not updatable after creation (known issue SKUPPER-2569).
+The workaround is to delete the link and recreate it with the desired cost.</p>
 </div>
 </td>
 </tr>
 </table>
 </div>
-<div class="listingblock">
+<div class="paragraph">
+<p>Delete the existing high-cost link in <code>site-east</code>:</p>
+</div>
+<div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
-oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":1}}'</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc delete link -n site-east --all</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Replace <code>&lt;link-name&gt;</code> with the link name from the <code>oc get link</code> output.</p>
+<p>Issue a new token from <code>site-west</code>:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
+skupper token issue ~/west-token-default.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Redeem the token in <code>site-east</code> (cost defaults to 1):</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-east
+skupper token redeem ~/west-token-default.yaml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait for the link to become ready:</p>
+</div>
+<div class="listingblock execute">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">skupper link status</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>Then scale down the on-premises backend to force all traffic to the cloud:</p>
@@ -796,12 +798,14 @@ oc patch link &lt;link-name&gt; -n site-west --type merge -p '{"spec":{"cost":1}
 </div>
 </div>
 <div class="paragraph">
-<p>Verify that the frontend still works, now served entirely by the cloud backend:</p>
+<p>Verify that traffic is now served entirely by the cloud backend:</p>
 </div>
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">for i in $(seq 1 5); do
-  curl -s http://$FRONTEND_URL/api/hello
+  oc run curl-test-$i --image=registry.access.redhat.com/ubi9/ubi-minimal \
+    -n site-west --rm -it --restart=Never -- \
+    curl -s http://backend:8080/api/hello
   echo ""
 done</code></pre>
 </div>
@@ -862,11 +866,13 @@ oc delete deployment backend -n site-west</code></pre>
 </div>
 <div class="listingblock execute">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl -s http://$FRONTEND_URL/api/hello</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc run curl-test --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  -n site-west --rm -it --restart=Never -- \
+  curl -s http://backend:8080/api/hello</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The frontend continues to work seamlessly, even though the backend is now in a different site (simulating a different cloud).</p>
+<p>The backend service continues to work seamlessly through the listener, even though the backend is now in a different site (simulating a different cloud).</p>
 </div>
 </div>
 <div class="sect2">
@@ -874,19 +880,19 @@ oc delete deployment backend -n site-west</code></pre>
 <div class="paragraph">
 <p>Remove the lab resources:</p>
 </div>
-<div id="_tabs_8" class="openblock tabs is-loading">
+<div id="_tabs_7" class="openblock tabs is-loading">
 <div class="content">
 <div class="ulist tablist">
 <ul>
-<li id="_tabs_8_option_a_two_clusters" class="tab">
+<li id="_tabs_7_option_a_two_clusters" class="tab">
 <p>Option A: Two Clusters</p>
 </li>
-<li id="_tabs_8_option_b_single_cluster" class="tab">
+<li id="_tabs_7_option_b_single_cluster" class="tab">
 <p>Option B: Single Cluster</p>
 </li>
 </ul>
 </div>
-<div id="_tabs_8_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_8_option_a_two_clusters">
+<div id="_tabs_7_option_a_two_clusters--panel" class="tabpanel" aria-labelledby="_tabs_7_option_a_two_clusters">
 <div class="paragraph">
 <p>On Cluster A:</p>
 </div>
@@ -912,7 +918,7 @@ oc delete deployment backend</code></pre>
 </div>
 </div>
 </div>
-<div id="_tabs_8_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_8_option_b_single_cluster">
+<div id="_tabs_7_option_b_single_cluster--panel" class="tabpanel" aria-labelledby="_tabs_7_option_b_single_cluster">
 <div class="listingblock execute">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc project site-west
