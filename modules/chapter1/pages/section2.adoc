@@ -232,7 +232,7 @@ site-west (namespace)              site-east (namespace)
 │   "backend")        │            │   "backend")        │
 │    │                │            │    ▲                │
 │    ▼                │            │    │                │
-│  SI router ─────────┼── mTLS ───┼── SI router         │
+│  SI router ─────────┼── mTLS ────┼── SI router         │
 │                     │  (link)    │                     │
 └─────────────────────┘            └─────────────────────┘
 ----
