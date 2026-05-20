@@ -78,11 +78,12 @@ They should match, confirming the trust chain.
 
 === Step 3: Verify mTLS on Links
 
-Check the link status to confirm that the connection between sites is encrypted:
+Check the link status to confirm that the connection between sites is encrypted.
+The link resource lives on the connecting site (`site-east`), not the listening site:
 
 [source,bash,role=execute]
 ----
-oc project site-west
+oc project site-east
 skupper link status
 ----
 
@@ -99,7 +100,7 @@ You can also inspect the link resource for more detail:
 
 [source,bash,role=execute]
 ----
-oc get link -n site-west -o yaml
+oc get link -n site-east -o yaml
 ----
 
 The `status` section shows the connection state and any certificate-related information.
