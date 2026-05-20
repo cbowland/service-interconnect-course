@@ -35,16 +35,16 @@ A central hub site connects to all other sites.
 Spoke sites do not link directly to each other — they communicate through the hub.
 
 ----
-                    +-------------+
-                    |   Hub Site  |
-                    | (on-prem)   |
-                    +------+------+
-                     / | \
-                    /  |  \
-    +-----------+ +----+-----+ +-----------+
-    | Spoke A   | | Spoke B  | | Spoke C   |
-    | (AWS)     | | (Azure)  | | (GCP)     |
-    +-----------+ +----------+ +-----------+
+                  +-------------+
+                  |   Hub Site  |
+                  |  (on-prem)  |
+                  +------+------+
+                    /    |    \
+                   /     |     \
+    +-----------+  +-----------+  +-----------+
+    | Spoke A   |  | Spoke B   |  | Spoke C   |
+    | (AWS)     |  | (Azure)   |  | (GCP)     |
+    +-----------+  +-----------+  +-----------+
 ----
 
 **When to use:** When you have a primary data center and want centralized control over routing. Good for organizations with an existing on-premises hub.
