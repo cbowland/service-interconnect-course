@@ -6,7 +6,7 @@
 In this exercise, you will connect a PostgreSQL database running on a Linux system to a frontend application running on OpenShift.
 This simulates a common hybrid scenario where a legacy database cannot be migrated to the cloud but needs to be accessed by cloud-native workloads.
 
-The lab uses a RHEL 9 virtual machine, but the same steps apply to any supported Linux distribution with Podman or systemd.
+The lab uses a RHEL 9 virtual machine with Podman, but the same steps apply to any supported Linux distribution.
 
 IMPORTANT: Using the Skupper CLI on local systems is a Technology Preview feature.
 
@@ -14,50 +14,31 @@ IMPORTANT: Using the Skupper CLI on local systems is a Technology Preview featur
 
 * Completed the Chapter 3 hands-on lab (you have a working `site-west` with link access enabled)
 * A Linux system (RHEL 9 in this lab) with:
-** The `skupper` CLI installed
-** Podman installed and the Podman socket enabled, *or* the `skupper-router` package installed
+** The `skupper` CLI installed (see xref:chapter5:section1.adoc[Installing the CLI])
+** Podman installed
 * Network connectivity between the Linux system and the OpenShift cluster (outbound from the Linux host)
 
 == Exercise Steps
 
 === Step 1: Prepare the Linux System
 
-Verify the CLI is installed:
+Download and install the Skupper CLI:
 
 [source,bash,role=execute]
 ----
+curl https://skupper.io/v2/install.sh | sh
 skupper version
 ----
 
-.Expected output
-----
-COMPONENT          VERSION
-cli                2.1.3-rh-1
-----
+Install Podman, enable the Podman socket, and enable user lingering:
 
-[tabs]
-====
-Option A: Podman Platform::
-+
-Enable the Podman socket and user lingering:
-+
 [source,bash,role=execute]
 ----
+sudo dnf install -y podman
 systemctl --user enable --now podman.socket
 loginctl enable-linger $(whoami)
 export SKUPPER_PLATFORM=podman
 ----
-
-Option B: Linux (systemd) Platform::
-+
-Verify the `skupper-router` package is installed:
-+
-[source,bash,role=execute]
-----
-rpm -q skupper-router
-export SKUPPER_PLATFORM=linux
-----
-====
 
 === Step 2: Install PostgreSQL on the Linux Host
 
@@ -88,10 +69,11 @@ sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" \
   /var/lib/pgsql/data/postgresql.conf
 ----
 
-Edit `/var/lib/pgsql/data/pg_hba.conf` to add a line for password authentication:
+Edit `/var/lib/pgsql/data/pg_hba.conf` to use password authentication instead of `ident`:
 
 [source,bash,role=execute]
 ----
+sudo sed -i 's/ident/md5/g' /var/lib/pgsql/data/pg_hba.conf
 echo "host all all 0.0.0.0/0 md5" | sudo tee -a /var/lib/pgsql/data/pg_hba.conf
 ----
 
@@ -113,27 +95,14 @@ Enter the password `redhat123` when prompted.
 
 === Step 3: Create a Local System Site
 
-[tabs]
-====
-Option A: Podman Platform::
-+
+Install the Skupper controller and create a site:
+
 [source,bash,role=execute]
 ----
-export SKUPPER_PLATFORM=podman
 skupper system install
 skupper site create rhel-db-site
 skupper system start
 ----
-
-Option B: Linux (systemd) Platform::
-+
-[source,bash,role=execute]
-----
-export SKUPPER_PLATFORM=linux
-skupper site create rhel-db-site
-skupper system start
-----
-====
 
 Verify the site is running:
 
@@ -181,12 +150,16 @@ Copy the token to the Linux host:
 scp ~/rhel-link-token.yaml user@linux-host:~/rhel-link-token.yaml
 ----
 
-On the Linux host, redeem the token:
+On the Linux host, redeem the token and reload the system to apply the change:
 
 [source,bash,role=execute]
 ----
 skupper token redeem ~/rhel-link-token.yaml
+skupper system reload
 ----
+
+NOTE: On local systems (Podman/Docker/Linux), resource changes are not applied automatically.
+You must run `skupper system reload` after creating or modifying resources for the changes to take effect.
 
 Verify the link is ready:
 
@@ -200,7 +173,7 @@ Run this command multiple times if needed until `STATUS` shows `Ready`:
 .Expected output
 ----
 NAME                                          STATUS   COST   MESSAGE
-west-<uuid>                                   Ready    1      OK
+west-<uuid>                                   Ready    0      OK
 ----
 
 === Step 5: Expose PostgreSQL to the Application Network
@@ -229,9 +202,12 @@ skupper connector status
 
 .Expected output
 ----
-NAME         STATUS   ROUTING-KEY   HOST        PORT
-postgresql   Ok       postgresql    localhost   5432
+NAME         STATUS    ROUTING-KEY    SELECTOR   HOST        PORT   HAS MATCHING LISTENER   MESSAGE
+postgresql   Pending   postgresql                localhost   5432   false                    No matching listeners
 ----
+
+The status shows `No matching listeners` because the listener has not been created on the OpenShift side yet.
+The connector will show `Ready` after you create the listener in the next step.
 
 === Step 6: Create a Listener on OpenShift
 
@@ -301,10 +277,11 @@ oc get site
 .Expected output
 ----
 NAME        STATUS   SITES IN NETWORK   MESSAGE
-site-west   Ready    2                  OK
+site-west   Ready    3                  OK
 ----
 
-The network now includes both the OpenShift site and the local system site.
+The `SITES IN NETWORK` count includes `site-west`, `site-east`, and `rhel-db-site`.
+If you still have `site-south` from the Chapter 4 lab, the count will be 4.
 
 [TIP]
 .Console Checkpoint
@@ -345,7 +322,7 @@ sudo dnf remove -y postgresql-server postgresql
 
 In this exercise, you:
 
-* Prepared a Linux system with the Skupper CLI and a local system platform (Podman or systemd)
+* Prepared a Linux system with the Skupper CLI and Podman
 * Created a local system site and linked it to an OpenShift cluster
 * Exposed a PostgreSQL database running on a Linux host to the application network using a connector
 * Created a listener on OpenShift to make the database accessible as a Kubernetes service

@@ -41,18 +41,21 @@ To use Service Interconnect on a Linux system, you need:
 
 * The `skupper` CLI installed (via binary download or RPM package)
 * For Podman/Docker platforms: the container runtime installed and running
-* For the Linux/systemd platform: the `skupper-router` package
+* For the Linux/systemd platform: the `skupper-router` RPM package
 
-=== Installing the CLI via RPM (RHEL)
+=== Installing the CLI
 
-If you have not installed the CLI as described in Chapter 2, RHEL users can use the RPM method:
+Install the Skupper CLI using the upstream install script:
 
 [source,bash,role=execute]
 ----
-sudo subscription-manager repos \
-  --enable=service-interconnect-2-for-rhel-9-x86_64-rpms
-sudo dnf install skupper-cli
+curl https://skupper.io/v2/install.sh | sh
 ----
+
+The script downloads the latest v2 release and installs the `skupper` command under your home directory.
+It prompts you to add the command to your path if necessary.
+
+To install a specific version, download it from the https://github.com/skupperproject/skupper/releases[Skupper GitHub releases] page.
 
 === Installing the skupper-router Package (Linux Platform Only)
 
@@ -63,15 +66,16 @@ For the `linux` (systemd) platform, install the router package:
 sudo dnf install skupper-router
 ----
 
-NOTE: The `skupper-router` package is only required for Linux local system sites (systemd).
-Podman and Docker sites use container images for the router.
+NOTE: The `skupper-router` package is only required for Linux local system sites (systemd) and requires the RPM repository.
+Podman and Docker sites use container images for the router and do not need this package.
 
 === Preparing Podman
 
-For Podman-based sites, enable the Podman socket so that Service Interconnect can manage containers:
+For Podman-based sites, install Podman (if not already present) and enable the Podman socket so that Service Interconnect can manage containers:
 
 [source,bash,role=execute]
 ----
+sudo dnf install -y podman
 systemctl --user enable --now podman.socket
 ----
 
