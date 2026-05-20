@@ -109,6 +109,7 @@ On Cluster A:
 ----
 oc login --server=<cluster-a-api-url> -u <username> -p <password>
 oc new-project site-west
+oc label namespace site-west pod-security.kubernetes.io/warn=baseline --overwrite
 ----
 +
 On Cluster B:
@@ -117,6 +118,7 @@ On Cluster B:
 ----
 oc login --server=<cluster-b-api-url> -u <username> -p <password>
 oc new-project site-east
+oc label namespace site-east pod-security.kubernetes.io/warn=baseline --overwrite
 ----
 
 Option B: Single Cluster::
@@ -126,7 +128,16 @@ Option B: Single Cluster::
 oc login --server=<cluster-api-url> -u <username> -p <password>
 oc new-project site-west
 oc new-project site-east
+oc label namespace site-west pod-security.kubernetes.io/warn=baseline --overwrite
+oc label namespace site-east pod-security.kubernetes.io/warn=baseline --overwrite
 ----
+====
+
+[NOTE]
+====
+By default, OpenShift namespaces use the `restricted` Pod Security profile for warnings.
+This causes harmless warning messages when running ad-hoc pods with `oc run` (e.g., for testing connectivity), because the default container security context does not explicitly set `allowPrivilegeEscalation: false`.
+Setting the warning level to `baseline` suppresses these warnings without changing the enforcement policy — pods that would actually violate security constraints are still rejected.
 ====
 
 === Step 5: Create the Sites

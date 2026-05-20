@@ -101,6 +101,21 @@ oc new-project site-west
 oc new-project site-east
 ----
 
+Set the Pod Security Admission warning level to `baseline` on both namespaces:
+
+[source,bash,role=execute]
+----
+oc label namespace site-west pod-security.kubernetes.io/warn=baseline --overwrite
+oc label namespace site-east pod-security.kubernetes.io/warn=baseline --overwrite
+----
+
+[NOTE]
+====
+By default, OpenShift namespaces use the `restricted` Pod Security profile for warnings.
+This causes harmless warning messages when running ad-hoc pods with `oc run` (e.g., for testing connectivity), because the default container security context does not explicitly set `allowPrivilegeEscalation: false`.
+Setting the warning level to `baseline` suppresses these warnings without changing the enforcement policy — pods that would actually violate security constraints are still rejected.
+====
+
 === Using Two Namespaces as Separate Sites
 
 Throughout this course, when instructions refer to "Cluster A" or `site-west`, work in the `site-west` namespace:

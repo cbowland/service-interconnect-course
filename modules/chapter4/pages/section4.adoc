@@ -29,6 +29,7 @@ On Cluster A:
 ----
 oc login --server=<cluster-a-api-url> -u <username> -p <password>
 oc new-project site-south
+oc label namespace site-south pod-security.kubernetes.io/warn=baseline --overwrite
 skupper site create site-south
 ----
 
@@ -37,6 +38,7 @@ Option B: Single Cluster::
 [source,bash,role=execute]
 ----
 oc new-project site-south
+oc label namespace site-south pod-security.kubernetes.io/warn=baseline --overwrite
 skupper site create site-south
 ----
 ====
