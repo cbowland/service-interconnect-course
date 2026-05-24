@@ -70,7 +70,7 @@ Replace `<version>` with `2` for the main release stream:
 [source,bash,role=execute]
 ----
 sudo subscription-manager repos \
-  --enable=service-interconnect-_<version>_-for-rhel-9-x86_64-rpms
+  --enable=service-interconnect-<version>-for-rhel-9-x86_64-rpms
 ----
 
 . Install the `skupper-cli` package:
@@ -85,7 +85,7 @@ sudo dnf install skupper-cli
 [source,bash,role=execute]
 ----
 sudo subscription-manager repos \
-  --enable=service-interconnect-_<version>_-for-rhel-8-x86_64-rpms
+  --enable=service-interconnect-<version>-for-rhel-8-x86_64-rpms
 sudo dnf install skupper-cli
 ----
 
