@@ -22,7 +22,6 @@ skupper <resource-type> <operation> <resource-name> [options]
 Resource types include `site`, `token`, `listener`, `connector`, and `link`.
 Operations include `create`, `update`, `delete`, `status`, and `generate`.
 
-NOTE: In Service Interconnect 2.1, CLI shortcuts (such as `-r`) have been removed. You must now specify the full parameter name, for example `--routing-key`.
 
 == Installing the CLI
 
